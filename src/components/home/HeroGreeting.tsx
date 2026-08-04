@@ -11,7 +11,10 @@ export default function HeroGreeting({ children }: { children?: ReactNode }) {
 
   return (
     <div className="hero">
-      <p className="hero-eyebrow">Waylo</p>
+      <p className="hero-eyebrow">
+        <img src="/logo.svg" alt="" width={16} height={16} style={{ verticalAlign: '-3px', marginRight: 4 }} />
+        Waylo
+      </p>
       <h1 className="hero-title">
         <span>{text}</span>
       </h1>
