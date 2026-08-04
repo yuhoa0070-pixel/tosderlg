@@ -46,3 +46,18 @@ export function persistState(state: LoadedState): void {
     // storage unavailable — safe to skip
   }
 }
+
+/**
+ * Wipes persisted state under both the current and legacy storage keys.
+ * Used by the "Clear all data" flow — unlike persistState()/loadState(),
+ * which deliberately keep the legacy key around as a migration fallback,
+ * this is an explicit full wipe requested by the user.
+ */
+export function clearPersistedState(): void {
+  try {
+    localStorage.removeItem(NEW_KEY);
+    localStorage.removeItem(OLD_KEY);
+  } catch {
+    // storage unavailable — safe to skip
+  }
+}

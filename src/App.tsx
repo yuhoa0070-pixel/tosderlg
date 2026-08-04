@@ -8,18 +8,14 @@ import MapView from './views/MapView';
 import AllPhotosView from './views/AllPhotosView';
 import MemoryView from './views/MemoryView';
 import RecapView from './views/RecapView';
+import MyTripsView from './views/MyTripsView';
+import ProfileView from './views/ProfileView';
 import StopFormModal from './components/modals/StopFormModal';
 import PasteLinkModal from './components/modals/PasteLinkModal';
 import MemoryCollectionModal from './components/modals/MemoryCollectionModal';
 import ConfirmDeletePhotoModal from './components/modals/ConfirmDeletePhotoModal';
-
-function PlaceholderView({ name }: { name: string }) {
-  return (
-    <section className="active" style={{ padding: 24 }}>
-      <p className="sub">The "{name}" view lands in a later phase.</p>
-    </section>
-  );
-}
+import EditProfileModal from './components/modals/EditProfileModal';
+import ConfirmClearModal from './components/modals/ConfirmClearModal';
 
 function renderView(view: ViewName) {
   switch (view) {
@@ -37,8 +33,12 @@ function renderView(view: ViewName) {
       return <MemoryView />;
     case 'recap':
       return <RecapView />;
+    case 'mytrips':
+      return <MyTripsView />;
+    case 'profile':
+      return <ProfileView />;
     default:
-      return <PlaceholderView name={view} />;
+      return <HomeView />;
   }
 }
 
@@ -55,6 +55,8 @@ function App() {
       <PasteLinkModal />
       <MemoryCollectionModal />
       <ConfirmDeletePhotoModal />
+      <EditProfileModal />
+      <ConfirmClearModal />
 
       <BottomNav />
     </div>
