@@ -1,31 +1,35 @@
-import { useState } from 'react';
-import BottomNav, { type NavId } from './components/nav/BottomNav';
+import { useAppContext } from './context/AppContext';
+import type { ViewName } from './types';
+import BottomNav from './components/nav/BottomNav';
+import HomeView from './views/HomeView';
+
+function PlaceholderView({ name }: { name: string }) {
+  return (
+    <section className="active" style={{ padding: 24 }}>
+      <p className="sub">The "{name}" view lands in a later phase.</p>
+    </section>
+  );
+}
+
+function renderView(view: ViewName) {
+  switch (view) {
+    case 'home':
+      return <HomeView />;
+    default:
+      return <PlaceholderView name={view} />;
+  }
+}
 
 function App() {
-  const [active, setActive] = useState<NavId>('navHome');
+  const { state } = useAppContext();
 
   return (
     <div className="app">
       <div className="app-glow" />
 
-      <section id="view-home" className="active">
-        <div className="hero">
-          <p className="hero-eyebrow">Waylo</p>
-          <h1 className="hero-title">
-            <span>Good morning</span>
-          </h1>
-          <p className="hero-sub">say less — pick a vibe, drop a spot, start stacking days ✨</p>
-        </div>
-      </section>
+      {renderView(state.currentView)}
 
-      <BottomNav
-        active={active}
-        disabled={false}
-        onHome={() => setActive('navHome')}
-        onItinerary={() => setActive('navItinerary')}
-        onMap={() => setActive('navMap')}
-        onProfile={() => setActive('navProfile')}
-      />
+      <BottomNav />
     </div>
   );
 }
