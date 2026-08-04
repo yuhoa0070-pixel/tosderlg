@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useAppContext } from '../../context/AppContext';
+import ThemeToggle from '../shared/ThemeToggle';
 
 export default function HeroGreeting({ children }: { children?: ReactNode }) {
   const { state } = useAppContext();
@@ -11,11 +12,14 @@ export default function HeroGreeting({ children }: { children?: ReactNode }) {
 
   return (
     <div className="hero">
-      <img
-        src={state.theme === 'dark' ? '/logo-full-dark.png' : '/logo-full-transparent.png'}
-        alt="Waylo"
-        style={{ height: 64, width: 'auto', display: 'block', marginBottom: 2 }}
-      />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+        <img
+          src={state.theme === 'dark' ? '/logo-full-dark.png' : '/logo-full-transparent.png'}
+          alt="Waylo"
+          style={{ height: 64, width: 'auto', display: 'block' }}
+        />
+        <ThemeToggle />
+      </div>
       <h1 className="hero-title">
         <span>{text}</span>
       </h1>
