@@ -4,6 +4,12 @@ export function keyFor(d: number, s: number): string {
   return 'd' + d + '-s' + s;
 }
 
+export function parseKey(key: string): { day: number; stop: number } | null {
+  const m = key.match(/^d(\d+)-s(\d+)$/);
+  if (!m) return null;
+  return { day: parseInt(m[1], 10), stop: parseInt(m[2], 10) };
+}
+
 export function isPastTrip(trip: Trip): boolean {
   if (!trip.endDate) return false;
   const end = new Date(trip.endDate + 'T23:59:59');

@@ -1,17 +1,21 @@
 import { useAppContext } from '../../context/AppContext';
 import { sampleMemories } from '../../lib/constants';
 import { buildRecentMoments } from '../../lib/tripUtils';
+import type { MomentGroup } from '../../types';
 import MomentCard from '../shared/MomentCard';
 
 export default function MemoriesGallery() {
-  const { state } = useAppContext();
+  const { state, dispatch } = useAppContext();
   const groups = buildRecentMoments(state.trips);
   const isSampleFallback = groups.length === 0;
   const display = isSampleFallback ? sampleMemories : groups;
 
-  // Memory collection preview (tap-to-open carousel) lands in a later phase —
-  // for now the cards render but are not yet interactive.
-  const handleClick = () => {};
+  // Tapping a moment card opens the carousel preview (openMemoryCollection
+  // in the original) — "View all photos" inside it navigates to AllPhotosView.
+  const handleClick = (group: MomentGroup, _isSample: boolean) => {
+    dispatch({ type: 'SET_ACTIVE_MOMENT_GROUP', group });
+    dispatch({ type: 'OPEN_MODAL', modal: 'memoryCollection' });
+  };
 
   return (
     <div id="memoriesWrap" style={{ marginBottom: 24 }}>

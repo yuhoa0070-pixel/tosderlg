@@ -37,8 +37,27 @@ export function appReducer(state: AppState, action: Action): AppState {
     case 'SET_MEMORY_RETURN_VIEW':
       return { ...state, memoryReturnView: action.view };
 
-    case 'SET_ACTIVE_MOMENT_GROUP':
-      return { ...state, activeMomentGroup: action.group };
+    case 'SET_ACTIVE_MOMENT_GROUP': {
+      const group = action.group;
+      // Sample groups (no tripId) and closing the group (null) don't touch
+      // trip context. Real groups mirror the original's
+      // openMemoryFromHome()/goAllPhotos(): switch the active trip + day/stop
+      // so MemoryView/ConfirmDeletePhotoModal (which key off currentTripId)
+      // resolve the right trip even when opened from Home, not the map.
+      if (!group || group.tripId == null) {
+        return { ...state, activeMomentGroup: group };
+      }
+      const trip = state.trips.find((t) => t.id === group.tripId);
+      if (!trip) return { ...state, activeMomentGroup: group };
+      let currentDay = state.currentDay;
+      let selectedStop = state.selectedStop;
+      const m = group.key ? group.key.match(/^d(\d+)-s(\d+)$/) : null;
+      if (m) {
+        currentDay = parseInt(m[1], 10);
+        selectedStop = parseInt(m[2], 10);
+      }
+      return { ...state, activeMomentGroup: group, currentTripId: trip.id, currentDay, selectedStop };
+    }
 
     case 'SET_VIEWING_PHOTO':
       return { ...state, viewingPhoto: action.photo };

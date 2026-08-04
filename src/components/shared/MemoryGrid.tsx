@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from 'react';
+import type { CSSProperties, SyntheticEvent } from 'react';
 import type { Photo } from '../../types';
 
 interface MemoryGridProps {
@@ -9,6 +9,7 @@ interface MemoryGridProps {
   /** AllPhotosView hides broken images on error; the map detail-card grid does not (matches original). */
   useImgFallback?: boolean;
   gridId?: string;
+  style?: CSSProperties;
 }
 
 function momentImgFallback(e: SyntheticEvent<HTMLImageElement>) {
@@ -16,9 +17,9 @@ function momentImgFallback(e: SyntheticEvent<HTMLImageElement>) {
   e.currentTarget.style.display = 'none';
 }
 
-export default function MemoryGrid({ photos, onPhotoClick, onAddClick, useImgFallback, gridId }: MemoryGridProps) {
+export default function MemoryGrid({ photos, onPhotoClick, onAddClick, useImgFallback, gridId, style }: MemoryGridProps) {
   return (
-    <div className="memory-grid" id={gridId}>
+    <div className="memory-grid" id={gridId} style={style}>
       {photos.map((p, i) => (
         <div className="memory-tile" key={i} onClick={() => onPhotoClick(i)}>
           <img src={p.src} onError={useImgFallback ? momentImgFallback : undefined} />

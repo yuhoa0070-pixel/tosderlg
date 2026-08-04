@@ -5,8 +5,13 @@ import HomeView from './views/HomeView';
 import ItineraryView from './views/ItineraryView';
 import CustomizeView from './views/CustomizeView';
 import MapView from './views/MapView';
+import AllPhotosView from './views/AllPhotosView';
+import MemoryView from './views/MemoryView';
+import RecapView from './views/RecapView';
 import StopFormModal from './components/modals/StopFormModal';
 import PasteLinkModal from './components/modals/PasteLinkModal';
+import MemoryCollectionModal from './components/modals/MemoryCollectionModal';
+import ConfirmDeletePhotoModal from './components/modals/ConfirmDeletePhotoModal';
 
 function PlaceholderView({ name }: { name: string }) {
   return (
@@ -26,6 +31,12 @@ function renderView(view: ViewName) {
       return <CustomizeView />;
     case 'map':
       return <MapView />;
+    case 'all-photos':
+      return <AllPhotosView />;
+    case 'memory':
+      return <MemoryView />;
+    case 'recap':
+      return <RecapView />;
     default:
       return <PlaceholderView name={view} />;
   }
@@ -42,6 +53,8 @@ function App() {
 
       <StopFormModal />
       <PasteLinkModal />
+      <MemoryCollectionModal />
+      <ConfirmDeletePhotoModal />
 
       <BottomNav />
     </div>
