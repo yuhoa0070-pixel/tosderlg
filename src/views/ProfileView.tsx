@@ -21,7 +21,9 @@ export default function ProfileView() {
           style={{ width: 76, height: 76, fontSize: 22 }}
           onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'editProfile' })}
         >
-          {state.profilePhoto ? <img id="profilePageImg" src={state.profilePhoto} alt="" /> : <PersonAvatar />}
+          <div className="avatar-edit-inner">
+            {state.profilePhoto ? <img id="profilePageImg" src={state.profilePhoto} alt="" /> : <PersonAvatar />}
+          </div>
           <div className="avatar-edit-badge">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.2-2h6.6l1.2 2h2A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5z" />

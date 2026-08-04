@@ -7,12 +7,16 @@
 
 .avatar-edit{
   position:relative;width:84px;height:84px;border-radius:50%;
-  background:var(--card-hover);color:var(--text-muted);display:flex;align-items:center;justify-content:center;
-  font-size:26px;font-weight:600;cursor:pointer;overflow:hidden;
+  cursor:pointer;
 }
-.avatar-edit img{width:100%;height:100%;object-fit:cover;}
+.avatar-edit-inner{
+  width:100%;height:100%;border-radius:50%;overflow:hidden;
+  background:var(--card-hover);color:var(--text-muted);display:flex;align-items:center;justify-content:center;
+  font-size:26px;font-weight:600;
+}
+.avatar-edit-inner img{width:100%;height:100%;object-fit:cover;}
 .avatar-edit-badge{
   position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;
   background:var(--accent);display:flex;align-items:center;justify-content:center;
-  font-size:12px;border:2px solid var(--card);color:#fff;
+  font-size:12px;border:2px solid var(--card);color:#fff;z-index:1;
 }

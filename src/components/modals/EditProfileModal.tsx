@@ -43,7 +43,9 @@ export default function EditProfileModal() {
       <h2>Edit profile</h2>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}>
         <label className="avatar-edit" id="avatarEditPreview" htmlFor="avatarFileInput" style={{ cursor: 'pointer' }}>
-          {photo ? <img id="avatarEditImg" src={photo} alt="" /> : <PersonAvatar />}
+          <div className="avatar-edit-inner">
+            {photo ? <img id="avatarEditImg" src={photo} alt="" /> : <PersonAvatar />}
+          </div>
           <div className="avatar-edit-badge">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.2-2h6.6l1.2 2h2A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5z" />
