@@ -51,7 +51,9 @@
 }
 .moment-card-badge{
   position:absolute;top:12px;left:12px;z-index:2;
-  background:rgba(255,255,255,0.92);color:#1a1a18;
+  background:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.7);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#1a1a18;box-shadow:0 2px 10px rgba(0,0,0,0.15);
   font-size:11px;font-weight:600;border-radius:20px;
   padding:6px 12px 6px 10px;display:flex;align-items:center;gap:5px;
 }
@@ -59,7 +61,12 @@
 .moment-card-title{font-size:17px;font-weight:700;line-height:1.2;margin-bottom:6px;}
 .moment-card-sub-row{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;}
 .moment-card-sub{font-size:12px;color:rgba(255,255,255,0.82);line-height:1.4;}
-.moment-card-stat{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#fff;flex-shrink:0;}
+.moment-card-stat{
+  display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;
+  background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border-radius:14px;padding:5px 10px;
+}
 
 .mc-sub{font-size:13px;color:var(--text-secondary);margin:0;}
 
