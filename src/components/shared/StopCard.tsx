@@ -7,8 +7,11 @@ interface StopCardProps {
   onRemove?: () => void;
 }
 
+// Emoji can be a unicode glyph, a legacy inline `data:image/...` value (old
+// persisted trips), or the new `/emoji/*.png` chip path — mirrors
+// useLeafletMap.ts's isImgEmoji().
 function isImgIcon(emoji: string | undefined): boolean {
-  return !!emoji && emoji.startsWith('data:image');
+  return !!emoji && (emoji.startsWith('data:image') || emoji.startsWith('/emoji/'));
 }
 
 export default function StopCard({ stop, mode, onEdit, onRemove }: StopCardProps) {

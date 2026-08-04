@@ -6,7 +6,8 @@ import type { GeoCenter, Stop } from '../types';
 /**
  * Emoji can be a unicode glyph, a legacy inline `data:image/...` value (old
  * persisted trips), or the new `/emoji/*.png` chip path — see
- * StopFormModal.tsx's TODO about the deferred base64 chip extraction.
+ * StopFormModal.tsx's EMOJI_CHIPS and StopCard.tsx's isImgIcon() for the
+ * other two places this same 3-way check applies.
  */
 function isImgEmoji(emoji: string | undefined): boolean {
   return !!emoji && (emoji.startsWith('data:image') || emoji.startsWith('/emoji/'));

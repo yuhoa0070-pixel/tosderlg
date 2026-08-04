@@ -6,10 +6,29 @@ import { reverseGeocode } from '../../lib/geocode';
 import { DEFAULT_CENTER } from '../../lib/constants';
 import BottomSheetModal from './BottomSheetModal';
 
-// TODO(phase3-followup): add base64 image emoji chips (4 extra chips ported
-// from the original's inline base64 PNGs — map/coffee/wave/temple icons).
-// Only the 8 unicode category chips are wired up in this phase.
-const EMOJI_CHIPS = ['📍', '🍜', '☕', '🏨', '🏛️', '🌳', '🛍️', '🎉'];
+// Ported verbatim from the original's #emojiPicker: unicode category chips
+// interleaved with 4 image chips extracted from the original's inline base64
+// PNGs (now real files under public/emoji/). The stored value for an image
+// chip is its /emoji/*.png path — see useLeafletMap.ts's isImgEmoji() and
+// StopCard.tsx's isImgIcon() for the 3 formats supported at render time.
+const EMOJI_CHIPS: string[] = [
+  '📍',
+  '/emoji/map.png',
+  '🍜',
+  '☕',
+  '/emoji/coffee.png',
+  '🏨',
+  '🏛️',
+  '🌳',
+  '/emoji/wave.png',
+  '🛍️',
+  '🎉',
+  '/emoji/temple.png',
+];
+
+function isImgChip(emoji: string): boolean {
+  return emoji.startsWith('/emoji/');
+}
 
 export default function StopFormModal() {
   const { state, dispatch } = useAppContext();
@@ -180,10 +199,10 @@ export default function StopFormModal() {
         {EMOJI_CHIPS.map((e) => (
           <div
             key={e}
-            className={`emoji-chip${emoji === e ? ' active' : ''}`}
+            className={`emoji-chip${isImgChip(e) ? ' emoji-chip-img' : ''}${emoji === e ? ' active' : ''}`}
             onClick={() => setEmoji(e)}
           >
-            {e}
+            {isImgChip(e) ? <img src={e} alt="" /> : e}
           </div>
         ))}
       </div>

@@ -1,0 +1,4 @@
+.grip{cursor:grab;color:var(--text-muted);font-size:14px;touch-action:none;align-self:center;}
+.stop-card-ghost{opacity:0.35;}
+.stop-card-dragging{background:var(--card-hover);box-shadow:0 8px 20px rgba(0,0,0,0.4);}
+.stop-card.dragging{opacity:0.4;}
