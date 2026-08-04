@@ -14,7 +14,7 @@ export default function HeroGreeting({ children }: { children?: ReactNode }) {
       <img
         src={state.theme === 'dark' ? '/logo-full-dark.png' : '/logo-full-transparent.png'}
         alt="Waylo"
-        style={{ height: 48, width: 'auto', display: 'block', marginBottom: 12 }}
+        style={{ height: 64, width: 'auto', display: 'block', marginBottom: 2 }}
       />
       <h1 className="hero-title">
         <span>{text}</span>
