@@ -3,7 +3,7 @@ import type { AppState } from '../types';
 import { appReducer, initialState } from './appReducer';
 import type { Action } from './actions';
 import { loadState, persistState } from './persistence';
-import { initTelegramWebApp } from '../lib/telegram';
+import { getTelegramUser, initTelegramWebApp, telegramUserDisplayName } from '../lib/telegram';
 
 interface AppContextValue {
   state: AppState;
@@ -41,6 +41,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [state.theme]);
 
   useEffect(() => {
+    // Only auto-fill from Telegram if the user hasn't already set a profile
+    // themselves (e.g. via Edit Profile) — never overwrite a manual edit.
+    if (!state.profileName) {
+      const tgUser = getTelegramUser();
+      if (tgUser) {
+        const name = telegramUserDisplayName(tgUser);
+        if (name) dispatch({ type: 'SET_PROFILE_NAME', name });
+        if (tgUser.photo_url && !state.profilePhoto) {
+          dispatch({ type: 'SET_PROFILE_PHOTO', photo: tgUser.photo_url });
+        }
+      }
+    }
     return initTelegramWebApp((theme) => dispatch({ type: 'SET_THEME', theme }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
