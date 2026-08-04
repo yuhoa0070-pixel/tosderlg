@@ -2,6 +2,9 @@ import { useAppContext } from './context/AppContext';
 import type { ViewName } from './types';
 import BottomNav from './components/nav/BottomNav';
 import HomeView from './views/HomeView';
+import ItineraryView from './views/ItineraryView';
+import CustomizeView from './views/CustomizeView';
+import StopFormModal from './components/modals/StopFormModal';
 
 function PlaceholderView({ name }: { name: string }) {
   return (
@@ -15,6 +18,10 @@ function renderView(view: ViewName) {
   switch (view) {
     case 'home':
       return <HomeView />;
+    case 'itinerary':
+      return <ItineraryView />;
+    case 'customize':
+      return <CustomizeView />;
     default:
       return <PlaceholderView name={view} />;
   }
@@ -28,6 +35,8 @@ function App() {
       <div className="app-glow" />
 
       {renderView(state.currentView)}
+
+      <StopFormModal />
 
       <BottomNav />
     </div>
