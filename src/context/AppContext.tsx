@@ -3,6 +3,7 @@ import type { AppState } from '../types';
 import { appReducer, initialState } from './appReducer';
 import type { Action } from './actions';
 import { loadState, persistState } from './persistence';
+import { initTelegramWebApp } from '../lib/telegram';
 
 interface AppContextValue {
   state: AppState;
@@ -38,6 +39,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.body.dataset.theme = state.theme;
   }, [state.theme]);
+
+  useEffect(() => {
+    return initTelegramWebApp((theme) => dispatch({ type: 'SET_THEME', theme }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>;
 }
