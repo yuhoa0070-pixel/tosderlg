@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useActiveTrip } from '../../hooks/useActiveTrip';
 import { parseGoogleMapsLink, isShortMapsLink, resolveShortLink } from '../../lib/mapsLink';
+import { reverseGeocode } from '../../lib/geocode';
 import { DEFAULT_CENTER } from '../../lib/constants';
 import BottomSheetModal from './BottomSheetModal';
 
@@ -27,6 +28,8 @@ export default function StopFormModal() {
   const [status, setStatus] = useState('');
   const [statusErr, setStatusErr] = useState(false);
   const [busy, setBusy] = useState(false);
+  // True while reverse-geocoding a tap-to-add-stop location (map view only).
+  const [nameLocating, setNameLocating] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -37,12 +40,24 @@ export default function StopFormModal() {
       setNote(s.sub);
       setMapLink(s.mapLink || '');
       setEmoji(s.emoji || '📍');
+      setNameLocating(false);
     } else {
       setTime('');
-      setTitle('');
       setNote('');
       setMapLink('');
       setEmoji('📍');
+      const tapCoords = state.pendingTapCoords;
+      if (tapCoords) {
+        setTitle('Locating…');
+        setNameLocating(true);
+        reverseGeocode(tapCoords.lat, tapCoords.lng).then((name) => {
+          setTitle(name || '');
+          setNameLocating(false);
+        });
+      } else {
+        setTitle('');
+        setNameLocating(false);
+      }
     }
     setStatus('');
     setStatusErr(false);
@@ -50,6 +65,7 @@ export default function StopFormModal() {
   }, [isOpen, editingIndex]);
 
   function close() {
+    dispatch({ type: 'SET_PENDING_TAP_COORDS', coords: null });
     dispatch({ type: 'CLOSE_MODAL' });
   }
 
@@ -108,7 +124,8 @@ export default function StopFormModal() {
         },
       });
     } else {
-      const coords = parsedCoords || jitteredCoords();
+      const tapCoords = state.pendingTapCoords;
+      const coords = tapCoords || parsedCoords || jitteredCoords();
       dispatch({
         type: 'ADD_STOP',
         dayIndex: state.currentDay,
@@ -122,6 +139,10 @@ export default function StopFormModal() {
           lng: coords.lng,
         },
       });
+      if (tapCoords) {
+        // Newly added stop lands at the end — select it so the map view highlights it.
+        dispatch({ type: 'SET_SELECTED_STOP', index: stops.length });
+      }
     }
     close();
   }
@@ -132,7 +153,13 @@ export default function StopFormModal() {
       <label className="field-label">Time</label>
       <input type="text" placeholder="9:00 AM" value={time} onChange={(e) => setTime(e.target.value)} />
       <label className="field-label">Place</label>
-      <input type="text" placeholder="Belem Tower" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <input
+        type="text"
+        placeholder="Belem Tower"
+        value={title}
+        disabled={nameLocating}
+        onChange={(e) => setTitle(e.target.value)}
+      />
       <label className="field-label">Note</label>
       <input
         type="text"

@@ -62,6 +62,11 @@ export interface MomentGroup {
   photos: Photo[];
 }
 
+export interface ViewingPhoto {
+  key: string;
+  index: number;
+}
+
 export interface AppState {
   trips: Trip[];
   currentTripId: number | null;
@@ -74,4 +79,8 @@ export interface AppState {
   memoryReturnView: ViewName;
   activeModal: ModalName | null;
   editingStopIndex: number | null;
+  activeMomentGroup: MomentGroup | null;
+  viewingPhoto: ViewingPhoto | null;
+  /** Coordinates from a tap-to-add-stop on the map, consumed by StopFormModal. */
+  pendingTapCoords: GeoCenter | null;
 }

@@ -4,7 +4,9 @@ import BottomNav from './components/nav/BottomNav';
 import HomeView from './views/HomeView';
 import ItineraryView from './views/ItineraryView';
 import CustomizeView from './views/CustomizeView';
+import MapView from './views/MapView';
 import StopFormModal from './components/modals/StopFormModal';
+import PasteLinkModal from './components/modals/PasteLinkModal';
 
 function PlaceholderView({ name }: { name: string }) {
   return (
@@ -22,6 +24,8 @@ function renderView(view: ViewName) {
       return <ItineraryView />;
     case 'customize':
       return <CustomizeView />;
+    case 'map':
+      return <MapView />;
     default:
       return <PlaceholderView name={view} />;
   }
@@ -37,6 +41,7 @@ function App() {
       {renderView(state.currentView)}
 
       <StopFormModal />
+      <PasteLinkModal />
 
       <BottomNav />
     </div>

@@ -1,10 +1,13 @@
-import type { ModalName, Photo, Stop, Theme, Trip, ViewName } from '../types';
+import type { GeoCenter, ModalName, MomentGroup, Photo, Stop, Theme, Trip, ViewingPhoto, ViewName } from '../types';
 
 export type Action =
   | { type: 'NAVIGATE'; view: ViewName }
   | { type: 'SET_CURRENT_DAY'; day: number }
   | { type: 'SET_SELECTED_STOP'; index: number }
   | { type: 'SET_MEMORY_RETURN_VIEW'; view: ViewName }
+  | { type: 'SET_ACTIVE_MOMENT_GROUP'; group: MomentGroup | null }
+  | { type: 'SET_VIEWING_PHOTO'; photo: ViewingPhoto | null }
+  | { type: 'SET_PENDING_TAP_COORDS'; coords: GeoCenter | null }
   | { type: 'OPEN_MODAL'; modal: ModalName; editingStopIndex?: number | null }
   | { type: 'CLOSE_MODAL' }
   | { type: 'CREATE_TRIP'; trip: Trip }

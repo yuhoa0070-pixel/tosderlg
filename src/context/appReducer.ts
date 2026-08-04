@@ -14,6 +14,9 @@ export const initialState: AppState = {
   memoryReturnView: 'map',
   activeModal: null,
   editingStopIndex: null,
+  activeMomentGroup: null,
+  viewingPhoto: null,
+  pendingTapCoords: null,
 };
 
 function mapTrip(state: AppState, tripId: number | null, fn: (trip: Trip) => Trip): Trip[] {
@@ -33,6 +36,15 @@ export function appReducer(state: AppState, action: Action): AppState {
 
     case 'SET_MEMORY_RETURN_VIEW':
       return { ...state, memoryReturnView: action.view };
+
+    case 'SET_ACTIVE_MOMENT_GROUP':
+      return { ...state, activeMomentGroup: action.group };
+
+    case 'SET_VIEWING_PHOTO':
+      return { ...state, viewingPhoto: action.photo };
+
+    case 'SET_PENDING_TAP_COORDS':
+      return { ...state, pendingTapCoords: action.coords };
 
     case 'OPEN_MODAL':
       return {
