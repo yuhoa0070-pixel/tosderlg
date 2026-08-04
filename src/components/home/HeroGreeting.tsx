@@ -11,10 +11,11 @@ export default function HeroGreeting({ children }: { children?: ReactNode }) {
 
   return (
     <div className="hero">
-      <p className="hero-eyebrow">
-        <img src="/logo.svg" alt="" width={16} height={16} style={{ verticalAlign: '-3px', marginRight: 4 }} />
-        Waylo
-      </p>
+      <img
+        src={state.theme === 'dark' ? '/logo-full-dark.png' : '/logo-full-transparent.png'}
+        alt="Waylo"
+        style={{ height: 28, width: 'auto', display: 'block', marginBottom: 10 }}
+      />
       <h1 className="hero-title">
         <span>{text}</span>
       </h1>
