@@ -1,5 +1,6 @@
 .stop-form-overlay{
-  display:flex;position:fixed;inset:0;background:rgba(0,0,0,0);
+  display:flex;position:fixed;top:0;left:0;right:0;
+  height:var(--tg-viewport-height, 100dvh);background:rgba(0,0,0,0);
   align-items:flex-end;justify-content:center;z-index:40;
   opacity:0;pointer-events:none;
   transition:opacity .22s ease, background .22s ease;
