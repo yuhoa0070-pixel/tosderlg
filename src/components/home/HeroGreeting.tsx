@@ -12,7 +12,15 @@ export default function HeroGreeting({ children }: { children?: ReactNode }) {
 
   return (
     <div className="hero">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 2,
+          boxShadow: '0px 4px 4px rgba(0,0,0,0.05)',
+        }}
+      >
         <img
           src={state.theme === 'dark' ? '/logo-full-dark.png' : '/logo-full-transparent.png'}
           alt="Waylo"
