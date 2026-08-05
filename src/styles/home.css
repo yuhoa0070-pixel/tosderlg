@@ -1,16 +1,35 @@
 .app-header{
   display:flex;align-items:center;justify-content:space-between;
   background:var(--header-bg);border-radius:0;
-  padding:20px 24px;margin:-36px -24px 20px;
+  padding:12px 20px;margin:-36px -24px 18px;
   box-shadow:0 4px 12px rgba(0,0,0,0.06);
   position:relative;z-index:10;
 }
-.app-header-logo-img{height:48px;width:auto;display:block;}
-.app-header-controls{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0;}
+.app-header-logo-img{height:40px;width:auto;display:block;}
+.app-header-controls{
+  display:flex;align-items:center;justify-content:flex-end;gap:2px;min-width:0;
+  padding:3px;border:1px solid rgba(255,255,255,.14);border-radius:999px;
+  background:rgba(255,255,255,.08);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 18px rgba(0,0,0,.12);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+.app-header-controls .theme-toggle,.app-header-controls .language-toggle{background:transparent;padding:0;gap:1px;}
+.app-header-controls .language-toggle{margin-left:3px;padding-left:4px;border-left:1px solid rgba(255,255,255,.15);border-radius:0;}
+.app-header-controls .theme-toggle-opt{width:27px;height:27px;}
+.app-header-controls .theme-toggle-opt svg{width:15px;height:15px;}
+.app-header-controls .language-toggle button{min-width:28px;height:27px;padding:0 7px;font-size:11px;}
+.app-header-controls .theme-toggle-opt.active,.app-header-controls .language-toggle button.active{
+  background:rgba(46,207,117,.92);box-shadow:0 2px 8px rgba(46,207,117,.24);color:#07150c;
+}
+body[data-theme="light"] .app-header-controls{
+  background:rgba(255,255,255,.5);border-color:rgba(255,255,255,.72);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 6px 18px rgba(67,62,46,.1);
+}
+body[data-theme="light"] .app-header-controls .language-toggle{border-left-color:rgba(90,85,68,.12);}
 @media(max-width:360px){
-  .app-header{padding-left:18px;padding-right:18px;}
-  .app-header-logo-img{height:42px;}
-  .app-header-controls{gap:5px;}
+  .app-header{padding:11px 16px;}
+  .app-header-logo-img{height:36px;}
+  .app-header-controls .language-toggle button{min-width:26px;padding:0 6px;font-size:10px;}
 }
 .hero{padding:4px 0 26px;position:relative;}
 .hero-eyebrow{font-size:14px;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px;font-weight:600;}
