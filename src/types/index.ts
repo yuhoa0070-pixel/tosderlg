@@ -39,6 +39,12 @@ export interface TripDay {
   stops: Stop[];
 }
 
+export interface PackingItem {
+  id: number;
+  text: string;
+  packed: boolean;
+}
+
 export interface GeoCenter {
   lat: number;
   lng: number;
@@ -53,6 +59,7 @@ export interface Trip {
   center: GeoCenter;
   tripDays: TripDay[];
   photos: Record<string, Photo[]>;
+  packingItems?: PackingItem[];
 }
 
 export interface MomentGroup {

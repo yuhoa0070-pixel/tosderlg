@@ -192,6 +192,35 @@ export function appReducer(state: AppState, action: Action): AppState {
         }),
       };
 
+    case 'ADD_PACKING_ITEM':
+      return {
+        ...state,
+        trips: mapTrip(state, state.currentTripId, (trip) => ({
+          ...trip,
+          packingItems: [...(trip.packingItems ?? []), action.item],
+        })),
+      };
+
+    case 'TOGGLE_PACKING_ITEM':
+      return {
+        ...state,
+        trips: mapTrip(state, state.currentTripId, (trip) => ({
+          ...trip,
+          packingItems: (trip.packingItems ?? []).map((item) =>
+            item.id === action.itemId ? { ...item, packed: !item.packed } : item,
+          ),
+        })),
+      };
+
+    case 'REMOVE_PACKING_ITEM':
+      return {
+        ...state,
+        trips: mapTrip(state, state.currentTripId, (trip) => ({
+          ...trip,
+          packingItems: (trip.packingItems ?? []).filter((item) => item.id !== action.itemId),
+        })),
+      };
+
     case 'SET_PROFILE_NAME':
       return { ...state, profileName: action.name };
 

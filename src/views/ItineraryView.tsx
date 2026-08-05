@@ -2,6 +2,7 @@ import { useAppContext } from '../context/AppContext';
 import { useActiveTrip } from '../hooks/useActiveTrip';
 import { isPastTrip } from '../lib/tripUtils';
 import StopCard from '../components/shared/StopCard';
+import PackingChecklist from '../components/shared/PackingChecklist';
 
 export default function ItineraryView() {
   const { state, dispatch } = useAppContext();
@@ -44,6 +45,8 @@ export default function ItineraryView() {
           stops.map((stop, i) => <StopCard key={i} stop={stop} mode="readonly" />)
         )}
       </div>
+
+      {activeTrip && <PackingChecklist trip={activeTrip} />}
 
       <button
         className="btn btn-primary"

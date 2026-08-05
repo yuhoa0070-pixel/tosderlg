@@ -42,6 +42,7 @@ export default function TripCard({ trip, active, onSelect, allowDelete = false, 
   const km = state.language === 'km';
   const scheduleText = formatTripSchedule(trip, km);
   const destinationName = trip.destination.split(',')[0].trim();
+  const unpackedItems = (trip.packingItems ?? []).filter((item) => !item.packed).length;
   const excitementText = km
     ? `${destinationName} ជិតមកដល់ហើយ! តើអ្នករំភើបចង់ទៅមើលអ្វីជាងគេ?`
     : `${destinationName} is almost here! What are you most excited to explore?`;
@@ -147,6 +148,16 @@ export default function TripCard({ trip, active, onSelect, allowDelete = false, 
             <div className="trip-card-excitement">
               <span className="trip-card-sparkle" aria-hidden="true">✦</span>
               <span>{excitementText}</span>
+            </div>
+          )}
+          {alert && unpackedItems > 0 && (
+            <div className="trip-card-packing-reminder">
+              <span aria-hidden="true">▣</span>
+              <span>
+                {km
+                  ? `រំលឹក៖ នៅសល់របស់ត្រូវរៀបចំ ${unpackedItems}`
+                  : `Packing reminder: ${unpackedItems} item${unpackedItems === 1 ? '' : 's'} left`}
+              </span>
             </div>
           )}
         </div>

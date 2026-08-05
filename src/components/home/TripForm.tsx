@@ -39,6 +39,7 @@ export default function TripForm() {
       center,
       tripDays: days,
       photos: {},
+      packingItems: [],
     };
 
     setBusy(false);

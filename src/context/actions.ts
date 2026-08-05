@@ -1,4 +1,4 @@
-import type { GeoCenter, Language, ModalName, MomentGroup, Photo, Stop, Theme, Trip, ViewingPhoto, ViewName } from '../types';
+import type { GeoCenter, Language, ModalName, MomentGroup, PackingItem, Photo, Stop, Theme, Trip, ViewingPhoto, ViewName } from '../types';
 
 export type Action =
   | { type: 'NAVIGATE'; view: ViewName }
@@ -21,6 +21,9 @@ export type Action =
   | { type: 'ADD_PHOTO'; key: string; photo: Photo }
   | { type: 'UPDATE_PHOTO_CAPTION'; key: string; index: number; caption: string }
   | { type: 'DELETE_PHOTO'; key: string; index: number }
+  | { type: 'ADD_PACKING_ITEM'; item: PackingItem }
+  | { type: 'TOGGLE_PACKING_ITEM'; itemId: number }
+  | { type: 'REMOVE_PACKING_ITEM'; itemId: number }
   | { type: 'SET_PROFILE_NAME'; name: string }
   | { type: 'SET_PROFILE_PHOTO'; photo: string | null }
   | { type: 'SET_THEME'; theme: Theme }
