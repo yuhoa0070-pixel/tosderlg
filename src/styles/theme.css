@@ -22,7 +22,7 @@ body[data-theme="light"] .app-glow{background:radial-gradient(ellipse 70% 100% a
   position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
   width:100%;max-width:420px;margin:0 auto;opacity:.78;
 }
-.theme-sky-wash{position:absolute;inset:0;animation:themeSkyWash 1850ms ease-in-out both;}
+.theme-sky-wash{position:absolute;inset:0;animation:themeSkyWash 2900ms ease-in-out both;}
 .theme-sky-transition.light .theme-sky-wash{
   background:linear-gradient(115deg,rgba(255,177,76,.28),rgba(255,220,142,.13) 42%,rgba(121,199,255,.1) 72%,transparent);
 }
@@ -32,8 +32,8 @@ body[data-theme="light"] .app-glow{background:radial-gradient(ellipse 70% 100% a
 .theme-celestial{
   position:absolute;top:0;left:0;width:62px;height:62px;filter:drop-shadow(0 0 14px currentColor);
 }
-.theme-sun-rise{color:#FFB43E;animation:sunRiseAcross 1800ms linear both;}
-.theme-moon-set{color:#DCE7FF;animation:moonSetAcross 1800ms linear both;}
+.theme-sun-rise{color:#FFB43E;animation:sunRiseAcross 2800ms linear both;}
+.theme-moon-set{color:#DCE7FF;animation:moonSetAcross 2800ms linear both;}
 @keyframes themeSkyWash{
   0%{opacity:0;}
   30%{opacity:.82;}
@@ -42,24 +42,22 @@ body[data-theme="light"] .app-glow{background:radial-gradient(ellipse 70% 100% a
 }
 @keyframes sunRiseAcross{
   0%{left:-74px;top:54%;opacity:0;transform:scale(.62) rotate(-14deg);}
-  12.5%{left:5%;top:46%;opacity:.68;transform:scale(.7) rotate(-11deg);}
-  25%{left:20%;top:39%;opacity:.88;transform:scale(.82) rotate(-7deg);}
-  37.5%{left:35%;top:34%;opacity:.98;transform:scale(.94) rotate(-3deg);}
-  50%{left:calc(50% - 31px);top:31%;opacity:1;transform:scale(1) rotate(0);}
-  62.5%{left:65%;top:34%;opacity:.98;transform:scale(.94) rotate(3deg);}
-  75%{left:80%;top:39%;opacity:.88;transform:scale(.82) rotate(7deg);}
-  87.5%{left:95%;top:46%;opacity:.68;transform:scale(.7) rotate(11deg);}
+  14%{left:7%;top:45%;opacity:.72;transform:scale(.72) rotate(-10deg);}
+  28%{left:27%;top:36%;opacity:.92;transform:scale(.86) rotate(-6deg);animation-timing-function:cubic-bezier(.18,.75,.24,1);}
+  42%{left:calc(50% - 31px);top:31%;opacity:1;transform:scale(1) rotate(0);}
+  58%{left:calc(50% - 31px);top:31%;opacity:1;transform:scale(1) rotate(0);animation-timing-function:cubic-bezier(.55,0,.82,.25);}
+  72%{left:73%;top:36%;opacity:.92;transform:scale(.86) rotate(6deg);}
+  86%{left:93%;top:45%;opacity:.72;transform:scale(.72) rotate(10deg);}
   100%{left:calc(100% + 12px);top:54%;opacity:0;transform:scale(.62) rotate(14deg);}
 }
 @keyframes moonSetAcross{
   0%{left:calc(100% + 12px);top:54%;opacity:0;transform:scale(.62) rotate(14deg);}
-  12.5%{left:95%;top:46%;opacity:.68;transform:scale(.7) rotate(11deg);}
-  25%{left:80%;top:39%;opacity:.88;transform:scale(.82) rotate(7deg);}
-  37.5%{left:65%;top:34%;opacity:.98;transform:scale(.94) rotate(3deg);}
-  50%{left:calc(50% - 31px);top:31%;opacity:1;transform:scale(1) rotate(0);}
-  62.5%{left:35%;top:34%;opacity:.98;transform:scale(.94) rotate(-3deg);}
-  75%{left:20%;top:39%;opacity:.88;transform:scale(.82) rotate(-7deg);}
-  87.5%{left:5%;top:46%;opacity:.68;transform:scale(.7) rotate(-11deg);}
+  14%{left:93%;top:45%;opacity:.72;transform:scale(.72) rotate(10deg);}
+  28%{left:73%;top:36%;opacity:.92;transform:scale(.86) rotate(6deg);animation-timing-function:cubic-bezier(.18,.75,.24,1);}
+  42%{left:calc(50% - 31px);top:31%;opacity:1;transform:scale(1) rotate(0);}
+  58%{left:calc(50% - 31px);top:31%;opacity:1;transform:scale(1) rotate(0);animation-timing-function:cubic-bezier(.55,0,.82,.25);}
+  72%{left:27%;top:36%;opacity:.92;transform:scale(.86) rotate(-6deg);}
+  86%{left:7%;top:45%;opacity:.72;transform:scale(.72) rotate(-10deg);}
   100%{left:-74px;top:54%;opacity:0;transform:scale(.62) rotate(-14deg);}
 }
 @media(prefers-reduced-motion:reduce){
