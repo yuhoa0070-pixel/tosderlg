@@ -40,16 +40,20 @@ body[data-theme="light"] .app-glow{background:radial-gradient(ellipse 70% 100% a
   100%{opacity:0;}
 }
 @keyframes sunRiseAcross{
-  0%{opacity:0;transform:translate(-74px,72vh) scale(.55) rotate(-18deg);}
-  18%{opacity:.9;}
-  58%{opacity:1;transform:translate(46vw,20vh) scale(1) rotate(6deg);}
-  100%{opacity:0;transform:translate(calc(100vw + 74px),4vh) scale(.72) rotate(18deg);}
+  0%{left:-74px;top:52%;opacity:0;transform:scale(.6) rotate(-16deg);}
+  18%{opacity:.92;}
+  25%{left:20%;top:38%;transform:scale(.82) rotate(-8deg);}
+  50%{left:calc(50% - 31px);top:31%;opacity:1;transform:scale(1) rotate(0);}
+  75%{left:80%;top:38%;transform:scale(.82) rotate(8deg);}
+  100%{left:calc(100% + 12px);top:52%;opacity:0;transform:scale(.6) rotate(16deg);}
 }
 @keyframes moonSetAcross{
-  0%{opacity:0;transform:translate(calc(100vw + 74px),8vh) scale(.72) rotate(16deg);}
+  0%{left:calc(100% + 12px);top:52%;opacity:0;transform:scale(.6) rotate(16deg);}
   18%{opacity:.92;}
-  58%{opacity:1;transform:translate(46vw,24vh) scale(1) rotate(-5deg);}
-  100%{opacity:0;transform:translate(-74px,68vh) scale(.58) rotate(-20deg);}
+  25%{left:80%;top:38%;transform:scale(.82) rotate(8deg);}
+  50%{left:calc(50% - 31px);top:31%;opacity:1;transform:scale(1) rotate(0);}
+  75%{left:20%;top:38%;transform:scale(.82) rotate(-8deg);}
+  100%{left:-74px;top:52%;opacity:0;transform:scale(.6) rotate(-16deg);}
 }
 @media(prefers-reduced-motion:reduce){
   .theme-sky-transition{display:none;}
