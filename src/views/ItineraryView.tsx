@@ -2,7 +2,6 @@ import { useAppContext } from '../context/AppContext';
 import { useActiveTrip } from '../hooks/useActiveTrip';
 import { isPastTrip } from '../lib/tripUtils';
 import StopCard from '../components/shared/StopCard';
-import PackingChecklist from '../components/shared/PackingChecklist';
 
 export default function ItineraryView() {
   const { state, dispatch } = useAppContext();
@@ -21,6 +20,15 @@ export default function ItineraryView() {
       <p className="sub" id="itinDates">
         {activeTrip ? activeTrip.label : '—'}
       </p>
+
+      <div className="itinerary-mode-tabs" aria-label={state.language === 'km' ? 'ជ្រើសរើសទិដ្ឋភាព' : 'Choose itinerary view'}>
+        <button type="button" className="active">
+          {state.language === 'km' ? 'ផែនការ' : 'Plan'}
+        </button>
+        <button type="button" onClick={() => dispatch({ type: 'NAVIGATE', view: 'map' })}>
+          {state.language === 'km' ? 'ផែនទី' : 'Map'}
+        </button>
+      </div>
 
       <div className="day-tabs" id="dayTabs">
         {tripDays.map((_, i) => (
@@ -46,21 +54,12 @@ export default function ItineraryView() {
         )}
       </div>
 
-      {activeTrip && <PackingChecklist trip={activeTrip} />}
-
       <button
         className="btn btn-primary"
         style={{ marginTop: 8 }}
         onClick={() => dispatch({ type: 'NAVIGATE', view: 'customize' })}
       >
         Review and customize
-      </button>
-      <button
-        className="btn btn-ghost"
-        style={{ marginTop: 10 }}
-        onClick={() => dispatch({ type: 'NAVIGATE', view: 'map' })}
-      >
-        Open map explorer
       </button>
       {showRecapBtn && (
         <button

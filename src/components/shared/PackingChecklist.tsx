@@ -5,15 +5,19 @@ import type { Trip } from '../../types';
 export default function PackingChecklist({ trip }: { trip: Trip }) {
   const { state, dispatch } = useAppContext();
   const [newItem, setNewItem] = useState('');
+  const [newEmoji, setNewEmoji] = useState('🎒');
   const km = state.language === 'km';
   const items = trip.packingItems ?? [];
   const remaining = items.filter((item) => !item.packed).length;
-  const suggestions = km ? ['លិខិតឆ្លងដែន', 'ឆ្នាំងសាក', 'ថ្នាំពេទ្យ'] : ['Passport', 'Charger', 'Medication'];
+  const emojiOptions = ['🎒', '👕', '👟', '🪥', '💊', '🔌', '📷', '🛂'];
+  const suggestions = km
+    ? [{ text: 'លិខិតឆ្លងដែន', emoji: '🛂' }, { text: 'ឆ្នាំងសាក', emoji: '🔌' }, { text: 'ថ្នាំពេទ្យ', emoji: '💊' }]
+    : [{ text: 'Passport', emoji: '🛂' }, { text: 'Charger', emoji: '🔌' }, { text: 'Medication', emoji: '💊' }];
 
-  function addItem(text: string) {
+  function addItem(text: string, emoji = newEmoji) {
     const cleanText = text.trim();
     if (!cleanText || items.some((item) => item.text.toLocaleLowerCase() === cleanText.toLocaleLowerCase())) return;
-    dispatch({ type: 'ADD_PACKING_ITEM', item: { id: Date.now(), text: cleanText, packed: false } });
+    dispatch({ type: 'ADD_PACKING_ITEM', item: { id: Date.now(), text: cleanText, packed: false, emoji } });
     setNewItem('');
   }
 
@@ -45,6 +49,21 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
         )}
       </div>
 
+      <div className="packing-emoji-picker" aria-label={km ? 'ជ្រើសរើសរូបសញ្ញា' : 'Choose an emoji'}>
+        {emojiOptions.map((emoji) => (
+          <button
+            type="button"
+            key={emoji}
+            className={emoji === newEmoji ? 'active' : ''}
+            onClick={() => setNewEmoji(emoji)}
+            aria-label={`${km ? 'ជ្រើសរើស' : 'Choose'} ${emoji}`}
+            aria-pressed={emoji === newEmoji}
+          >
+            {emoji}
+          </button>
+        ))}
+      </div>
+
       <form className="packing-form" onSubmit={handleSubmit}>
         <input
           className="packing-input"
@@ -72,6 +91,7 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
               >
                 {item.packed && <span aria-hidden="true">✓</span>}
               </button>
+              <span className="packing-item-emoji" aria-hidden="true">{item.emoji ?? '🎒'}</span>
               <span className="packing-item-text">{item.text}</span>
               <button
                 type="button"
@@ -88,7 +108,9 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
         <div className="packing-suggestions">
           <span>{km ? 'សាកល្បង៖' : 'Try:'}</span>
           {suggestions.map((suggestion) => (
-            <button type="button" key={suggestion} onClick={() => addItem(suggestion)}>{suggestion}</button>
+            <button type="button" key={suggestion.text} onClick={() => addItem(suggestion.text, suggestion.emoji)}>
+              <span aria-hidden="true">{suggestion.emoji}</span> {suggestion.text}
+            </button>
           ))}
         </div>
       )}

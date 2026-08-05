@@ -6,6 +6,7 @@ export type ViewName =
   | 'itinerary'
   | 'customize'
   | 'map'
+  | 'packing'
   | 'all-photos'
   | 'memory'
   | 'recap'
@@ -43,6 +44,7 @@ export interface PackingItem {
   id: number;
   text: string;
   packed: boolean;
+  emoji?: string;
 }
 
 export interface GeoCenter {

@@ -5,6 +5,7 @@ import HomeView from './views/HomeView';
 import ItineraryView from './views/ItineraryView';
 import CustomizeView from './views/CustomizeView';
 import MapView from './views/MapView';
+import PackingView from './views/PackingView';
 import AllPhotosView from './views/AllPhotosView';
 import MemoryView from './views/MemoryView';
 import RecapView from './views/RecapView';
@@ -29,6 +30,8 @@ function renderView(view: ViewName) {
       return <CustomizeView />;
     case 'map':
       return <MapView />;
+    case 'packing':
+      return <PackingView />;
     case 'all-photos':
       return <AllPhotosView />;
     case 'memory':

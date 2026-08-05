@@ -164,11 +164,13 @@ export default function MapView() {
 
   return (
     <section id="view-map" className="active">
-      <div className="topbar">
-        <div className="icon-btn" onClick={() => dispatch({ type: 'NAVIGATE', view: 'itinerary' })}>
-          &#8592;
-        </div>
-        <div />
+      <div className="itinerary-mode-tabs" aria-label={state.language === 'km' ? 'ជ្រើសរើសទិដ្ឋភាព' : 'Choose itinerary view'}>
+        <button type="button" onClick={() => dispatch({ type: 'NAVIGATE', view: 'itinerary' })}>
+          {state.language === 'km' ? 'ផែនការ' : 'Plan'}
+        </button>
+        <button type="button" className="active">
+          {state.language === 'km' ? 'ផែនទី' : 'Map'}
+        </button>
       </div>
       <p className="eyebrow">Map explorer with photo memory integration</p>
       <div className="map-frame">
