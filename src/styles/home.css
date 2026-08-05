@@ -55,7 +55,6 @@ body[data-theme="dark"] .app-header-logo span{color:var(--text);}
 .moment-card{
   position:relative;flex:0 0 210px;height:280px;scroll-snap-align:start;
   border-radius:20px;overflow:hidden;cursor:pointer;background:var(--card-hover);
-  box-shadow:0 8px 20px rgba(0,0,0,0.18);
 }
 .moment-card-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .moment-card-scrim{
