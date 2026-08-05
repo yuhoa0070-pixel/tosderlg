@@ -32,17 +32,12 @@ function isExpandedGoogleMapsUrl(value: string): boolean {
 }
 
 export default {
-  async fetch(request, env): Promise<Response> {
-    const requestUrl = new URL(request.url);
-
-    if (requestUrl.pathname !== '/api/resolve-map-link') {
-      return env.ASSETS.fetch(request);
-    }
+  async fetch(request: Request): Promise<Response> {
     if (request.method !== 'GET') {
       return json({ error: 'Method not allowed' }, 405);
     }
 
-    const rawUrl = requestUrl.searchParams.get('url');
+    const rawUrl = new URL(request.url).searchParams.get('url');
     if (!rawUrl || rawUrl.length > 2048) {
       return json({ error: 'A Google Maps short link is required' }, 400);
     }
@@ -73,4 +68,4 @@ export default {
       return json({ error: 'Could not resolve this Google Maps link' }, 502);
     }
   },
-} satisfies ExportedHandler<Env>;
+};
