@@ -46,6 +46,7 @@ export default function StopFormModal() {
   const [emoji, setEmoji] = useState('📍');
   const [status, setStatus] = useState('');
   const [statusErr, setStatusErr] = useState(false);
+  const [titleError, setTitleError] = useState('');
   const [busy, setBusy] = useState(false);
   // True while reverse-geocoding a tap-to-add-stop location (map view only).
   const [nameLocating, setNameLocating] = useState(false);
@@ -80,6 +81,7 @@ export default function StopFormModal() {
     }
     setStatus('');
     setStatusErr(false);
+    setTitleError('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, editingIndex]);
 
@@ -99,7 +101,11 @@ export default function StopFormModal() {
     const finalNote = note.trim();
     let finalMapLink = mapLink.trim();
     const finalEmoji = emoji || '📍';
-    if (!finalTitle) return;
+    if (!finalTitle) {
+      setTitleError('Place is required');
+      return;
+    }
+    setTitleError('');
 
     setStatus('');
     setStatusErr(false);
@@ -177,8 +183,17 @@ export default function StopFormModal() {
         placeholder="Belem Tower"
         value={title}
         disabled={nameLocating}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) => {
+          setTitle(e.target.value);
+          if (titleError && e.target.value.trim()) setTitleError('');
+        }}
+        style={titleError ? { borderColor: 'var(--danger)', marginBottom: 4 } : undefined}
       />
+      {titleError && (
+        <p className="status err" style={{ margin: '0 0 10px', textAlign: 'left' }}>
+          {titleError}
+        </p>
+      )}
       <label className="field-label">Note</label>
       <input
         type="text"

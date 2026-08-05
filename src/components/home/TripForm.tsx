@@ -11,10 +11,15 @@ export default function TripForm() {
   const [endDate, setEndDate] = useState('');
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
+  const [destError, setDestError] = useState('');
 
   async function handleCreate() {
     const dest = destination.trim();
-    if (!dest) return;
+    if (!dest) {
+      setDestError('Destination is required');
+      return;
+    }
+    setDestError('');
     const n = dayCount(startDate, endDate);
     setBusy(true);
     setStatus('');
@@ -47,8 +52,17 @@ export default function TripForm() {
         id="destination"
         placeholder="Lisbon, Portugal"
         value={destination}
-        onChange={(e) => setDestination(e.target.value)}
+        onChange={(e) => {
+          setDestination(e.target.value);
+          if (destError && e.target.value.trim()) setDestError('');
+        }}
+        style={destError ? { borderColor: 'var(--danger)', marginBottom: 4 } : undefined}
       />
+      {destError && (
+        <p className="status err" style={{ margin: '0 0 10px', textAlign: 'left' }}>
+          {destError}
+        </p>
+      )}
       <div className="row2">
         <div>
           <label className="field-label">Depart</label>
