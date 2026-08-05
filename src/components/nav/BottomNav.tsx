@@ -48,9 +48,9 @@ export default function BottomNav() {
       </button>
       <button className={`nav-item${active === 'navPacking' ? ' active' : ''}`} disabled={!hasTrip} onClick={goPacking}>
         <svg className="nav-icon" viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M7 8V6a5 5 0 0 1 10 0v2" />
-          <path d="M5 8h14l1 12H4L5 8Z" />
-          <path d="M9 12v1M15 12v1" />
+          <path d="M8.5 7V5.8A1.8 1.8 0 0 1 10.3 4h3.4a1.8 1.8 0 0 1 1.8 1.8V7" />
+          <rect x="4" y="7" width="16" height="13.5" rx="4" />
+          <path d="M8.5 11v5.5M15.5 11v5.5" />
         </svg>
         <span>{km ? 'របស់ត្រូវយក' : 'Packing'}</span>
       </button>
