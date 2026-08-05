@@ -151,7 +151,15 @@ body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header
 .mc-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:background .2s,width .2s;}
 .mc-dot.active{background:var(--accent);width:16px;border-radius:3px;}
 
-.trip-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.trip-swipe-shell{position:relative;overflow:hidden;border-radius:12px;margin-bottom:10px;background:var(--danger);}
+.trip-card-delete-action{
+  position:absolute;inset:0 0 0 auto;width:88px;border:0;background:var(--danger);color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;
+}
+.trip-card-delete-action:focus-visible{outline:2px solid #fff;outline-offset:-4px;}
+.trip-card{position:relative;z-index:1;width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin:0;display:flex;align-items:center;justify-content:space-between;cursor:pointer;touch-action:pan-y;user-select:none;will-change:transform;transition:transform .24s cubic-bezier(.22,1,.36,1);}
+.trip-card.dragging{transition:none;cursor:grabbing;}
 .trip-card.active{border-color:var(--accent);}
 .trip-card-body{flex:1;}
 .trip-card-dest{font-size:16px;font-weight:500;color:var(--text);}
@@ -174,4 +182,3 @@ body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header
 .trip-card-alert-badge.urgent{color:#EF5D50;background:rgba(239,93,80,.14);border-color:rgba(239,93,80,.3);}
 body[data-theme="dark"] .trip-card-alert-badge.soon{color:#F8BB4C;background:rgba(245,158,11,.12);}
 body[data-theme="dark"] .trip-card-alert-badge.urgent{color:#FF8176;background:rgba(239,93,80,.12);}
-.trip-card-del{color:var(--text-muted);font-size:19px;padding:4px 6px;cursor:pointer;}
