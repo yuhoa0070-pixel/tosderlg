@@ -40,6 +40,10 @@ export default function TripCard({ trip, active, onSelect, onDelete }: TripCardP
   const alert = getUpcomingTripAlert(trip);
   const km = state.language === 'km';
   const scheduleText = formatTripSchedule(trip, km);
+  const destinationName = trip.destination.split(',')[0].trim();
+  const excitementText = km
+    ? `${destinationName} ជិតមកដល់ហើយ! តើអ្នករំភើបចង់ទៅមើលអ្វីជាងគេ?`
+    : `${destinationName} is almost here! What are you most excited to explore?`;
 
   function updateSwipeOffset(next: number) {
     swipeOffsetRef.current = next;
@@ -136,6 +140,12 @@ export default function TripCard({ trip, active, onSelect, onDelete }: TripCardP
             </svg>
             <span>{scheduleText}</span>
           </div>
+          {alert && (
+            <div className="trip-card-excitement">
+              <span className="trip-card-sparkle" aria-hidden="true">✦</span>
+              <span>{excitementText}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
