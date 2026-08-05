@@ -21,6 +21,7 @@ export default function MapView() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const routeLayersRef = useRef<L.Polyline[]>([]);
   const [statsText, setStatsText] = useState('—');
+  const [locationNotice, setLocationNotice] = useState<string | null>(null);
 
   function handleSelectStop(i: number) {
     dispatch({ type: 'SET_SELECTED_STOP', index: i });
@@ -39,7 +40,12 @@ export default function MapView() {
     onMapClick: handleMapClick,
   });
 
-  const { active: liveActive, toggle: toggleLiveLocation } = useLiveLocation(mapRef, setStatsText);
+  const { active: liveActive, toggle: toggleLiveLocation } = useLiveLocation(mapRef, setLocationNotice);
+
+  function handleToggleLiveLocation() {
+    setLocationNotice(null);
+    toggleLiveLocation();
+  }
 
   // Settle map sizing shortly after mount — the container's real dimensions
   // may not be final at the instant L.map() is created. Mirrors goMap()'s
@@ -176,7 +182,7 @@ export default function MapView() {
           className={`map-live-btn${liveActive ? ' active' : ''}`}
           id="liveLocationBtn"
           title="Track my location"
-          onClick={toggleLiveLocation}
+          onClick={handleToggleLiveLocation}
         >
           <svg
             width="15"
@@ -193,6 +199,7 @@ export default function MapView() {
           </svg>
         </div>
       </div>
+      {locationNotice && <p className="note map-location-notice">{locationNotice}</p>}
       <div className="chip-row" id="stopChips">
         {stops.map((s, i) => (
           <div key={i} className={`chip${i === selectedStop ? ' active' : ''}`} onClick={() => handleSelectStop(i)}>

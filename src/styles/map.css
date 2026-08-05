@@ -1,3 +1,7 @@
+.map-location-notice{
+  color:var(--text-secondary);background:var(--card-hover);border:1px solid var(--border);
+  border-radius:10px;padding:8px 12px;margin:0 0 14px;
+}
 .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;overflow-x:auto;}
 .chip{font-size:13px;padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text-secondary);cursor:pointer;user-select:none;white-space:nowrap;transition:all .15s;}
 .chip.active{background:var(--white);border-color:var(--white);color:#111;}
