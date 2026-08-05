@@ -2,6 +2,23 @@
   color:var(--text-secondary);background:var(--card-hover);border:1px solid var(--border);
   border-radius:10px;padding:8px 12px;margin:0 0 14px;
 }
+.map-itinerary-section{margin:2px 0 20px;}
+.map-itinerary-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.map-itinerary-heading h2{margin:0;font-size:21px;}
+.map-itinerary-heading span{
+  flex-shrink:0;padding:4px 9px;border-radius:999px;background:rgba(46,204,113,.12);
+  color:var(--accent);font-size:12px;font-weight:800;
+}
+.map-day-tabs{margin-bottom:12px;}
+.map-day-tabs .day-tab{border:1px solid var(--glass-border);font-family:inherit;font-weight:700;}
+.map-itinerary-list{display:grid;gap:8px;}
+.map-itinerary-item{border-radius:12px;cursor:pointer;}
+.map-itinerary-item .stop-card{margin:0;transition:outline-color .18s ease,background .18s ease;}
+.map-itinerary-item.active .stop-card{outline:1.5px solid var(--accent);background:rgba(46,204,113,.08);}
+.map-itinerary-empty{
+  padding:22px 14px;border:1px dashed var(--border);border-radius:12px;
+  color:var(--text-muted);font-size:14px;text-align:center;background:var(--glass-bg);
+}
 .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;overflow-x:auto;}
 .chip{position:relative;font-size:15px;padding:7px 32px 7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text-secondary);cursor:pointer;user-select:none;white-space:nowrap;transition:all .15s;}
 .chip.active{background:var(--white);border-color:var(--white);color:#111;}

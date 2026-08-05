@@ -8,6 +8,7 @@ import { fetchWalkingRoute, pathDistanceKm } from '../lib/geo';
 import { keyFor } from '../lib/tripUtils';
 import { DEFAULT_CENTER } from '../lib/constants';
 import MemoryGrid from '../components/shared/MemoryGrid';
+import StopCard from '../components/shared/StopCard';
 
 export default function MapView() {
   const { state, dispatch } = useAppContext();
@@ -25,6 +26,11 @@ export default function MapView() {
 
   function handleSelectStop(i: number) {
     dispatch({ type: 'SET_SELECTED_STOP', index: i });
+  }
+
+  function handleSelectDay(day: number) {
+    dispatch({ type: 'SET_CURRENT_DAY', day });
+    dispatch({ type: 'SET_SELECTED_STOP', index: 0 });
   }
 
   function handleRemoveStop(i: number) {
@@ -218,6 +224,43 @@ export default function MapView() {
         </div>
       </div>
       {locationNotice && <p className="note map-location-notice">{locationNotice}</p>}
+
+      <div className="map-itinerary-section">
+        <div className="map-itinerary-heading">
+          <h2>{state.language === 'km' ? 'កាលវិភាគ' : 'Itinerary'}</h2>
+          <span>{state.language === 'km' ? `ថ្ងៃទី ${state.currentDay + 1}` : `Day ${state.currentDay + 1}`}</span>
+        </div>
+        <div className="day-tabs map-day-tabs">
+          {tripDays.map((_, i) => (
+            <button
+              type="button"
+              key={i}
+              className={`day-tab${i === state.currentDay ? ' active' : ''}`}
+              onClick={() => handleSelectDay(i)}
+            >
+              {state.language === 'km' ? `ថ្ងៃទី ${i + 1}` : `Day ${i + 1}`}
+            </button>
+          ))}
+        </div>
+        <div className="map-itinerary-list">
+          {stops.length === 0 ? (
+            <div className="map-itinerary-empty">
+              {state.language === 'km' ? 'មិនទាន់មានទីកន្លែងសម្រាប់ថ្ងៃនេះទេ។' : 'No stops yet for this day.'}
+            </div>
+          ) : (
+            stops.map((itineraryStop, i) => (
+              <div
+                key={`${itineraryStop.time}-${itineraryStop.title}-${i}`}
+                className={`map-itinerary-item${i === selectedStop ? ' active' : ''}`}
+                onClick={() => handleSelectStop(i)}
+              >
+                <StopCard stop={itineraryStop} mode="readonly" />
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
       <div className="chip-row" id="stopChips">
         {stops.map((s, i) => (
           <div key={i} className={`chip${i === selectedStop ? ' active' : ''}`} onClick={() => handleSelectStop(i)}>
