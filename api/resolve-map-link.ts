@@ -1,13 +1,20 @@
 const SHORT_MAP_HOSTS = new Set(['maps.app.goo.gl', 'goo.gl']);
 
-function json(body: unknown, status = 200): Response {
-  return Response.json(body, {
-    status,
-    headers: {
-      'Cache-Control': 'no-store',
-      'X-Content-Type-Options': 'nosniff',
-    },
-  });
+interface ApiRequest {
+  method?: string;
+  query?: Record<string, string | string[] | undefined>;
+}
+
+interface ApiResponse {
+  status: (code: number) => ApiResponse;
+  setHeader: (name: string, value: string) => void;
+  json: (body: unknown) => void;
+}
+
+function sendJson(response: ApiResponse, body: unknown, status = 200) {
+  response.setHeader('Cache-Control', 'no-store');
+  response.setHeader('X-Content-Type-Options', 'nosniff');
+  response.status(status).json(body);
 }
 
 function isAllowedShortMapUrl(value: string): URL | null {
@@ -25,47 +32,54 @@ function isExpandedGoogleMapsUrl(value: string): boolean {
   try {
     const url = new URL(value);
     const isGoogleHost = url.hostname === 'google.com' || url.hostname.endsWith('.google.com');
-    return url.protocol === 'https:' && isGoogleHost && url.pathname.startsWith('/maps');
+    if (url.protocol !== 'https:' || !isGoogleHost) return false;
+    return url.pathname.startsWith('/maps') || url.hostname === 'maps.google.com';
   } catch {
     return false;
   }
 }
 
-export default {
-  async fetch(request: Request): Promise<Response> {
-    if (request.method !== 'GET') {
-      return json({ error: 'Method not allowed' }, 405);
-    }
+export default async function handler(request: ApiRequest, response: ApiResponse): Promise<void> {
+  if (request.method !== 'GET') {
+    sendJson(response, { error: 'Method not allowed' }, 405);
+    return;
+  }
 
-    const rawUrl = new URL(request.url).searchParams.get('url');
-    if (!rawUrl || rawUrl.length > 2048) {
-      return json({ error: 'A Google Maps short link is required' }, 400);
-    }
+  const queryUrl = request.query?.url;
+  const rawUrl = Array.isArray(queryUrl) ? queryUrl[0] : queryUrl;
+  if (!rawUrl || rawUrl.length > 2048) {
+    sendJson(response, { error: 'A Google Maps short link is required' }, 400);
+    return;
+  }
 
-    const shortUrl = isAllowedShortMapUrl(rawUrl);
-    if (!shortUrl) {
-      return json({ error: 'Only Google Maps short links are supported' }, 400);
-    }
+  const shortUrl = isAllowedShortMapUrl(rawUrl);
+  if (!shortUrl) {
+    sendJson(response, { error: 'Only Google Maps short links are supported' }, 400);
+    return;
+  }
 
-    try {
-      const response = await fetch(shortUrl, {
-        method: 'GET',
-        redirect: 'manual',
-        headers: { 'User-Agent': 'Waylo map link resolver' },
-      });
-      const expandedUrl = response.headers.get('Location');
-      if (!expandedUrl || !isExpandedGoogleMapsUrl(expandedUrl)) {
-        return json({ error: 'Google Maps did not return a usable location' }, 422);
-      }
-      return json({ url: expandedUrl });
-    } catch (error) {
-      console.error(
-        JSON.stringify({
-          message: 'Google Maps short-link resolution failed',
-          error: error instanceof Error ? error.message : String(error),
-        }),
-      );
-      return json({ error: 'Could not resolve this Google Maps link' }, 502);
+  try {
+    const expandedResponse = await fetch(shortUrl, {
+      method: 'GET',
+      redirect: 'follow',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Waylo/1.0; +https://waylo.app)',
+        'Accept-Language': 'en',
+      },
+    });
+    const expandedUrl = expandedResponse.url;
+    if (!expandedUrl || !isExpandedGoogleMapsUrl(expandedUrl)) {
+      sendJson(response, { error: 'Google Maps did not return a usable location' }, 422);
+      return;
     }
-  },
-};
+    sendJson(response, { url: expandedUrl });
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        message: 'Google Maps short-link resolution failed',
+        error: error instanceof Error ? error.message : String(error),
+      }),
+    );
+    sendJson(response, { error: 'Could not resolve this Google Maps link' }, 502);
+  }
+}

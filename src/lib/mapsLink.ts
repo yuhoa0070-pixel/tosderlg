@@ -3,14 +3,32 @@ import type { GeoCenter } from '../types';
 export function parseGoogleMapsLink(url: string | null | undefined): GeoCenter | null {
   if (!url) return null;
   try {
+    let normalized = url.trim();
+    try {
+      normalized = decodeURIComponent(normalized);
+    } catch {
+      // Keep the original text when a pasted URL contains a malformed escape.
+    }
+
+    const coordinates = (match: RegExpMatchArray | null): GeoCenter | null => {
+      if (!match) return null;
+      const lat = Number(match[1]);
+      const lng = Number(match[2]);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+      return { lat, lng };
+    };
+
+    const number = '(-?\\d{1,3}(?:\\.\\d+)?)';
     // Place URLs often contain both pairs: !3d/!4d is the selected place,
     // while @lat,lng is only the map camera center and can be kilometres away.
-    let m = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
-    m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
-    m = url.match(/[?&](?:q|query|ll)=(-?\d+\.\d+),(-?\d+\.\d+)/);
-    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+    let parsed = coordinates(normalized.match(new RegExp(`!3d${number}!4d${number}`, 'i')));
+    if (parsed) return parsed;
+    parsed = coordinates(normalized.match(new RegExp(`@${number},${number}`, 'i')));
+    if (parsed) return parsed;
+    parsed = coordinates(
+      normalized.match(new RegExp(`[?&](?:q|query|ll|center|destination)=\\(?(?:loc:)?${number}\\s*,\\s*${number}`, 'i')),
+    );
+    if (parsed) return parsed;
   } catch {
     // ignore
   }
