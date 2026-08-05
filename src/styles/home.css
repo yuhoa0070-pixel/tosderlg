@@ -95,13 +95,13 @@ body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header
 }
 .hero-gallery-card span{color:#fff;font-size:16px;font-weight:700;line-height:1.2;text-shadow:0 1px 5px rgba(0,0,0,.35);}
 #memoriesGallery{
-  display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
+  display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 2px 6px;
 }
 #memoriesGallery::-webkit-scrollbar{display:none;}
 .moment-card{
-  position:relative;flex:0 0 210px;height:280px;scroll-snap-align:start;
-  border-radius:20px;overflow:hidden;cursor:pointer;background:var(--card-hover);
+  position:relative;flex:0 0 clamp(166px,42vw,174px);height:236px;scroll-snap-align:start;
+  border-radius:18px;overflow:hidden;cursor:pointer;background:var(--card-hover);
 }
 .moment-card-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .moment-card-scrim{
@@ -109,23 +109,24 @@ body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header
   background:linear-gradient(to bottom, rgba(0,0,0,0) 38%, rgba(0,0,0,0.78) 100%);
 }
 .moment-card-badge{
-  position:absolute;top:12px;left:12px;z-index:2;
+  position:absolute;top:10px;left:10px;z-index:2;
   background:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.7);
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   color:#1a1a18;box-shadow:0 2px 10px rgba(0,0,0,0.15);
-  font-size:13px;font-weight:600;border-radius:20px;
-  padding:6px 12px 6px 10px;display:flex;align-items:center;gap:5px;
+  font-size:12px;font-weight:700;border-radius:20px;
+  padding:5px 10px 5px 8px;display:flex;align-items:center;gap:5px;
 }
-.moment-card-content{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:14px 14px 16px;color:#fff;}
-.moment-card-title{font-size:18px;font-weight:700;line-height:1.2;margin-bottom:6px;}
+.moment-card-content{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:12px 12px 13px;color:#fff;}
+.moment-card-title{font-size:16px;font-weight:800;line-height:1.2;margin-bottom:6px;}
 .moment-card-sub-row{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;}
-.moment-card-sub{font-size:14px;color:rgba(255,255,255,0.82);line-height:1.4;}
+.moment-card-sub{font-size:13px;color:rgba(255,255,255,0.84);line-height:1.35;}
 .moment-card-stat{
-  display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:#fff;flex-shrink:0;
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:0;color:#fff;flex-shrink:0;
   background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  border-radius:14px;padding:5px 10px;
+  border-radius:50%;padding:0;
 }
+.moment-card-stat span{font-size:16px;line-height:1;}
 
 .mc-sub{font-size:15px;color:var(--text-secondary);margin:0;}
 
