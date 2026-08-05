@@ -89,31 +89,21 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
 
   return (
     <div className="trip-share-panel">
-      {trip.roomCode && (
-        <div className="trip-room-code" aria-label={`Trip room code ${trip.roomCode}`}>
-          <span>{km ? 'លេខកូដបន្ទប់' : 'Trip room code'}</span>
-          <strong>{trip.roomCode}</strong>
-        </div>
-      )}
-      <button type="button" className="trip-invite-button" onClick={inviteFriends} disabled={busy}>
-        <span className="trip-invite-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <div className="trip-share-actions">
+        {trip.roomCode && (
+          <div className="trip-room-code" aria-label={`Trip room code ${trip.roomCode}`}>
+            <span>{km ? 'កូដ' : 'Code'}</span>
+            <strong>{trip.roomCode}</strong>
+          </div>
+        )}
+        <button type="button" className="trip-invite-button" onClick={inviteFriends} disabled={busy}>
+          <svg className="trip-invite-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="9" cy="8" r="3" />
             <path d="M3.5 19c0-3.4 2.3-5.5 5.5-5.5s5.5 2.1 5.5 5.5M17 8v6M14 11h6" />
           </svg>
-        </span>
-        <span className="trip-invite-copy">
-          <strong>
-            {busy
-              ? km ? 'កំពុងបង្កើត…' : 'Creating room…'
-              : trip.roomCode
-                ? km ? 'ចែករំលែកលេខកូដ' : 'Share room code'
-                : km ? 'បង្កើតបន្ទប់ដំណើរ' : 'Create trip room'}
-          </strong>
-          <small>{km ? 'មិត្តភក្តិអាចចូលមើលគម្រោងដំណើរ' : 'Friends can join and view the trip plan'}</small>
-        </span>
-        <span className="trip-invite-arrow" aria-hidden="true">→</span>
-      </button>
+          <span>{busy ? (km ? 'កំពុងបង្កើត…' : 'Creating…') : (km ? 'អញ្ជើញមិត្ត' : 'Invite friend')}</span>
+        </button>
+      </div>
       {status && <p className="trip-share-status" role="status">{status}</p>}
     </div>
   );
