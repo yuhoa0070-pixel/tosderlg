@@ -48,7 +48,7 @@
 #view-map h2{font-family:'Baloo 2',cursive;font-weight:700;font-size:22px;letter-spacing:-0.01em;}
 .map-label-pill{
   background:var(--card);border:1.5px solid #F2A488;border-radius:16px;
-  padding:4px 10px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;
+  padding:4px 10px;font-family:'Comic Neue',sans-serif;font-size:11px;font-weight:600;
   color:var(--text);box-shadow:0 3px 8px rgba(0,0,0,0.4);white-space:nowrap;
 }
 .map-label-pill::before{border-top-color:#F2A488 !important;}
