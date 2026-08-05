@@ -8,18 +8,22 @@ export default function LanguageToggle() {
       <button
         type="button"
         className={state.language === 'en' ? 'active' : ''}
+        aria-label="English"
         aria-pressed={state.language === 'en'}
+        title="English"
         onClick={() => dispatch({ type: 'SET_LANGUAGE', language: 'en' })}
       >
-        EN
+        <span aria-hidden="true">🇬🇧</span>
       </button>
       <button
         type="button"
         className={state.language === 'km' ? 'active' : ''}
+        aria-label="Khmer"
         aria-pressed={state.language === 'km'}
+        title="Khmer"
         onClick={() => dispatch({ type: 'SET_LANGUAGE', language: 'km' })}
       >
-        ខ្មែរ
+        <span aria-hidden="true">🇰🇭</span>
       </button>
     </div>
   );
