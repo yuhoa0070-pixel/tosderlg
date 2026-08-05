@@ -4,6 +4,16 @@ import TripCard from '../components/shared/TripCard';
 export default function MyTripsView() {
   const { state, dispatch } = useAppContext();
   const trips = state.trips.slice().reverse();
+  const km = state.language === 'km';
+
+  function createNewTrip() {
+    dispatch({ type: 'NAVIGATE', view: 'home' });
+    window.setTimeout(() => {
+      const destinationInput = document.getElementById('destination') as HTMLInputElement | null;
+      destinationInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      destinationInput?.focus({ preventScroll: true });
+    }, 60);
+  }
 
   return (
     <section id="view-mytrips" className="active">
@@ -35,6 +45,9 @@ export default function MyTripsView() {
           ))}
         </div>
       )}
+      <button type="button" className="btn btn-primary my-trips-create" onClick={createNewTrip}>
+        <span aria-hidden="true">＋</span> {km ? 'បង្កើតដំណើរថ្មី' : 'Create new trip'}
+      </button>
     </section>
   );
 }
