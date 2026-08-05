@@ -9,7 +9,7 @@
   position:absolute;top:50%;right:7px;transform:translateY(-50%);
   width:22px;height:22px;padding:0;border:0;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  background:transparent;color:currentColor;font:700 18px/1 'Comic Neue',sans-serif;
+  background:transparent;color:currentColor;font:700 18px/1 'Baloo 2',sans-serif;
   cursor:pointer;opacity:.7;
 }
 .chip-close:hover,.chip-close:focus-visible{background:rgba(127,127,127,.16);opacity:1;}
@@ -55,13 +55,14 @@
 }
 .pin-marker{filter:drop-shadow(0 2px 3px rgba(0,0,0,0.5));}
 #leafletMap{height:100%;width:100%;background:#FBF3EC;}
+.leaflet-container{font-family:'Baloo 2',sans-serif;}
 .leaflet-tile-pane{filter:sepia(0.3) saturate(1.35) brightness(1.08) hue-rotate(-6deg) contrast(0.96);}
 
 #view-map .eyebrow{color:#F2A488;}
 #view-map h2{font-weight:800;font-size:24px;letter-spacing:-0.01em;}
 .map-label-pill{
   background:var(--card);border:1.5px solid #F2A488;border-radius:16px;
-  padding:4px 10px;font-family:'Comic Neue',sans-serif;font-size:13px;font-weight:600;
+  padding:4px 10px;font-family:'Baloo 2',sans-serif;font-size:13px;font-weight:600;
   color:var(--text);box-shadow:0 3px 8px rgba(0,0,0,0.4);white-space:nowrap;
 }
 .map-label-pill::before{border-top-color:#F2A488 !important;}
