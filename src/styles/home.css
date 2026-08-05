@@ -5,7 +5,9 @@
   box-shadow:0 4px 12px rgba(0,0,0,0.06);
   position:relative;z-index:10;
 }
-.app-header-logo-img{height:40px;width:auto;display:block;}
+.app-header-logo-img{
+  width:120px;height:36px;display:block;object-fit:cover;object-position:center;
+}
 .app-header-controls{
   display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0;
 }
@@ -51,7 +53,7 @@ body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header
 }
 @media(max-width:360px){
   .app-header{padding:11px 16px;}
-  .app-header-logo-img{height:36px;}
+  .app-header-logo-img{width:108px;height:32px;}
   .app-header-controls .language-mode-button{width:31px;height:31px;font-size:16px;}
 }
 .hero{padding:4px 0 26px;position:relative;}
