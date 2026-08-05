@@ -49,7 +49,7 @@
 .leaflet-tile-pane{filter:sepia(0.3) saturate(1.35) brightness(1.08) hue-rotate(-6deg) contrast(0.96);}
 
 #view-map .eyebrow{color:#F2A488;}
-#view-map h2{font-family:'Baloo 2',cursive;font-weight:700;font-size:24px;letter-spacing:-0.01em;}
+#view-map h2{font-weight:800;font-size:24px;letter-spacing:-0.01em;}
 .map-label-pill{
   background:var(--card);border:1.5px solid #F2A488;border-radius:16px;
   padding:4px 10px;font-family:'Comic Neue',sans-serif;font-size:13px;font-weight:600;

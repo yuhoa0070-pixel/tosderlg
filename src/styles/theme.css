@@ -1,13 +1,13 @@
 :root{
   --bg:#0f0f0f; --card:#1c1c1c; --card-hover:#242424;
-  --text:#f2f2f0; --text-secondary:#9a9a96; --text-muted:#6b6b68;
+  --text:#f2f2f0; --heading:#ffffff; --text-secondary:#9a9a96; --text-muted:#6b6b68;
   --border:#2e2e2b; --accent:#2ECC71; --white:#ffffff; --danger:#e2504a;
   --glass-bg:rgba(255,255,255,0.07); --glass-border:rgba(255,255,255,0.14); --glass-shadow:rgba(0,0,0,0.3);
   --glass-active-text:#eafff1; --header-bg:#1c1c1c;
 }
 body[data-theme="light"]{
   --bg:#F7F5F0; --card:#FFFFFF; --card-hover:#EFEDE6;
-  --text:#1A1A18; --text-secondary:#5C5C57; --text-muted:#8C8C86;
+  --text:#1A1A18; --heading:#090908; --text-secondary:#5C5C57; --text-muted:#8C8C86;
   --border:#E2E0D6;
   --glass-bg:rgba(255,255,255,0.55); --glass-border:rgba(255,255,255,0.75); --glass-shadow:rgba(0,0,0,0.04);
   --glass-active-text:#0d3d1f; --header-bg:#F5F4EF;

@@ -5,8 +5,8 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:'Comic Neue',sa
 section{padding:24px;display:none;}
 section.active{display:block;}
 .eyebrow{font-size:15px;font-weight:700;color:var(--text-muted);margin:0 0 4px;}
-h1{font-size:28px;font-weight:800;margin:0 0 2px;}
-h2{font-size:23px;font-weight:800;margin:0 0 14px;}
+h1{font-family:'Baloo 2',sans-serif;font-size:28px;font-weight:800;color:var(--heading);margin:0 0 2px;}
+h2{font-family:'Baloo 2',sans-serif;font-size:23px;font-weight:800;color:var(--heading);margin:0 0 14px;}
 .sub{font-size:15px;color:var(--text-secondary);margin:0 0 18px;}
 
 label.field-label{display:block;font-size:14px;color:var(--text-muted);margin-bottom:6px;}
