@@ -1,13 +1,12 @@
 import type { ReactNode } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { getTelegramUser } from '../../lib/telegram';
+import { getTelegramUser, telegramUserDisplayName } from '../../lib/telegram';
 
 export default function HeroGreeting({ children }: { children?: ReactNode }) {
   const { state } = useAppContext();
   const telegramUser = getTelegramUser();
-  const greetingName = telegramUser?.username
-    ? `@${telegramUser.username}`
-    : telegramUser?.first_name || state.profileName || 'Traveler';
+  const telegramDisplayName = telegramUser ? telegramUserDisplayName(telegramUser) : '';
+  const greetingName = telegramDisplayName || state.profileName || 'Traveler';
 
   return (
     <div className="hero">
