@@ -1,9 +1,11 @@
 .profile-row{padding:15px 4px;font-size:14px;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
 .profile-row svg{flex-shrink:0;}
 .profile-row.danger{color:var(--danger);}
-.theme-toggle{display:flex;background:var(--card-hover);border-radius:20px;padding:3px;gap:2px;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
-.theme-toggle-opt{font-size:12px;padding:6px 12px;border-radius:16px;color:var(--text-muted);cursor:pointer;transition:background .15s ease,color .15s ease,box-shadow .15s ease;display:flex;align-items:center;gap:5px;}
-.theme-toggle-opt.active{background:var(--accent);color:#111;font-weight:600;box-shadow:0 2px 8px rgba(46,204,113,0.45);}
+.theme-toggle{display:flex;background:var(--card-hover);border-radius:999px;padding:4px;}
+.theme-toggle-opt{font-size:12px;padding:8px 16px;border-radius:999px;color:var(--text-muted);cursor:pointer;transition:all 150ms ease;display:flex;align-items:center;gap:6px;font-weight:500;}
+.theme-toggle-opt.active{background:var(--accent);color:#0A0A0A;font-weight:700;}
+body[data-theme="light"] .theme-toggle{background:#E7E4DC;}
+body[data-theme="light"] .theme-toggle-opt{color:#8A8778;}
 
 .avatar-edit{
   position:relative;width:84px;height:84px;border-radius:50%;

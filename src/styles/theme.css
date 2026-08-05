@@ -3,14 +3,14 @@
   --text:#f2f2f0; --text-secondary:#9a9a96; --text-muted:#6b6b68;
   --border:#2e2e2b; --accent:#2ECC71; --white:#ffffff; --danger:#e2504a;
   --glass-bg:rgba(255,255,255,0.07); --glass-border:rgba(255,255,255,0.14); --glass-shadow:rgba(0,0,0,0.3);
-  --glass-active-text:#eafff1;
+  --glass-active-text:#eafff1; --header-bg:#1c1c1c;
 }
 body[data-theme="light"]{
   --bg:#F7F5F0; --card:#FFFFFF; --card-hover:#EFEDE6;
   --text:#1A1A18; --text-secondary:#5C5C57; --text-muted:#8C8C86;
   --border:#E2E0D6;
   --glass-bg:rgba(255,255,255,0.55); --glass-border:rgba(255,255,255,0.75); --glass-shadow:rgba(0,0,0,0.04);
-  --glass-active-text:#0d3d1f;
+  --glass-active-text:#0d3d1f; --header-bg:#F5F4EF;
 }
 .app-glow{background:radial-gradient(ellipse 70% 100% at 100% 0%, rgba(46,204,113,0.32), rgba(46,204,113,0.1) 40%, transparent 68%);}
 body[data-theme="light"] .app-glow{background:radial-gradient(ellipse 70% 100% at 100% 0%, rgba(30,180,95,0.55), rgba(30,180,95,0.22) 42%, transparent 70%);}
