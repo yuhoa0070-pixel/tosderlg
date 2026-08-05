@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import type { Trip } from '../../types';
 
@@ -6,10 +6,35 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
   const { state, dispatch } = useAppContext();
   const [newItem, setNewItem] = useState('');
   const [newEmoji, setNewEmoji] = useState('🎒');
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const km = state.language === 'km';
   const items = trip.packingItems ?? [];
   const remaining = items.filter((item) => !item.packed).length;
-  const emojiOptions = ['🎒', '👕', '👟', '🪥', '💊', '🔌', '📷', '🛂', '👗', '👔'];
+  const emojiOptions = km
+    ? [
+        { emoji: '🎒', text: 'កាបូបស្ពាយ' },
+        { emoji: '👕', text: 'សម្លៀកបំពាក់' },
+        { emoji: '👟', text: 'ស្បែកជើង' },
+        { emoji: '🪥', text: 'សម្ភារៈអនាម័យ' },
+        { emoji: '💊', text: 'ថ្នាំពេទ្យ' },
+        { emoji: '🔌', text: 'ឆ្នាំងសាក' },
+        { emoji: '📷', text: 'កាមេរ៉ា' },
+        { emoji: '🛂', text: 'លិខិតឆ្លងដែន' },
+        { emoji: '👗', text: 'របស់មិត្តស្រី' },
+        { emoji: '👔', text: 'របស់មិត្តប្រុស' },
+      ]
+    : [
+        { emoji: '🎒', text: 'Backpack' },
+        { emoji: '👕', text: 'Clothes' },
+        { emoji: '👟', text: 'Shoes' },
+        { emoji: '🪥', text: 'Toiletries' },
+        { emoji: '💊', text: 'Medicine' },
+        { emoji: '🔌', text: 'Charger' },
+        { emoji: '📷', text: 'Camera' },
+        { emoji: '🛂', text: 'Passport' },
+        { emoji: '👗', text: "Girlfriend's items" },
+        { emoji: '👔', text: "Boyfriend's items" },
+      ];
   const suggestions = km
     ? [{ text: 'លិខិតឆ្លងដែន', emoji: '🛂' }, { text: 'ឆ្នាំងសាក', emoji: '🔌' }, { text: 'ថ្នាំពេទ្យ', emoji: '💊' }]
     : [{ text: 'Passport', emoji: '🛂' }, { text: 'Charger', emoji: '🔌' }, { text: 'Medication', emoji: '💊' }];
@@ -24,6 +49,12 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     addItem(newItem);
+  }
+
+  function suggestItem(emoji: string, text: string) {
+    setNewEmoji(emoji);
+    setNewItem(text);
+    inputRef.current?.focus();
   }
 
   return (
@@ -50,22 +81,23 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
       </div>
 
       <div className="packing-emoji-picker" aria-label={km ? 'ជ្រើសរើសរូបសញ្ញា' : 'Choose an emoji'}>
-        {emojiOptions.map((emoji) => (
+        {emojiOptions.map((option) => (
           <button
             type="button"
-            key={emoji}
-            className={emoji === newEmoji ? 'active' : ''}
-            onClick={() => setNewEmoji(emoji)}
-            aria-label={`${km ? 'ជ្រើសរើស' : 'Choose'} ${emoji}`}
-            aria-pressed={emoji === newEmoji}
+            key={option.emoji}
+            className={option.emoji === newEmoji ? 'active' : ''}
+            onClick={() => suggestItem(option.emoji, option.text)}
+            aria-label={`${option.text} ${option.emoji}`}
+            aria-pressed={option.emoji === newEmoji}
           >
-            {emoji}
+            {option.emoji}
           </button>
         ))}
       </div>
 
       <form className="packing-form" onSubmit={handleSubmit}>
         <input
+          ref={inputRef}
           className="packing-input"
           type="text"
           value={newItem}
