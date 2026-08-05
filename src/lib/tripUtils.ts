@@ -16,6 +16,24 @@ export function isPastTrip(trip: Trip): boolean {
   return end < new Date();
 }
 
+export interface UpcomingTripAlert {
+  daysUntil: number;
+  tone: 'soon' | 'urgent';
+}
+
+export function getUpcomingTripAlert(trip: Trip, now = new Date()): UpcomingTripAlert | null {
+  if (!trip.startDate) return null;
+  const [year, month, day] = trip.startDate.split('-').map(Number);
+  if (!year || !month || !day) return null;
+
+  const startUtc = Date.UTC(year, month - 1, day);
+  const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const daysUntil = Math.round((startUtc - todayUtc) / 86400000);
+  if (daysUntil < 0 || daysUntil > 30) return null;
+
+  return { daysUntil, tone: daysUntil <= 7 ? 'urgent' : 'soon' };
+}
+
 export function dayCount(startDate: string, endDate: string): number {
   if (!startDate || !endDate) return 1;
   const diff = Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000) + 1;
