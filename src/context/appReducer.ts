@@ -10,6 +10,7 @@ export const initialState: AppState = {
   profileName: '',
   profilePhoto: null,
   theme: 'dark',
+  language: 'en',
   currentView: 'home',
   memoryReturnView: 'map',
   activeModal: null,
@@ -200,10 +201,14 @@ export function appReducer(state: AppState, action: Action): AppState {
     case 'SET_THEME':
       return { ...state, theme: action.theme };
 
+    case 'SET_LANGUAGE':
+      return { ...state, language: action.language };
+
     case 'CLEAR_ALL_DATA':
       return {
         ...initialState,
         theme: state.theme,
+        language: state.language,
       };
 
     default:

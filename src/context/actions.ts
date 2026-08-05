@@ -1,4 +1,4 @@
-import type { GeoCenter, ModalName, MomentGroup, Photo, Stop, Theme, Trip, ViewingPhoto, ViewName } from '../types';
+import type { GeoCenter, Language, ModalName, MomentGroup, Photo, Stop, Theme, Trip, ViewingPhoto, ViewName } from '../types';
 
 export type Action =
   | { type: 'NAVIGATE'; view: ViewName }
@@ -24,4 +24,5 @@ export type Action =
   | { type: 'SET_PROFILE_NAME'; name: string }
   | { type: 'SET_PROFILE_PHOTO'; photo: string | null }
   | { type: 'SET_THEME'; theme: Theme }
+  | { type: 'SET_LANGUAGE'; language: Language }
   | { type: 'CLEAR_ALL_DATA' };

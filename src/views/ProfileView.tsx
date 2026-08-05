@@ -3,6 +3,7 @@ import PersonAvatar from '../components/shared/PersonAvatar';
 
 export default function ProfileView() {
   const { state, dispatch } = useAppContext();
+  const km = state.language === 'km';
 
   return (
     <section id="view-profile" className="active">
@@ -31,7 +32,7 @@ export default function ProfileView() {
           </div>
         </div>
         <div id="profilePageName" style={{ fontSize: 16, fontWeight: 600, marginTop: 12 }}>
-          {state.profileName || 'Add your name'}
+          {state.profileName || (km ? 'បញ្ចូលឈ្មោះរបស់អ្នក' : 'Add your name')}
         </div>
       </div>
 
@@ -41,7 +42,7 @@ export default function ProfileView() {
           <path d="M4.5 20.5c0-4 3.4-6.8 7.5-6.8s7.5 2.8 7.5 6.8" />
           <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
         </svg>
-        <span>Edit profile</span>
+        <span>{km ? 'កែប្រែគណនី' : 'Edit profile'}</span>
       </div>
 
       <div className="profile-row" id="menuMyTrips" onClick={() => dispatch({ type: 'NAVIGATE', view: 'mytrips' })}>
@@ -50,7 +51,19 @@ export default function ProfileView() {
           <path d="M9 8V6a3 3 0 0 1 6 0v2" />
           <circle cx="12" cy="14" r="1.4" fill="currentColor" stroke="none" />
         </svg>
-        <span>My trips</span>
+        <span>{km ? 'ដំណើររបស់ខ្ញុំ' : 'My trips'}</span>
+      </div>
+
+      <div className="profile-row language-row">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" />
+        </svg>
+        <span>{km ? 'ភាសា' : 'Language'}</span>
+        <div className="language-toggle" role="group" aria-label="Language">
+          <button className={state.language === 'en' ? 'active' : ''} onClick={() => dispatch({ type: 'SET_LANGUAGE', language: 'en' })}>EN</button>
+          <button className={state.language === 'km' ? 'active' : ''} onClick={() => dispatch({ type: 'SET_LANGUAGE', language: 'km' })}>ខ្មែរ</button>
+        </div>
       </div>
 
       <div className="profile-row danger" id="menuClear" onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'confirmClear' })}>
@@ -60,7 +73,7 @@ export default function ProfileView() {
           <path d="M6.5 7l1 12.5A2 2 0 0 0 9.5 21h5a2 2 0 0 0 2-1.5L17.5 7" />
           <circle cx="12" cy="13" r="1.3" fill="currentColor" stroke="none" />
         </svg>
-        <span>Clear all data</span>
+        <span>{km ? 'លុបទិន្នន័យទាំងអស់' : 'Clear all data'}</span>
       </div>
     </section>
   );

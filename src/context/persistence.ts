@@ -1,4 +1,4 @@
-import type { AppState, Theme, Trip } from '../types';
+import type { AppState, Language, Theme, Trip } from '../types';
 
 const NEW_KEY = 'waylo_trips_v1';
 const OLD_KEY = 'waypoint_trips_v1';
@@ -9,9 +9,10 @@ interface PersistedShape {
   profileName?: string;
   profilePhoto?: string | null;
   theme?: Theme;
+  language?: Language;
 }
 
-export type LoadedState = Pick<AppState, 'trips' | 'currentTripId' | 'profileName' | 'profilePhoto' | 'theme'>;
+export type LoadedState = Pick<AppState, 'trips' | 'currentTripId' | 'profileName' | 'profilePhoto' | 'theme' | 'language'>;
 
 export function loadState(defaults: LoadedState): LoadedState {
   try {
@@ -24,6 +25,7 @@ export function loadState(defaults: LoadedState): LoadedState {
       profileName: parsed.profileName ?? defaults.profileName,
       profilePhoto: parsed.profilePhoto ?? defaults.profilePhoto,
       theme: parsed.theme ?? defaults.theme,
+      language: parsed.language ?? defaults.language,
     };
   } catch {
     return defaults;
@@ -40,6 +42,7 @@ export function persistState(state: LoadedState): void {
         profileName: state.profileName,
         profilePhoto: state.profilePhoto,
         theme: state.theme,
+        language: state.language,
       }),
     );
   } catch {

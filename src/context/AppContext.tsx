@@ -19,6 +19,7 @@ function init(base: AppState): AppState {
     profileName: base.profileName,
     profilePhoto: base.profilePhoto,
     theme: base.theme,
+    language: base.language,
   });
   return { ...base, ...loaded };
 }
@@ -33,8 +34,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       profileName: state.profileName,
       profilePhoto: state.profilePhoto,
       theme: state.theme,
+      language: state.language,
     });
-  }, [state.trips, state.currentTripId, state.profileName, state.profilePhoto, state.theme]);
+  }, [state.trips, state.currentTripId, state.profileName, state.profilePhoto, state.theme, state.language]);
 
   useEffect(() => {
     document.body.dataset.theme = state.theme;

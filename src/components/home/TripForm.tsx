@@ -5,7 +5,8 @@ import { dayCount } from '../../lib/tripUtils';
 import type { Trip } from '../../types';
 
 export default function TripForm() {
-  const { dispatch } = useAppContext();
+  const { state, dispatch } = useAppContext();
+  const km = state.language === 'km';
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -16,7 +17,7 @@ export default function TripForm() {
   async function handleCreate() {
     const dest = destination.trim();
     if (!dest) {
-      setDestError('Destination is required');
+      setDestError(km ? 'សូមបញ្ចូលគោលដៅ' : 'Destination is required');
       return;
     }
     setDestError('');
@@ -46,7 +47,7 @@ export default function TripForm() {
 
   return (
     <>
-      <p className="eyebrow">Destination</p>
+      <p className="eyebrow">{km ? 'គោលដៅ' : 'Destination'}</p>
       <input
         type="text"
         id="destination"
@@ -65,16 +66,16 @@ export default function TripForm() {
       )}
       <div className="row2">
         <div>
-          <label className="field-label">Depart</label>
+          <label className="field-label">{km ? 'ចេញដំណើរ' : 'Depart'}</label>
           <input type="date" id="startDate" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
         </div>
         <div>
-          <label className="field-label">Return</label>
+          <label className="field-label">{km ? 'ត្រឡប់' : 'Return'}</label>
           <input type="date" id="endDate" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
         </div>
       </div>
       <button className="btn btn-primary" id="generateBtn" disabled={busy} onClick={handleCreate}>
-        {busy ? 'Setting up…' : 'Create trip'}
+        {busy ? (km ? 'កំពុងរៀបចំ…' : 'Setting up…') : (km ? 'បង្កើតដំណើរ' : 'Create trip')}
       </button>
       <div className="status" id="genStatus">
         {status}

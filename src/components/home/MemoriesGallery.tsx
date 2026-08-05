@@ -20,7 +20,7 @@ export default function MemoriesGallery() {
   return (
     <div id="memoriesWrap" style={{ marginBottom: 24 }}>
       <p className="eyebrow" style={{ marginBottom: 8 }}>
-        Memories
+        {state.language === 'km' ? 'អនុស្សាវរីយ៍' : 'Memories'}
       </p>
       <div id="memoriesGallery">
         {display.map((group, i) => (

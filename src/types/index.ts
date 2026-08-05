@@ -1,4 +1,5 @@
 export type Theme = 'dark' | 'light';
+export type Language = 'en' | 'km';
 
 export type ViewName =
   | 'home'
@@ -75,6 +76,7 @@ export interface AppState {
   profileName: string;
   profilePhoto: string | null;
   theme: Theme;
+  language: Language;
   currentView: ViewName;
   memoryReturnView: ViewName;
   activeModal: ModalName | null;
