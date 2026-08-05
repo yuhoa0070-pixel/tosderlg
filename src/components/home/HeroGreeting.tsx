@@ -18,7 +18,7 @@ export default function HeroGreeting({ children }: { children?: ReactNode }) {
           alignItems: 'center',
           justifyContent: 'space-between',
           marginBottom: 12,
-          padding: '10px 14px',
+          padding: '8px 14px',
           borderRadius: 16,
           background: 'var(--card)',
           boxShadow: '0px 4px 4px rgba(0,0,0,0.05)',
@@ -27,7 +27,7 @@ export default function HeroGreeting({ children }: { children?: ReactNode }) {
         <img
           src={state.theme === 'dark' ? '/logo-full-dark.png' : '/logo-full-transparent.png'}
           alt="Waylo"
-          style={{ height: 64, width: 'auto', display: 'block' }}
+          style={{ height: 36, width: 'auto', display: 'block' }}
         />
         <ThemeToggle />
       </div>
