@@ -2,6 +2,7 @@ import { useAppContext } from '../context/AppContext';
 import { useActiveTrip } from '../hooks/useActiveTrip';
 import { isPastTrip } from '../lib/tripUtils';
 import StopCard from '../components/shared/StopCard';
+import TripInviteButton from '../components/shared/TripInviteButton';
 
 export default function ItineraryView() {
   const { state, dispatch } = useAppContext();
@@ -20,6 +21,8 @@ export default function ItineraryView() {
       <p className="sub" id="itinDates">
         {activeTrip ? activeTrip.label : '—'}
       </p>
+
+      {activeTrip && <TripInviteButton trip={activeTrip} />}
 
       <div className="itinerary-mode-tabs" aria-label={state.language === 'km' ? 'ជ្រើសរើសទិដ្ឋភាព' : 'Choose itinerary view'}>
         <button type="button" className="active">
@@ -54,13 +57,15 @@ export default function ItineraryView() {
         )}
       </div>
 
-      <button
-        className="btn btn-primary"
-        style={{ marginTop: 8 }}
-        onClick={() => dispatch({ type: 'NAVIGATE', view: 'customize' })}
-      >
-        Review and customize
-      </button>
+      {!activeTrip?.readOnly && (
+        <button
+          className="btn btn-primary"
+          style={{ marginTop: 8 }}
+          onClick={() => dispatch({ type: 'NAVIGATE', view: 'customize' })}
+        >
+          Review and customize
+        </button>
+      )}
       {showRecapBtn && (
         <button
           className="btn btn-ghost"

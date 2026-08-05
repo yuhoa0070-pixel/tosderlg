@@ -13,6 +13,7 @@ import StopCard from '../components/shared/StopCard';
 export default function MapView() {
   const { state, dispatch } = useAppContext();
   const activeTrip = useActiveTrip();
+  const readOnly = activeTrip?.readOnly === true;
   const tripDays = activeTrip?.tripDays ?? [];
   const stops = tripDays[state.currentDay]?.stops ?? [];
   const selectedStop = state.selectedStop;
@@ -34,6 +35,7 @@ export default function MapView() {
   }
 
   function handleRemoveStop(i: number) {
+    if (readOnly) return;
     if (selectedStop >= i) {
       dispatch({ type: 'SET_SELECTED_STOP', index: Math.max(0, Math.min(selectedStop - 1, stops.length - 2)) });
     }
@@ -41,6 +43,7 @@ export default function MapView() {
   }
 
   function handleMapClick(lat: number, lng: number) {
+    if (readOnly) return;
     dispatch({ type: 'SET_PENDING_TAP_COORDS', coords: { lat, lng } });
     dispatch({ type: 'OPEN_MODAL', modal: 'stopForm', editingStopIndex: null });
   }
@@ -137,6 +140,7 @@ export default function MapView() {
   }, [stops]);
 
   function triggerUpload(stopIdx: number) {
+    if (readOnly) return;
     dispatch({ type: 'SET_SELECTED_STOP', index: stopIdx });
     fileInputRef.current?.click();
   }
@@ -267,31 +271,37 @@ export default function MapView() {
         {stops.map((s, i) => (
           <div key={i} className={`chip${i === selectedStop ? ' active' : ''}`} onClick={() => handleSelectStop(i)}>
             {s.title}
-            <button
-              type="button"
-              className="chip-close"
-              title={`Remove ${s.title}`}
-              aria-label={`Remove ${s.title}`}
-              onClick={(event) => {
-                event.stopPropagation();
-                handleRemoveStop(i);
-              }}
-            >
-              &times;
-            </button>
+            {!readOnly && (
+              <button
+                type="button"
+                className="chip-close"
+                title={`Remove ${s.title}`}
+                aria-label={`Remove ${s.title}`}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleRemoveStop(i);
+                }}
+              >
+                &times;
+              </button>
+            )}
           </div>
         ))}
       </div>
-      <button
-        className="btn btn-ghost"
-        style={{ marginBottom: 8 }}
-        onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'pasteLink' })}
-      >
-        + Paste a Google Maps link
-      </button>
-      <p className="note" style={{ marginTop: 0, marginBottom: 16 }}>
-        Or tap anywhere on the map to drop a pin there
-      </p>
+      {!readOnly && (
+        <>
+          <button
+            className="btn btn-ghost"
+            style={{ marginBottom: 8 }}
+            onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'pasteLink' })}
+          >
+            + Paste a Google Maps link
+          </button>
+          <p className="note" style={{ marginTop: 0, marginBottom: 16 }}>
+            Or tap anywhere on the map to drop a pin there
+          </p>
+        </>
+      )}
 
       <div className="detail-card">
         <div className="detail-head">
@@ -303,30 +313,32 @@ export default function MapView() {
               {stop ? `${stop.time} · ${stop.sub}` : '—'}
             </div>
           </div>
-          <div className="icon-btn" title="Add memory" onClick={() => triggerUpload(selectedStop)}>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.1"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.2-2h6.6l1.2 2h2A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5z" />
-              <circle cx="12" cy="13" r="3.5" />
-            </svg>
-          </div>
+          {!readOnly && (
+            <div className="icon-btn" title="Add memory" onClick={() => triggerUpload(selectedStop)}>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.2-2h6.6l1.2 2h2A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5z" />
+                <circle cx="12" cy="13" r="3.5" />
+              </svg>
+            </div>
+          )}
         </div>
         <div className="memories-label">Memories</div>
-        <MemoryGrid photos={photos} onPhotoClick={openPhoto} onAddClick={() => triggerUpload(selectedStop)} gridId="detailGrid" />
+        <MemoryGrid photos={photos} onPhotoClick={openPhoto} onAddClick={readOnly ? undefined : () => triggerUpload(selectedStop)} gridId="detailGrid" />
       </div>
       <p className="note">
         Photos and trip data save to this browser via local storage. In the in-chat preview panel, storage may be
         sandboxed — open the file directly in a regular browser tab for it to persist across refreshes.
       </p>
-      <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
+      {!readOnly && <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />}
     </section>
   );
 }

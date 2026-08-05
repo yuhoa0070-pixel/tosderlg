@@ -32,6 +32,7 @@ interface TelegramWebApp {
   viewportStableHeight: number;
   initDataUnsafe?: { user?: TelegramUser };
   LocationManager?: TelegramLocationManager;
+  openTelegramLink?: (url: string) => void;
   onEvent: (eventType: TelegramEvent, callback: () => void) => void;
   offEvent: (eventType: TelegramEvent, callback: () => void) => void;
 }

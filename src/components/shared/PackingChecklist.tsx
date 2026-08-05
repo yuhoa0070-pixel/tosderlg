@@ -8,6 +8,7 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
   const [newEmoji, setNewEmoji] = useState('🎒');
   const inputRef = useRef<HTMLInputElement | null>(null);
   const km = state.language === 'km';
+  const readOnly = trip.readOnly === true;
   const items = trip.packingItems ?? [];
   const remaining = items.filter((item) => !item.packed).length;
   const emojiOptions = km
@@ -68,7 +69,11 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
           </div>
           <div>
             <div className="packing-title">{km ? 'បញ្ជីរបស់ត្រូវយក' : 'Packing checklist'}</div>
-            <div className="packing-subtitle">{km ? 'រៀបចំឥឡូវ ធ្វើដំណើរដោយស្ងប់ចិត្ត' : 'Pack now, relax later.'}</div>
+            <div className="packing-subtitle">
+              {readOnly
+                ? km ? 'បញ្ជីដែលបានចែករំលែក · មើលតែប៉ុណ្ណោះ' : 'Shared checklist · View only'
+                : km ? 'រៀបចំឥឡូវ ធ្វើដំណើរដោយស្ងប់ចិត្ត' : 'Pack now, relax later.'}
+            </div>
           </div>
         </div>
         {items.length > 0 && (
@@ -80,35 +85,39 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
         )}
       </div>
 
-      <div className="packing-emoji-picker" aria-label={km ? 'ជ្រើសរើសរូបសញ្ញា' : 'Choose an emoji'}>
-        {emojiOptions.map((option) => (
-          <button
-            type="button"
-            key={option.emoji}
-            className={option.emoji === newEmoji ? 'active' : ''}
-            onClick={() => suggestItem(option.emoji, option.text)}
-            aria-label={`${option.text} ${option.emoji}`}
-            aria-pressed={option.emoji === newEmoji}
-          >
-            {option.emoji}
-          </button>
-        ))}
-      </div>
+      {!readOnly && (
+        <>
+          <div className="packing-emoji-picker" aria-label={km ? 'ជ្រើសរើសរូបសញ្ញា' : 'Choose an emoji'}>
+            {emojiOptions.map((option) => (
+              <button
+                type="button"
+                key={option.emoji}
+                className={option.emoji === newEmoji ? 'active' : ''}
+                onClick={() => suggestItem(option.emoji, option.text)}
+                aria-label={`${option.text} ${option.emoji}`}
+                aria-pressed={option.emoji === newEmoji}
+              >
+                {option.emoji}
+              </button>
+            ))}
+          </div>
 
-      <form className="packing-form" onSubmit={handleSubmit}>
-        <input
-          ref={inputRef}
-          className="packing-input"
-          type="text"
-          value={newItem}
-          onChange={(event) => setNewItem(event.target.value)}
-          placeholder={km ? 'បន្ថែមរបស់ដែលត្រូវយក' : 'Add something to bring'}
-          aria-label={km ? 'របស់ដែលត្រូវយក' : 'Packing item'}
-        />
-        <button className="packing-add" type="submit" disabled={!newItem.trim()} aria-label={km ? 'បន្ថែម' : 'Add item'}>
-          <span aria-hidden="true">+</span>
-        </button>
-      </form>
+          <form className="packing-form" onSubmit={handleSubmit}>
+            <input
+              ref={inputRef}
+              className="packing-input"
+              type="text"
+              value={newItem}
+              onChange={(event) => setNewItem(event.target.value)}
+              placeholder={km ? 'បន្ថែមរបស់ដែលត្រូវយក' : 'Add something to bring'}
+              aria-label={km ? 'របស់ដែលត្រូវយក' : 'Packing item'}
+            />
+            <button className="packing-add" type="submit" disabled={!newItem.trim()} aria-label={km ? 'បន្ថែម' : 'Add item'}>
+              <span aria-hidden="true">+</span>
+            </button>
+          </form>
+        </>
+      )}
 
       {items.length > 0 ? (
         <div className="packing-list">
@@ -120,22 +129,27 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
                 onClick={() => dispatch({ type: 'TOGGLE_PACKING_ITEM', itemId: item.id })}
                 aria-label={item.packed ? `Mark ${item.text} unpacked` : `Mark ${item.text} packed`}
                 aria-pressed={item.packed}
+                disabled={readOnly}
               >
                 {item.packed && <span aria-hidden="true">✓</span>}
               </button>
               <span className="packing-item-emoji" aria-hidden="true">{item.emoji ?? '🎒'}</span>
               <span className="packing-item-text">{item.text}</span>
-              <button
-                type="button"
-                className="packing-remove"
-                onClick={() => dispatch({ type: 'REMOVE_PACKING_ITEM', itemId: item.id })}
-                aria-label={km ? `លុប ${item.text}` : `Remove ${item.text}`}
-              >
-                <span aria-hidden="true">×</span>
-              </button>
+              {!readOnly && (
+                <button
+                  type="button"
+                  className="packing-remove"
+                  onClick={() => dispatch({ type: 'REMOVE_PACKING_ITEM', itemId: item.id })}
+                  aria-label={km ? `លុប ${item.text}` : `Remove ${item.text}`}
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
+              )}
             </div>
           ))}
         </div>
+      ) : readOnly ? (
+        <div className="packing-readonly-empty">{km ? 'មិនទាន់មានរបស់ក្នុងបញ្ជីទេ។' : 'No packing items were shared yet.'}</div>
       ) : (
         <div className="packing-suggestions">
           <span>{km ? 'សាកល្បង៖' : 'Try:'}</span>

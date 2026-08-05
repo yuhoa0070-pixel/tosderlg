@@ -62,6 +62,9 @@ export interface Trip {
   tripDays: TripDay[];
   photos: Record<string, Photo[]>;
   packingItems?: PackingItem[];
+  shareId?: string;
+  sharedBy?: string;
+  readOnly?: boolean;
 }
 
 export interface MomentGroup {

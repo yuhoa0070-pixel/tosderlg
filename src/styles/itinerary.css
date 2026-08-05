@@ -3,6 +3,18 @@
 .itinerary-mode-tabs button{min-height:38px;border:0;border-radius:10px;background:transparent;color:var(--text-muted);font-size:14px;font-weight:800;cursor:pointer;}
 .itinerary-mode-tabs button.active{background:var(--card);color:var(--accent);box-shadow:0 3px 10px rgba(0,0,0,.08);}
 .itinerary-mode-tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+.trip-share-panel{margin:0 0 16px;}
+.trip-invite-button{width:100%;min-height:68px;display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid rgba(46,204,113,.24);border-radius:16px;background:rgba(46,204,113,.08);color:var(--text);text-align:left;cursor:pointer;}
+.trip-invite-icon,.shared-trip-icon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;border-radius:12px;background:var(--accent);color:#07150c;font-size:19px;}
+.trip-invite-copy{display:flex;flex:1;min-width:0;flex-direction:column;}
+.trip-invite-copy strong,.shared-trip-banner strong{color:var(--heading);font-size:15px;font-weight:800;line-height:1.25;}
+.trip-invite-copy small,.shared-trip-banner small{display:block;margin-top:2px;color:var(--text-secondary);font-size:12px;font-weight:600;line-height:1.35;}
+.trip-invite-arrow{color:var(--accent);font-size:20px;font-weight:800;}
+.trip-invite-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.trip-share-status{margin:6px 2px 0;color:var(--accent);font-size:12px;font-weight:700;}
+.shared-trip-banner{display:flex;align-items:center;gap:11px;margin:0 0 16px;padding:11px 12px;border:1px solid rgba(46,204,113,.22);border-radius:16px;background:rgba(46,204,113,.07);}
+.shared-trip-banner>span:last-child{min-width:0;}
+.shared-trip-banner .shared-trip-icon{background:rgba(46,204,113,.14);color:var(--accent);}
 .day-tabs::-webkit-scrollbar{display:none;}
 .day-tab{
   font-size:15px;padding:7px 16px;border-radius:20px;cursor:pointer;white-space:nowrap;
@@ -44,11 +56,13 @@
 .packing-item:last-child{border-bottom:0;}
 .packing-check{width:24px;height:24px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:#08140d;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:15px;font-weight:900;cursor:pointer;}
 .packing-item.packed .packing-check{background:var(--accent);border-color:var(--accent);}
+.packing-check:disabled{cursor:default;}
 .packing-item-emoji{width:24px;flex:0 0 auto;text-align:center;font-size:18px;line-height:1;}
 .packing-item-text{min-width:0;flex:1;color:var(--text);font-size:15px;font-weight:600;line-height:1.3;}
 .packing-item.packed .packing-item-text{text-decoration:line-through;color:var(--text-muted);}
 .packing-remove{width:32px;height:32px;border:0;background:transparent;color:var(--text-muted);font-size:22px;line-height:1;cursor:pointer;}
 .packing-suggestions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;color:var(--text-muted);font-size:12px;font-weight:600;}
 .packing-suggestions button{border:1px solid var(--border);border-radius:999px;padding:5px 8px;background:var(--card-hover);color:var(--text-secondary);font-size:12px;font-weight:700;cursor:pointer;}
+.packing-readonly-empty{margin-top:14px;padding:14px;border:1px dashed var(--border);border-radius:12px;color:var(--text-muted);font-size:13px;font-weight:600;text-align:center;}
 .packing-add:focus-visible,.packing-check:focus-visible,.packing-remove:focus-visible,.packing-suggestions button:focus-visible,.packing-emoji-picker button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 body[data-theme="dark"] .packing-count{color:#f3b24b;}

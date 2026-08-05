@@ -22,7 +22,7 @@ export const initialState: AppState = {
 };
 
 function mapTrip(state: AppState, tripId: number | null, fn: (trip: Trip) => Trip): Trip[] {
-  return state.trips.map((t) => (t.id === tripId ? fn(t) : t));
+  return state.trips.map((t) => (t.id === tripId && !t.readOnly ? fn(t) : t));
 }
 
 export function appReducer(state: AppState, action: Action): AppState {
@@ -99,6 +99,28 @@ export function appReducer(state: AppState, action: Action): AppState {
         currentView: isPastTrip(trip) ? 'recap' : 'itinerary',
       };
     }
+
+    case 'IMPORT_SHARED_TRIP': {
+      const existing = state.trips.find((trip) => trip.readOnly && trip.shareId === action.trip.shareId);
+      const importedTrip = { ...action.trip, id: existing?.id ?? action.trip.id, readOnly: true };
+      const trips = existing
+        ? state.trips.map((trip) => (trip.id === existing.id ? importedTrip : trip))
+        : [...state.trips, importedTrip];
+      return {
+        ...state,
+        trips,
+        currentTripId: importedTrip.id,
+        currentDay: 0,
+        selectedStop: 0,
+        currentView: 'itinerary',
+      };
+    }
+
+    case 'SET_TRIP_SHARE_ID':
+      return {
+        ...state,
+        trips: mapTrip(state, action.tripId, (trip) => ({ ...trip, shareId: action.shareId })),
+      };
 
     case 'DELETE_TRIP': {
       const trips = state.trips.filter((t) => t.id !== action.tripId);

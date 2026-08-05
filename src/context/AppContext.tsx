@@ -4,6 +4,7 @@ import { appReducer, initialState } from './appReducer';
 import type { Action } from './actions';
 import { loadState, persistState } from './persistence';
 import { getTelegramUser, initTelegramWebApp, telegramUserDisplayName } from '../lib/telegram';
+import { clearTripInviteFromUrl, readTripInviteFromUrl } from '../lib/tripInvite';
 
 interface AppContextValue {
   state: AppState;
@@ -26,6 +27,12 @@ function init(base: AppState): AppState {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState, init);
+
+  useEffect(() => {
+    const invitedTrip = readTripInviteFromUrl();
+    if (invitedTrip) dispatch({ type: 'IMPORT_SHARED_TRIP', trip: invitedTrip });
+    clearTripInviteFromUrl();
+  }, []);
 
   useEffect(() => {
     persistState({
