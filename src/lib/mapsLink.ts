@@ -21,13 +21,21 @@ export function isShortMapsLink(url: string): boolean {
 
 export async function resolveShortLink(url: string): Promise<string | null> {
   try {
-    const res = await fetch('https://corsproxy.io/?url=' + encodeURIComponent(url));
+    const endpoint = new URL('/api/resolve-map-link', window.location.origin);
+    endpoint.searchParams.set('url', url);
+    const res = await fetch(endpoint);
     if (!res.ok) return null;
-    const finalUrl = res.url;
-    if (finalUrl && finalUrl !== url) return finalUrl;
-    const text = await res.text();
-    const m = text.match(/https:\/\/www\.google\.com\/maps[^"'\s]*/);
-    return m ? m[0] : null;
+    const data: unknown = await res.json();
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'url' in data &&
+      typeof data.url === 'string' &&
+      parseGoogleMapsLink(data.url)
+    ) {
+      return data.url;
+    }
+    return null;
   } catch {
     return null;
   }
