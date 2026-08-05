@@ -70,20 +70,29 @@ export function initTelegramWebApp(onThemeChange: (theme: Theme) => void): (() =
   };
   webApp.onEvent('themeChanged', handleThemeChanged);
 
-  // Telegram's WebView doesn't shrink the CSS layout viewport when the
-  // on-screen keyboard opens, so `position:fixed; inset:0` elements (the
-  // bottom-sheet modals, bottom nav) end up anchored below the visible
-  // area. Track Telegram's own reported viewport height instead and drive
-  // full-height fixed elements off a CSS var, updated on every resize.
+  // Telegram's WebView doesn't always shrink the CSS layout viewport when
+  // the keyboard opens. Use the smaller of Telegram's live height and the
+  // browser Visual Viewport so fixed sheets follow the actually visible area.
+  // `viewportStableHeight` must not be used here because it intentionally
+  // excludes temporary changes such as the on-screen keyboard.
   const setViewportHeightVar = () => {
-    document.documentElement.style.setProperty(VIEWPORT_HEIGHT_VAR, `${webApp.viewportStableHeight}px`);
+    const telegramHeight = webApp.viewportHeight || webApp.viewportStableHeight;
+    const visualHeight = window.visualViewport?.height;
+    const visibleHeight = visualHeight && visualHeight > 0
+      ? Math.min(telegramHeight, visualHeight)
+      : telegramHeight;
+    document.documentElement.style.setProperty(VIEWPORT_HEIGHT_VAR, `${Math.round(visibleHeight)}px`);
   };
   setViewportHeightVar();
   webApp.onEvent('viewportChanged', setViewportHeightVar);
+  window.visualViewport?.addEventListener('resize', setViewportHeightVar);
+  window.addEventListener('resize', setViewportHeightVar);
 
   return () => {
     webApp.offEvent('themeChanged', handleThemeChanged);
     webApp.offEvent('viewportChanged', setViewportHeightVar);
+    window.visualViewport?.removeEventListener('resize', setViewportHeightVar);
+    window.removeEventListener('resize', setViewportHeightVar);
   };
 }
 
