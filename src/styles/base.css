@@ -1,9 +1,9 @@
 html{overflow-y:scroll;scrollbar-gutter:stable;}
 *{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--text);font-family:'Baloo 2',sans-serif;-webkit-font-smoothing:antialiased;transition:background .2s ease;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Baloo 2',sans-serif;-webkit-font-smoothing:antialiased;transition:background .65s ease;}
 button,select{font-family:inherit;}
-.app{max-width:420px;margin:0 auto;background:var(--bg);min-height:100vh;position:relative;padding-bottom:76px;padding-top:8px;}
-section{padding:24px;display:none;}
+.app{max-width:420px;margin:0 auto;background:var(--bg);min-height:100vh;position:relative;padding-bottom:76px;padding-top:8px;transition:background .65s ease;}
+section{padding:24px;display:none;position:relative;z-index:1;}
 section.active{display:block;}
 .eyebrow{font-size:15px;font-weight:700;color:var(--text-muted);margin:0 0 4px;}
 h1{font-family:'Baloo 2',sans-serif;font-size:28px;font-weight:800;color:var(--heading);margin:0 0 2px;}

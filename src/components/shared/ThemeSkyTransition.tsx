@@ -12,7 +12,7 @@ export default function ThemeSkyTransition() {
     previousTheme.current = state.theme;
     setTransitionTheme(state.theme);
 
-    const timer = window.setTimeout(() => setTransitionTheme(null), 1200);
+    const timer = window.setTimeout(() => setTransitionTheme(null), 1950);
     return () => window.clearTimeout(timer);
   }, [state.theme]);
 
