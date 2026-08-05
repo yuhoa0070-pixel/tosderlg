@@ -18,3 +18,39 @@ body[data-theme="light"] .app-glow{background:radial-gradient(ellipse 70% 100% a
   position:absolute;top:0;left:0;right:0;height:320px;
   z-index:-1;pointer-events:none;
 }
+.theme-sky-transition{
+  position:fixed;inset:0;z-index:5;pointer-events:none;overflow:hidden;
+  width:100%;max-width:420px;margin:0 auto;
+}
+.theme-sky-wash{position:absolute;inset:0;animation:themeSkyWash 1150ms ease-out both;}
+.theme-sky-transition.light .theme-sky-wash{
+  background:linear-gradient(115deg,rgba(255,177,76,.28),rgba(255,220,142,.13) 42%,rgba(121,199,255,.1) 72%,transparent);
+}
+.theme-sky-transition.dark .theme-sky-wash{
+  background:linear-gradient(245deg,rgba(90,112,202,.22),rgba(46,55,112,.12) 46%,rgba(11,16,38,.08) 75%,transparent);
+}
+.theme-celestial{
+  position:absolute;top:0;left:0;width:62px;height:62px;filter:drop-shadow(0 0 18px currentColor);
+}
+.theme-sun-rise{color:#FFB43E;animation:sunRiseAcross 1100ms cubic-bezier(.2,.72,.18,1) both;}
+.theme-moon-set{color:#DCE7FF;animation:moonSetAcross 1100ms cubic-bezier(.2,.72,.18,1) both;}
+@keyframes themeSkyWash{
+  0%{opacity:0;}
+  24%{opacity:1;}
+  100%{opacity:0;}
+}
+@keyframes sunRiseAcross{
+  0%{opacity:0;transform:translate(-74px,72vh) scale(.55) rotate(-18deg);}
+  18%{opacity:.9;}
+  58%{opacity:1;transform:translate(46vw,20vh) scale(1) rotate(6deg);}
+  100%{opacity:0;transform:translate(calc(100vw + 74px),4vh) scale(.72) rotate(18deg);}
+}
+@keyframes moonSetAcross{
+  0%{opacity:0;transform:translate(calc(100vw + 74px),8vh) scale(.72) rotate(16deg);}
+  18%{opacity:.92;}
+  58%{opacity:1;transform:translate(46vw,24vh) scale(1) rotate(-5deg);}
+  100%{opacity:0;transform:translate(-74px,68vh) scale(.58) rotate(-20deg);}
+}
+@media(prefers-reduced-motion:reduce){
+  .theme-sky-transition{display:none;}
+}
