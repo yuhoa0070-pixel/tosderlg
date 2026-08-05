@@ -1,5 +1,6 @@
 import { useAppContext } from '../context/AppContext';
 import TripCard from '../components/shared/TripCard';
+import TripRoomIcon from '../components/shared/TripRoomIcon';
 
 export default function MyTripsView() {
   const { state, dispatch } = useAppContext();
@@ -50,7 +51,7 @@ export default function MyTripsView() {
         className="btn btn-ghost my-trips-join"
         onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'joinTripRoom' })}
       >
-        <span aria-hidden="true">👥</span> {km ? 'ចូលដោយលេខកូដ' : 'Join with room code'}
+        <TripRoomIcon size={18} /> {km ? 'ចូលដោយលេខកូដ' : 'Join with room code'}
       </button>
       <button type="button" className="btn btn-primary my-trips-create" onClick={createNewTrip}>
         <span aria-hidden="true">＋</span> {km ? 'បង្កើតដំណើរថ្មី' : 'Create new trip'}

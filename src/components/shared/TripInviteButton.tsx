@@ -3,6 +3,7 @@ import { useAppContext } from '../../context/AppContext';
 import { getTelegramUser, getTelegramWebApp, telegramUserDisplayName } from '../../lib/telegram';
 import { saveTripRoom } from '../../lib/tripRoom';
 import type { Trip } from '../../types';
+import TripRoomIcon from './TripRoomIcon';
 
 function copyText(value: string): Promise<void> {
   if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(value);
@@ -73,7 +74,7 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
   if (trip.readOnly) {
     return (
       <div className="shared-trip-banner">
-        <span className="shared-trip-icon" aria-hidden="true">👥</span>
+        <span className="shared-trip-icon"><TripRoomIcon size={20} /></span>
         <span>
           <strong>{km ? 'ដំណើរដែលបានចែករំលែក' : 'Shared trip'}</strong>
           <small>

@@ -3,6 +3,7 @@ import { useAppContext } from '../../context/AppContext';
 import { geocodeCity } from '../../lib/geocode';
 import { dayCount } from '../../lib/tripUtils';
 import type { Trip } from '../../types';
+import TripRoomIcon from '../shared/TripRoomIcon';
 
 export default function TripForm() {
   const { state, dispatch } = useAppContext();
@@ -83,7 +84,7 @@ export default function TripForm() {
         className="btn btn-ghost home-join-room"
         onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'joinTripRoom' })}
       >
-        <span aria-hidden="true">👥</span> {km ? 'មានលេខកូដ? ចូលបន្ទប់ដំណើរ' : 'Have a code? Join a trip room'}
+        <TripRoomIcon size={18} /> {km ? 'មានលេខកូដ? ចូលបន្ទប់ដំណើរ' : 'Have a code? Join a trip room'}
       </button>
       <div className="status" id="genStatus">
         {status}

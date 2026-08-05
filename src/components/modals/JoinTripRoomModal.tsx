@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { joinTripRoom } from '../../lib/tripRoom';
 import BottomSheetModal from './BottomSheetModal';
+import TripRoomIcon from '../shared/TripRoomIcon';
 
 export default function JoinTripRoomModal() {
   const { state, dispatch } = useAppContext();
@@ -40,7 +41,7 @@ export default function JoinTripRoomModal() {
   return (
     <BottomSheetModal isOpen={isOpen} onClose={close} overlayId="joinTripRoomOverlay">
       <form onSubmit={submit}>
-        <div className="join-room-icon" aria-hidden="true">👥</div>
+        <div className="join-room-icon"><TripRoomIcon size={25} /></div>
         <h2>{km ? 'ចូលបន្ទប់ដំណើរ' : 'Join a trip room'}</h2>
         <p className="join-room-sub">
           {km ? 'សុំលេខកូដ ៦ តួពីមិត្តភក្តិរបស់អ្នក។' : 'Ask your friend for their 6-character room code.'}
