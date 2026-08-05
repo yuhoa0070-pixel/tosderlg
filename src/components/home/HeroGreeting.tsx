@@ -17,7 +17,10 @@ export default function HeroGreeting({ children }: { children?: ReactNode }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: 2,
+          marginBottom: 12,
+          padding: '10px 14px',
+          borderRadius: 16,
+          background: 'var(--card)',
           boxShadow: '0px 4px 4px rgba(0,0,0,0.05)',
         }}
       >
