@@ -9,30 +9,26 @@
 .app-header-controls{
   display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0;
 }
-.theme-mode-button,.app-header-controls .language-toggle{
+.theme-mode-button,.app-header-controls .language-mode-button{
   border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 5px 14px rgba(0,0,0,.1);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
 }
-.theme-mode-button{
+.theme-mode-button,.language-mode-button{
   width:33px;height:33px;padding:0;border-radius:50%;color:var(--accent);cursor:pointer;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
 .theme-mode-button svg{width:15px;height:15px;}
-.app-header-controls .language-toggle{padding:3px;gap:1px;border-radius:999px;}
-.app-header-controls .language-toggle button{min-width:30px;height:27px;padding:0 6px;font-size:16px;}
-.app-header-controls .language-toggle button.active{
-  background:rgba(46,207,117,.92);box-shadow:0 2px 8px rgba(46,207,117,.24);color:#07150c;
-}
-body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header-controls .language-toggle{
+.app-header-controls .language-mode-button{font-size:17px;line-height:1;}
+body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header-controls .language-mode-button{
   background:rgba(255,255,255,.5);border-color:rgba(255,255,255,.72);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 6px 18px rgba(67,62,46,.1);
 }
-.theme-mode-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.theme-mode-button:focus-visible,.language-mode-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 @media(max-width:360px){
   .app-header{padding:11px 16px;}
   .app-header-logo-img{height:36px;}
-  .app-header-controls .language-toggle button{min-width:28px;padding:0 5px;font-size:15px;}
+  .app-header-controls .language-mode-button{width:31px;height:31px;font-size:16px;}
 }
 .hero{padding:4px 0 26px;position:relative;}
 .hero-eyebrow{font-size:14px;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px;font-weight:600;}
