@@ -43,6 +43,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [state.theme]);
 
   useEffect(() => {
+    document.body.dataset.language = state.language;
+    document.documentElement.lang = state.language === 'km' ? 'km' : 'en';
+  }, [state.language]);
+
+  useEffect(() => {
     // Only auto-fill from Telegram if the user hasn't already set a profile
     // themselves (e.g. via Edit Profile) — never overwrite a manual edit.
     if (!state.profileName) {
