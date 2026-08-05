@@ -99,7 +99,7 @@ export function useLeafletMap(
   // original's single persistent `leafletMap` global).
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, { zoomControl: false });
+    const map = L.map(containerRef.current, { zoomControl: false, attributionControl: false });
     L.control.zoom({ position: 'topright' }).addTo(map);
     map.setView([optsRef.current.center.lat, optsRef.current.center.lng], 14);
     const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
