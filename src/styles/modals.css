@@ -21,7 +21,7 @@
 .emoji-chip{
   width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);
   background:var(--card-hover);display:flex;align-items:center;justify-content:center;
-  font-size:17px;cursor:pointer;overflow:hidden;
+  font-size:18px;cursor:pointer;overflow:hidden;
 }
 .emoji-chip.active{border-color:var(--accent);background:rgba(46,204,113,0.15);}
 .emoji-chip-img img{width:100%;height:100%;object-fit:cover;}

@@ -3,9 +3,11 @@ import type { GeoCenter } from '../types';
 export function parseGoogleMapsLink(url: string | null | undefined): GeoCenter | null {
   if (!url) return null;
   try {
-    let m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    // Place URLs often contain both pairs: !3d/!4d is the selected place,
+    // while @lat,lng is only the map camera center and can be kilometres away.
+    let m = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
     if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
-    m = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+    m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
     if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
     m = url.match(/[?&](?:q|query|ll)=(-?\d+\.\d+),(-?\d+\.\d+)/);
     if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
