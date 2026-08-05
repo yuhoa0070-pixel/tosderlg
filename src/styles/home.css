@@ -1,7 +1,7 @@
 .app-header{
   display:flex;align-items:center;justify-content:space-between;
   background:var(--header-bg);border-radius:0;
-  padding:12px 20px;margin:-36px -24px 18px;
+  padding:12px 20px;margin:0;
   box-shadow:0 4px 12px rgba(0,0,0,0.06);
   position:relative;z-index:10;
 }

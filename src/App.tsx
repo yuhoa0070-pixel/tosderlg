@@ -17,6 +17,7 @@ import ConfirmDeletePhotoModal from './components/modals/ConfirmDeletePhotoModal
 import EditProfileModal from './components/modals/EditProfileModal';
 import ConfirmClearModal from './components/modals/ConfirmClearModal';
 import ThemeSkyTransition from './components/shared/ThemeSkyTransition';
+import AppHeader from './components/shared/AppHeader';
 
 function renderView(view: ViewName) {
   switch (view) {
@@ -50,6 +51,7 @@ function App() {
     <div className="app">
       <div className="app-glow" />
       <ThemeSkyTransition />
+      <AppHeader />
 
       {renderView(state.currentView)}
 

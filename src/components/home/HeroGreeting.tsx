@@ -1,13 +1,11 @@
 import type { ReactNode } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import AppHeader from '../shared/AppHeader';
 
 export default function HeroGreeting({ children }: { children?: ReactNode }) {
   const { state } = useAppContext();
 
   return (
     <div className="hero">
-      <AppHeader />
       <h1 className="hero-title">
         <span>Kook Kook</span>
       </h1>
