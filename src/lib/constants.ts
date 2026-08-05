@@ -25,6 +25,7 @@ export const sampleMemories: MomentGroup[] = [
 export interface HeroGalleryCard {
   label: string;
   seed: string;
+  image?: string;
   icon: string;
 }
 
@@ -33,6 +34,7 @@ export const heroGalleryData: HeroGalleryCard[] = [
   {
     label: 'City escapes',
     seed: 'city-escapes',
+    image: '/city-escape.jpg',
     icon: '<path d="M3 17l5-6 4 4 5-7 4 5"/>',
   },
   {

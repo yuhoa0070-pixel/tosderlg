@@ -8,7 +8,7 @@ export default function HeroGallery() {
           key={card.seed}
           className="hero-gallery-card"
           style={{
-            background: `linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.05) 55%), url('https://picsum.photos/seed/${card.seed}/260/300') center/cover`,
+            background: `linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.05) 55%), url('${card.image ?? `https://picsum.photos/seed/${card.seed}/260/300`}') center/cover`,
           }}
         >
           <svg
