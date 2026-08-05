@@ -8,7 +8,7 @@
 
 .map-frame{height:220px;border-radius:16px;background:var(--card);border:1px solid var(--border);position:relative;margin-bottom:16px;overflow:hidden;}
 .map-stats-pill{
-  position:absolute;left:12px;bottom:12px;z-index:5;
+  position:absolute;left:12px;bottom:12px;z-index:800;
   background:var(--card);border:1px solid var(--border);border-radius:20px;
   padding:8px 14px;font-size:12px;color:var(--text);
   box-shadow:0 4px 12px rgba(0,0,0,0.35);
@@ -16,14 +16,14 @@
 }
 .map-stats-pill .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);}
 .map-recenter-btn{
-  position:absolute;right:12px;bottom:56px;z-index:5;
+  position:absolute;right:12px;bottom:56px;z-index:800;
   width:32px;height:32px;border-radius:50%;
   background:var(--card);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;color:var(--text-secondary);
   box-shadow:0 4px 12px rgba(0,0,0,0.35);cursor:pointer;
 }
 .map-live-btn{
-  position:absolute;right:12px;bottom:12px;z-index:5;
+  position:absolute;right:12px;bottom:12px;z-index:800;
   width:32px;height:32px;border-radius:50%;
   background:var(--card);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;color:var(--text-secondary);
