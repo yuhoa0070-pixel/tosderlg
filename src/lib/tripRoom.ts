@@ -13,6 +13,13 @@ interface RoomResponse {
   updatedAt: number;
 }
 
+function tripRoomApiUrl(): string {
+  const configured = import.meta.env.VITE_TRIP_ROOM_API_URL?.replace(/\/+$/, '');
+  if (configured) return configured;
+  if (import.meta.env.DEV) return 'http://localhost:8787';
+  throw new Error('Trip rooms need the Cloudflare API URL configured in Vercel.');
+}
+
 function roomSnapshot(trip: Trip): Omit<Trip, 'id' | 'photos'> {
   const {
     id: _id,
@@ -34,7 +41,7 @@ async function readError(response: Response): Promise<string> {
 }
 
 export async function saveTripRoom(trip: Trip, sharedBy: string): Promise<SavedRoom> {
-  const response = await fetch('/api/trip-room', {
+  const response = await fetch(tripRoomApiUrl(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -50,7 +57,7 @@ export async function saveTripRoom(trip: Trip, sharedBy: string): Promise<SavedR
 
 export async function joinTripRoom(rawCode: string): Promise<Trip> {
   const code = rawCode.trim().toUpperCase();
-  const response = await fetch(`/api/trip-room?code=${encodeURIComponent(code)}`, {
+  const response = await fetch(`${tripRoomApiUrl()}?code=${encodeURIComponent(code)}`, {
     headers: { Accept: 'application/json' },
   });
   if (!response.ok) throw new Error(await readError(response));
