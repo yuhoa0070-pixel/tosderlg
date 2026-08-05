@@ -14,7 +14,7 @@ export default function LanguageToggle() {
       title={`Switch to ${nextLabel}`}
       onClick={() => dispatch({ type: 'SET_LANGUAGE', language: nextLanguage })}
     >
-      <span aria-hidden="true">{isEnglish ? '🇬🇧' : '🇰🇭'}</span>
+      <span key={state.language} className="mode-flag" aria-hidden="true">{isEnglish ? '🇬🇧' : '🇰🇭'}</span>
     </button>
   );
 }
