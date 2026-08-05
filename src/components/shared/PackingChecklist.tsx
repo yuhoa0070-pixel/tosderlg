@@ -20,8 +20,8 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
         { emoji: '🔌', text: 'ឆ្នាំងសាក' },
         { emoji: '📷', text: 'កាមេរ៉ា' },
         { emoji: '🛂', text: 'លិខិតឆ្លងដែន' },
-        { emoji: '🎀', text: 'របស់មិត្តស្រី' },
-        { emoji: '🧢', text: 'របស់មិត្តប្រុស' },
+        { emoji: '👩', text: 'របស់មិត្តស្រី' },
+        { emoji: '👨', text: 'របស់មិត្តប្រុស' },
       ]
     : [
         { emoji: '🎒', text: 'Backpack' },
@@ -32,8 +32,8 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
         { emoji: '🔌', text: 'Charger' },
         { emoji: '📷', text: 'Camera' },
         { emoji: '🛂', text: 'Passport' },
-        { emoji: '🎀', text: "Girlfriend's items" },
-        { emoji: '🧢', text: "Boyfriend's items" },
+        { emoji: '👩', text: "Girlfriend's items" },
+        { emoji: '👨', text: "Boyfriend's items" },
       ];
   const suggestions = km
     ? [{ text: 'លិខិតឆ្លងដែន', emoji: '🛂' }, { text: 'ឆ្នាំងសាក', emoji: '🔌' }, { text: 'ថ្នាំពេទ្យ', emoji: '💊' }]
