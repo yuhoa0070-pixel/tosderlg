@@ -17,6 +17,7 @@ export type ModalName =
   | 'stopForm'
   | 'pasteLink'
   | 'memoryCollection'
+  | 'joinTripRoom'
   | 'editProfile'
   | 'confirmClear'
   | 'confirmDeletePhoto';
@@ -65,6 +66,9 @@ export interface Trip {
   shareId?: string;
   sharedBy?: string;
   readOnly?: boolean;
+  roomCode?: string;
+  roomOwnerToken?: string;
+  roomUpdatedAt?: number;
 }
 
 export interface MomentGroup {

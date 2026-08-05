@@ -1,10 +1,11 @@
-import { createContext, useContext, useEffect, useReducer, type Dispatch, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useReducer, useRef, type Dispatch, type ReactNode } from 'react';
 import type { AppState } from '../types';
 import { appReducer, initialState } from './appReducer';
 import type { Action } from './actions';
 import { loadState, persistState } from './persistence';
 import { getTelegramUser, initTelegramWebApp, telegramUserDisplayName } from '../lib/telegram';
 import { clearTripInviteFromUrl, readTripInviteFromUrl } from '../lib/tripInvite';
+import { joinTripRoom, saveTripRoom } from '../lib/tripRoom';
 
 interface AppContextValue {
   state: AppState;
@@ -27,6 +28,7 @@ function init(base: AppState): AppState {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState, init);
+  const lastOwnerSyncRef = useRef('');
 
   useEffect(() => {
     const invitedTrip = readTripInviteFromUrl();
@@ -44,6 +46,53 @@ export function AppProvider({ children }: { children: ReactNode }) {
       language: state.language,
     });
   }, [state.trips, state.currentTripId, state.profileName, state.profilePhoto, state.theme, state.language]);
+
+  useEffect(() => {
+    const ownerRooms = state.trips.filter((trip) => !trip.readOnly && trip.roomCode && trip.roomOwnerToken);
+    const signature = JSON.stringify(
+      ownerRooms.map(({ photos: _photos, roomUpdatedAt: _updatedAt, ...trip }) => trip),
+    ) + `|${state.profileName}`;
+    if (signature === lastOwnerSyncRef.current) return;
+    lastOwnerSyncRef.current = signature;
+    if (ownerRooms.length === 0) return;
+
+    const timer = window.setTimeout(() => {
+      const telegramUser = getTelegramUser();
+      const sharedBy = telegramUser ? telegramUserDisplayName(telegramUser) : state.profileName || 'A friend';
+      void Promise.allSettled(ownerRooms.map((trip) => saveTripRoom(trip, sharedBy)));
+    }, 900);
+    return () => window.clearTimeout(timer);
+  }, [state.trips, state.profileName]);
+
+  const activeSharedTrip = state.trips.find(
+    (trip) => trip.id === state.currentTripId && trip.readOnly && trip.roomCode,
+  );
+  const sharedRoomCode = activeSharedTrip?.roomCode;
+  const sharedRoomUpdatedAt = activeSharedTrip?.roomUpdatedAt ?? 0;
+
+  useEffect(() => {
+    if (!sharedRoomCode) return;
+    const roomCode = sharedRoomCode;
+    let cancelled = false;
+
+    async function refreshRoom() {
+      try {
+        const refreshed = await joinTripRoom(roomCode);
+        if (!cancelled && (refreshed.roomUpdatedAt ?? 0) > sharedRoomUpdatedAt) {
+          dispatch({ type: 'REFRESH_SHARED_TRIP', trip: refreshed });
+        }
+      } catch {
+        // Keep the last downloaded copy available while offline.
+      }
+    }
+
+    void refreshRoom();
+    const interval = window.setInterval(() => void refreshRoom(), 6_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [sharedRoomCode, sharedRoomUpdatedAt]);
 
   useEffect(() => {
     document.body.dataset.theme = state.theme;

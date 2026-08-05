@@ -198,4 +198,6 @@ body[data-theme="dark"] .trip-card-excitement{background:rgba(44,203,117,.1);bor
 .trip-card-alert-badge.urgent{color:#EF5D50;background:rgba(239,93,80,.14);border-color:rgba(239,93,80,.3);}
 body[data-theme="dark"] .trip-card-alert-badge.soon{color:#F8BB4C;background:rgba(245,158,11,.12);}
 body[data-theme="dark"] .trip-card-alert-badge.urgent{color:#FF8176;background:rgba(239,93,80,.12);}
-.my-trips-create{margin-top:18px;box-shadow:0 8px 20px rgba(46,204,113,.18);}
+.my-trips-join{margin-top:18px;display:flex;align-items:center;justify-content:center;gap:7px;}
+.my-trips-create{margin-top:10px;box-shadow:0 8px 20px rgba(46,204,113,.18);}
+.home-join-room{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;}

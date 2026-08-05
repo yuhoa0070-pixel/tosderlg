@@ -78,6 +78,13 @@ export default function TripForm() {
       <button className="btn btn-primary" id="generateBtn" disabled={busy} onClick={handleCreate}>
         {busy ? (km ? 'កំពុងរៀបចំ…' : 'Setting up…') : (km ? 'បង្កើតដំណើរ' : 'Create trip')}
       </button>
+      <button
+        type="button"
+        className="btn btn-ghost home-join-room"
+        onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'joinTripRoom' })}
+      >
+        <span aria-hidden="true">👥</span> {km ? 'មានលេខកូដ? ចូលបន្ទប់ដំណើរ' : 'Have a code? Join a trip room'}
+      </button>
       <div className="status" id="genStatus">
         {status}
       </div>

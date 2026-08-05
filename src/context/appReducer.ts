@@ -101,7 +101,12 @@ export function appReducer(state: AppState, action: Action): AppState {
     }
 
     case 'IMPORT_SHARED_TRIP': {
-      const existing = state.trips.find((trip) => trip.readOnly && trip.shareId === action.trip.shareId);
+      const existing = state.trips.find(
+        (trip) =>
+          trip.readOnly &&
+          ((action.trip.roomCode && trip.roomCode === action.trip.roomCode) ||
+            (action.trip.shareId && trip.shareId === action.trip.shareId)),
+      );
       const importedTrip = { ...action.trip, id: existing?.id ?? action.trip.id, readOnly: true };
       const trips = existing
         ? state.trips.map((trip) => (trip.id === existing.id ? importedTrip : trip))
@@ -116,10 +121,33 @@ export function appReducer(state: AppState, action: Action): AppState {
       };
     }
 
+    case 'REFRESH_SHARED_TRIP': {
+      const existing = state.trips.find(
+        (trip) => trip.readOnly && action.trip.roomCode && trip.roomCode === action.trip.roomCode,
+      );
+      if (!existing) return state;
+      const refreshedTrip = { ...action.trip, id: existing.id, readOnly: true };
+      return {
+        ...state,
+        trips: state.trips.map((trip) => (trip.id === existing.id ? refreshedTrip : trip)),
+      };
+    }
+
     case 'SET_TRIP_SHARE_ID':
       return {
         ...state,
         trips: mapTrip(state, action.tripId, (trip) => ({ ...trip, shareId: action.shareId })),
+      };
+
+    case 'SET_TRIP_ROOM':
+      return {
+        ...state,
+        trips: mapTrip(state, action.tripId, (trip) => ({
+          ...trip,
+          roomCode: action.code,
+          roomOwnerToken: action.ownerToken,
+          roomUpdatedAt: action.updatedAt,
+        })),
       };
 
     case 'DELETE_TRIP': {

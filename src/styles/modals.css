@@ -17,6 +17,12 @@
 }
 .stop-form-overlay.open .stop-form-card{transform:translateY(0);}
 .stop-form-card h2{margin-bottom:16px;}
+.join-room-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;border-radius:15px;background:rgba(46,204,113,.12);font-size:23px;}
+.stop-form-card .join-room-icon+h2{text-align:center;margin-bottom:6px;}
+.join-room-sub{max-width:290px;margin:0 auto 18px;color:var(--text-secondary);font-size:14px;font-weight:600;line-height:1.45;text-align:center;}
+.join-room-input{text-align:center;text-transform:uppercase;font-size:24px!important;font-weight:900!important;letter-spacing:.2em!important;}
+.join-room-error{margin:8px 2px 0;color:var(--danger);font-size:13px;font-weight:700;line-height:1.35;}
+.join-room-actions{margin-top:14px;}
 .emoji-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
 .emoji-chip{
   width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);

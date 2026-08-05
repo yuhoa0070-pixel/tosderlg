@@ -45,6 +45,13 @@ export default function MyTripsView() {
           ))}
         </div>
       )}
+      <button
+        type="button"
+        className="btn btn-ghost my-trips-join"
+        onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'joinTripRoom' })}
+      >
+        <span aria-hidden="true">👥</span> {km ? 'ចូលដោយលេខកូដ' : 'Join with room code'}
+      </button>
       <button type="button" className="btn btn-primary my-trips-create" onClick={createNewTrip}>
         <span aria-hidden="true">＋</span> {km ? 'បង្កើតដំណើរថ្មី' : 'Create new trip'}
       </button>

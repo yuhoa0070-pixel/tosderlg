@@ -14,7 +14,9 @@ export type Action =
   | { type: 'CREATE_TRIP'; trip: Trip }
   | { type: 'LOAD_TRIP'; tripId: number }
   | { type: 'IMPORT_SHARED_TRIP'; trip: Trip }
+  | { type: 'REFRESH_SHARED_TRIP'; trip: Trip }
   | { type: 'SET_TRIP_SHARE_ID'; tripId: number; shareId: string }
+  | { type: 'SET_TRIP_ROOM'; tripId: number; code: string; ownerToken: string; updatedAt: number }
   | { type: 'DELETE_TRIP'; tripId: number }
   | { type: 'ADD_STOP'; dayIndex: number; stop: Stop }
   | { type: 'UPDATE_STOP'; dayIndex: number; stopIndex: number; stop: Stop }
