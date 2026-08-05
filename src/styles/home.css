@@ -16,12 +16,24 @@
 }
 .theme-mode-button,.language-mode-button{
   width:33px;height:33px;padding:0;border-radius:50%;color:var(--accent);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 140ms ease;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:transform 150ms ease,background-color 150ms ease;
 }
-.theme-mode-button:active,.language-mode-button:active{transform:scale(.9);}
-.theme-mode-button svg{width:15px;height:15px;}
+.theme-mode-button:hover{transform:scale(1.02);}
+.theme-mode-button:active{transform:scale(.96);}
+.language-mode-button:active{transform:scale(.9);}
+.theme-icon-stack{position:relative;width:16px;height:16px;display:block;flex-shrink:0;}
+.theme-morph-icon{
+  position:absolute;inset:0;width:16px;height:16px;opacity:0;transform:scale(.5);
+  transition:opacity 220ms ease,transform 320ms cubic-bezier(.18,.89,.32,1.28);
+}
+.theme-mode-button[data-theme="dark"] .theme-moon,.theme-mode-button[data-theme="light"] .theme-sun{opacity:1;transform:scale(1);}
+@media(hover:hover){
+  .theme-mode-button[data-theme="dark"]:hover .theme-moon,.theme-mode-button[data-theme="light"]:hover .theme-sun{opacity:0;transform:scale(.5);}
+  .theme-mode-button[data-theme="dark"]:hover .theme-sun,.theme-mode-button[data-theme="light"]:hover .theme-moon{opacity:1;transform:scale(1);}
+}
 .app-header-controls .language-mode-button{font-size:17px;line-height:1;}
-.mode-icon,.mode-flag{display:block;transform-origin:center;animation:modeIconSwap 280ms cubic-bezier(.2,.8,.2,1);}
+.mode-flag{display:block;transform-origin:center;animation:modeIconSwap 280ms cubic-bezier(.2,.8,.2,1);}
 @keyframes modeIconSwap{
   0%{opacity:0;transform:rotate(-28deg) scale(.45);}
   65%{opacity:1;transform:rotate(6deg) scale(1.13);}
@@ -33,7 +45,8 @@ body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header
 }
 .theme-mode-button:focus-visible,.language-mode-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 @media(prefers-reduced-motion:reduce){
-  .mode-icon,.mode-flag{animation:none;}
+  .mode-flag{animation:none;}
+  .theme-morph-icon{transition:none;}
   .theme-mode-button,.language-mode-button{transition:none;}
 }
 @media(max-width:360px){
