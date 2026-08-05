@@ -1,9 +1,9 @@
 .profile-row{padding:15px 4px;font-size:14px;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
 .profile-row svg{flex-shrink:0;}
 .profile-row.danger{color:var(--danger);}
-.theme-toggle{display:flex;background:var(--card-hover);border-radius:20px;padding:3px;gap:2px;}
-.theme-toggle-opt{font-size:12px;padding:6px 12px;border-radius:16px;color:var(--text-muted);cursor:pointer;transition:background .15s ease,color .15s ease;display:flex;align-items:center;gap:5px;}
-.theme-toggle-opt.active{background:var(--accent);color:#111;font-weight:600;}
+.theme-toggle{display:flex;background:var(--card-hover);border-radius:20px;padding:3px;gap:2px;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+.theme-toggle-opt{font-size:12px;padding:6px 12px;border-radius:16px;color:var(--text-muted);cursor:pointer;transition:background .15s ease,color .15s ease,box-shadow .15s ease;display:flex;align-items:center;gap:5px;}
+.theme-toggle-opt.active{background:var(--accent);color:#111;font-weight:600;box-shadow:0 2px 8px rgba(46,204,113,0.45);}
 
 .avatar-edit{
   position:relative;width:84px;height:84px;border-radius:50%;
