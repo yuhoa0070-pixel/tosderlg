@@ -1,4 +1,5 @@
 import { useAppContext } from '../context/AppContext';
+import LanguageToggle from '../components/shared/LanguageToggle';
 import PersonAvatar from '../components/shared/PersonAvatar';
 
 export default function ProfileView() {
@@ -60,10 +61,7 @@ export default function ProfileView() {
           <path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" />
         </svg>
         <span>{km ? 'ភាសា' : 'Language'}</span>
-        <div className="language-toggle" role="group" aria-label="Language">
-          <button className={state.language === 'en' ? 'active' : ''} onClick={() => dispatch({ type: 'SET_LANGUAGE', language: 'en' })}>EN</button>
-          <button className={state.language === 'km' ? 'active' : ''} onClick={() => dispatch({ type: 'SET_LANGUAGE', language: 'km' })}>ខ្មែរ</button>
-        </div>
+        <LanguageToggle />
       </div>
 
       <div className="profile-row danger" id="menuClear" onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'confirmClear' })}>

@@ -1,4 +1,5 @@
 import { useAppContext } from '../../context/AppContext';
+import LanguageToggle from './LanguageToggle';
 import ThemeToggle from './ThemeToggle';
 
 export default function AppHeader() {
@@ -11,7 +12,10 @@ export default function AppHeader() {
         alt="Waylo"
         className="app-header-logo-img"
       />
-      <ThemeToggle />
+      <div className="app-header-controls">
+        <ThemeToggle />
+        <LanguageToggle />
+      </div>
     </div>
   );
 }
