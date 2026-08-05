@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { geocodeCity, reverseGeocodeCity } from '../../lib/geocode';
-import { getCurrentLocationCoords } from '../../lib/currentLocation';
+import { geocodeCity } from '../../lib/geocode';
 import { dayCount } from '../../lib/tripUtils';
 import type { Trip } from '../../types';
 
@@ -13,22 +12,6 @@ export default function TripForm() {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const [destError, setDestError] = useState('');
-  const [locating, setLocating] = useState(false);
-
-  async function handleUseCurrentLocation() {
-    setLocating(true);
-    setDestError('');
-    const coords = await getCurrentLocationCoords();
-    if (!coords) {
-      setDestError("Couldn't get your location — check location access is allowed for this app");
-      setLocating(false);
-      return;
-    }
-    const place = await reverseGeocodeCity(coords.lat, coords.lng);
-    if (place) setDestination(place);
-    else setDestError("Couldn't figure out a place name for your location — try typing it instead");
-    setLocating(false);
-  }
 
   async function handleCreate() {
     const dest = destination.trim();
@@ -63,23 +46,7 @@ export default function TripForm() {
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <p className="eyebrow" style={{ margin: 0 }}>
-          Destination
-        </p>
-        <span
-          onClick={locating ? undefined : handleUseCurrentLocation}
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: locating ? 'var(--text-muted)' : 'var(--accent)',
-            cursor: locating ? 'default' : 'pointer',
-            marginBottom: 4,
-          }}
-        >
-          {locating ? 'Locating…' : '📍 Use my current location'}
-        </span>
-      </div>
+      <p className="eyebrow">Destination</p>
       <input
         type="text"
         id="destination"
