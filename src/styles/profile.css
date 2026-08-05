@@ -1,9 +1,6 @@
 .profile-row{padding:15px 4px;font-size:16px;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
 .profile-row svg{flex-shrink:0;}
 .profile-row.danger{color:var(--danger);}
-.language-row>span{flex:1;}
-.language-mode-button{border:0;background:var(--card-hover);font:inherit;font-size:18px;line-height:1;}
-
 .avatar-edit{
   position:relative;width:84px;height:84px;border-radius:50%;
   cursor:pointer;

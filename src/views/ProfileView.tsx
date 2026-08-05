@@ -1,5 +1,4 @@
 import { useAppContext } from '../context/AppContext';
-import LanguageToggle from '../components/shared/LanguageToggle';
 import PersonAvatar from '../components/shared/PersonAvatar';
 
 export default function ProfileView() {
@@ -53,15 +52,6 @@ export default function ProfileView() {
           <circle cx="12" cy="14" r="1.4" fill="currentColor" stroke="none" />
         </svg>
         <span>{km ? 'ដំណើររបស់ខ្ញុំ' : 'My trips'}</span>
-      </div>
-
-      <div className="profile-row language-row">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18" />
-        </svg>
-        <span>{km ? 'ភាសា' : 'Language'}</span>
-        <LanguageToggle />
       </div>
 
       <div className="profile-row danger" id="menuClear" onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'confirmClear' })}>
