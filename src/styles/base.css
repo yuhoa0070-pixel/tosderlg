@@ -15,7 +15,7 @@ input[type=date]{-webkit-appearance:none;appearance:none;min-height:44px;}
 input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 
-.btn{width:100%;padding:13px;border-radius:10px;border:none;font-family:'Comic Neue',sans-serif;font-weight:500;font-size:16px;cursor:pointer;text-align:center;}
+.btn{width:100%;padding:13px;border-radius:10px;border:none;font-family:'Comic Neue',sans-serif;font-weight:700;font-size:16px;cursor:pointer;text-align:center;}
 .btn-primary{background:var(--accent);color:#000;}
 .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-secondary);}
 .btn-danger{background:var(--danger);color:#fff;}

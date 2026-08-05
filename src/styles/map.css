@@ -3,8 +3,17 @@
   border-radius:10px;padding:8px 12px;margin:0 0 14px;
 }
 .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;overflow-x:auto;}
-.chip{font-size:15px;padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text-secondary);cursor:pointer;user-select:none;white-space:nowrap;transition:all .15s;}
+.chip{position:relative;font-size:15px;padding:7px 32px 7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text-secondary);cursor:pointer;user-select:none;white-space:nowrap;transition:all .15s;}
 .chip.active{background:var(--white);border-color:var(--white);color:#111;}
+.chip-close{
+  position:absolute;top:50%;right:7px;transform:translateY(-50%);
+  width:22px;height:22px;padding:0;border:0;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;color:currentColor;font:700 18px/1 'Comic Neue',sans-serif;
+  cursor:pointer;opacity:.7;
+}
+.chip-close:hover,.chip-close:focus-visible{background:rgba(127,127,127,.16);opacity:1;}
+.chip-close:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
 
 .map-frame{height:220px;border-radius:16px;background:var(--card);border:1px solid var(--border);position:relative;margin-bottom:16px;overflow:hidden;}
 .map-stats-pill{
