@@ -157,6 +157,14 @@ body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header
 
 .trip-swipe-shell{position:relative;overflow:hidden;border-radius:18px;margin-bottom:12px;background:var(--danger);}
 .trip-swipe-shell.no-delete{background:transparent;}
+#tripList{
+  display:grid;grid-auto-flow:column;grid-auto-columns:100%;align-items:stretch;gap:12px;
+  overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;padding:2px 1px 6px;
+}
+#tripList::-webkit-scrollbar{display:none;}
+#tripList .trip-swipe-shell{height:100%;min-width:0;margin-bottom:0;scroll-snap-align:start;scroll-snap-stop:always;}
+#tripList .trip-card{height:100%;touch-action:auto;}
 .trip-card-delete-action{
   position:absolute;inset:0 0 0 auto;width:88px;border:0;background:var(--danger);color:#fff;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
