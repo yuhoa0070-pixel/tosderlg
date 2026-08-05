@@ -156,6 +156,7 @@ body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header
 .mc-dot.active{background:var(--accent);width:16px;border-radius:3px;}
 
 .trip-swipe-shell{position:relative;overflow:hidden;border-radius:18px;margin-bottom:12px;background:var(--danger);}
+.trip-swipe-shell.no-delete{background:transparent;}
 .trip-card-delete-action{
   position:absolute;inset:0 0 0 auto;width:88px;border:0;background:var(--danger);color:#fff;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;

@@ -7,7 +7,8 @@ interface TripCardProps {
   trip: Trip;
   active: boolean;
   onSelect: (id: number) => void;
-  onDelete: (id: number) => void;
+  allowDelete?: boolean;
+  onDelete?: (id: number) => void;
 }
 
 function formatTripSchedule(trip: Trip, km: boolean) {
@@ -30,7 +31,7 @@ function formatTripSchedule(trip: Trip, km: boolean) {
   return `${range} · ${duration}`;
 }
 
-export default function TripCard({ trip, active, onSelect, onDelete }: TripCardProps) {
+export default function TripCard({ trip, active, onSelect, allowDelete = false, onDelete }: TripCardProps) {
   const { state } = useAppContext();
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -51,7 +52,7 @@ export default function TripCard({ trip, active, onSelect, onDelete }: TripCardP
   }
 
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    if (event.button !== 0) return;
+    if (!allowDelete || event.button !== 0) return;
     dragStartRef.current = { x: event.clientX, y: event.clientY, offset: swipeOffsetRef.current };
     draggedRef.current = false;
     setDragging(true);
@@ -59,7 +60,7 @@ export default function TripCard({ trip, active, onSelect, onDelete }: TripCardP
   }
 
   function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!dragging) return;
+    if (!allowDelete || !dragging) return;
     const deltaX = event.clientX - dragStartRef.current.x;
     const deltaY = event.clientY - dragStartRef.current.y;
 
@@ -74,7 +75,7 @@ export default function TripCard({ trip, active, onSelect, onDelete }: TripCardP
   }
 
   function finishSwipe(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!dragging) return;
+    if (!allowDelete || !dragging) return;
     setDragging(false);
     updateSwipeOffset(swipeOffsetRef.current < -44 ? -88 : 0);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
@@ -105,18 +106,20 @@ export default function TripCard({ trip, active, onSelect, onDelete }: TripCardP
     : '';
 
   return (
-    <div className="trip-swipe-shell">
-      <button
-        type="button"
-        className="trip-card-delete-action"
-        aria-label={km ? `លុបដំណើរទៅ ${trip.destination}` : `Delete trip to ${trip.destination}`}
-        onClick={() => onDelete(trip.id)}
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" />
-        </svg>
-        <span>{km ? 'លុប' : 'Delete'}</span>
-      </button>
+    <div className={`trip-swipe-shell${allowDelete ? '' : ' no-delete'}`}>
+      {allowDelete && onDelete && (
+        <button
+          type="button"
+          className="trip-card-delete-action"
+          aria-label={km ? `លុបដំណើរទៅ ${trip.destination}` : `Delete trip to ${trip.destination}`}
+          onClick={() => onDelete(trip.id)}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" />
+          </svg>
+          <span>{km ? 'លុប' : 'Delete'}</span>
+        </button>
+      )}
       <div
         className={`trip-card${active ? ' active' : ''}${dragging ? ' dragging' : ''}`}
         style={{ transform: `translateX(${swipeOffset}px)` }}

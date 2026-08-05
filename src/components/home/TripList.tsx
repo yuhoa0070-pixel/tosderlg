@@ -28,7 +28,6 @@ export default function TripList() {
             trip={trip}
             active={trip.id === state.currentTripId}
             onSelect={(id) => dispatch({ type: 'LOAD_TRIP', tripId: id })}
-            onDelete={(id) => dispatch({ type: 'DELETE_TRIP', tripId: id })}
           />
         ))}
       </div>
