@@ -1,6 +1,5 @@
 import { useAppContext } from '../context/AppContext';
 import PersonAvatar from '../components/shared/PersonAvatar';
-import ThemeToggle from '../components/shared/ThemeToggle';
 
 export default function ProfileView() {
   const { state, dispatch } = useAppContext();
@@ -43,15 +42,6 @@ export default function ProfileView() {
           <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
         </svg>
         <span>Edit profile</span>
-      </div>
-
-      <div className="profile-row" style={{ cursor: 'default' }}>
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="4.2" />
-          <path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
-        </svg>
-        <span style={{ flex: 1 }}>Appearance</span>
-        <ThemeToggle />
       </div>
 
       <div className="profile-row" id="menuMyTrips" onClick={() => dispatch({ type: 'NAVIGATE', view: 'mytrips' })}>
