@@ -10,6 +10,26 @@ interface TripCardProps {
   onDelete: (id: number) => void;
 }
 
+function formatTripSchedule(trip: Trip, km: boolean) {
+  const days = Math.max(trip.tripDays.length, 1);
+  const duration = km ? `${days} ថ្ងៃ` : `${days} day${days === 1 ? '' : 's'}`;
+  if (!trip.startDate || !trip.endDate) return trip.label || duration;
+
+  const start = new Date(`${trip.startDate}T00:00:00`);
+  const end = new Date(`${trip.endDate}T00:00:00`);
+  const includeYear = start.getFullYear() !== end.getFullYear();
+  const formatter = new Intl.DateTimeFormat(km ? 'km-KH' : 'en-US', {
+    month: 'short',
+    day: 'numeric',
+    ...(includeYear ? { year: 'numeric' } : {}),
+  });
+  const range = start.getTime() === end.getTime()
+    ? formatter.format(start)
+    : `${formatter.format(start)} – ${formatter.format(end)}`;
+
+  return `${range} · ${duration}`;
+}
+
 export default function TripCard({ trip, active, onSelect, onDelete }: TripCardProps) {
   const { state } = useAppContext();
   const [swipeOffset, setSwipeOffset] = useState(0);
@@ -19,6 +39,7 @@ export default function TripCard({ trip, active, onSelect, onDelete }: TripCardP
   const draggedRef = useRef(false);
   const alert = getUpcomingTripAlert(trip);
   const km = state.language === 'km';
+  const scheduleText = formatTripSchedule(trip, km);
 
   function updateSwipeOffset(next: number) {
     swipeOffsetRef.current = next;
@@ -101,14 +122,19 @@ export default function TripCard({ trip, active, onSelect, onDelete }: TripCardP
         onPointerCancel={finishSwipe}
         onClick={handleCardClick}
       >
-        <div className="trip-card-body" style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ flex: 1 }}>
+        <div className="trip-card-body">
+          <div className="trip-card-heading">
             <div className="trip-card-dest">{trip.destination}</div>
-            <div className="trip-card-label">{trip.label}</div>
+            <div className="trip-card-alerts">
+              {alert && <span className={`trip-card-alert-badge ${alert.tone}`}>{alertText}</span>}
+              {isPastTrip(trip) && <span className="trip-card-past-badge">{km ? 'បានបញ្ចប់' : 'Past'}</span>}
+            </div>
           </div>
-          <div className="trip-card-alerts">
-            {alert && <span className={`trip-card-alert-badge ${alert.tone}`}>{alertText}</span>}
-            {isPastTrip(trip) && <span className="trip-card-past-badge">{km ? 'បានបញ្ចប់' : 'Past'}</span>}
+          <div className="trip-card-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z" />
+            </svg>
+            <span>{scheduleText}</span>
           </div>
         </div>
       </div>
