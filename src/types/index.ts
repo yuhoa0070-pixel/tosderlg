@@ -83,4 +83,6 @@ export interface AppState {
   viewingPhoto: ViewingPhoto | null;
   /** Coordinates from a tap-to-add-stop on the map, consumed by StopFormModal. */
   pendingTapCoords: GeoCenter | null;
+  /** Coordinates a newly pasted-link stop should fly to, consumed by MapView. */
+  pendingFlyToCoords: GeoCenter | null;
 }

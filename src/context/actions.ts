@@ -8,6 +8,7 @@ export type Action =
   | { type: 'SET_ACTIVE_MOMENT_GROUP'; group: MomentGroup | null }
   | { type: 'SET_VIEWING_PHOTO'; photo: ViewingPhoto | null }
   | { type: 'SET_PENDING_TAP_COORDS'; coords: GeoCenter | null }
+  | { type: 'SET_PENDING_FLY_TO_COORDS'; coords: GeoCenter | null }
   | { type: 'OPEN_MODAL'; modal: ModalName; editingStopIndex?: number | null }
   | { type: 'CLOSE_MODAL' }
   | { type: 'CREATE_TRIP'; trip: Trip }

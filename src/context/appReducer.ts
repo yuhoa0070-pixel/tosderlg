@@ -17,6 +17,7 @@ export const initialState: AppState = {
   activeMomentGroup: null,
   viewingPhoto: null,
   pendingTapCoords: null,
+  pendingFlyToCoords: null,
 };
 
 function mapTrip(state: AppState, tripId: number | null, fn: (trip: Trip) => Trip): Trip[] {
@@ -64,6 +65,9 @@ export function appReducer(state: AppState, action: Action): AppState {
 
     case 'SET_PENDING_TAP_COORDS':
       return { ...state, pendingTapCoords: action.coords };
+
+    case 'SET_PENDING_FLY_TO_COORDS':
+      return { ...state, pendingFlyToCoords: action.coords };
 
     case 'OPEN_MODAL':
       return {

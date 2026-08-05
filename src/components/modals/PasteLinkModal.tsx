@@ -79,6 +79,7 @@ export default function PasteLinkModal() {
       },
     });
     dispatch({ type: 'SET_SELECTED_STOP', index: stops.length });
+    dispatch({ type: 'SET_PENDING_FLY_TO_COORDS', coords: { lat: coords.lat, lng: coords.lng } });
 
     setBusy(false);
     setBusyLabel('Add stop');

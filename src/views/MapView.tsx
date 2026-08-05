@@ -32,13 +32,24 @@ export default function MapView() {
     dispatch({ type: 'OPEN_MODAL', modal: 'stopForm', editingStopIndex: null });
   }
 
-  const { mapRef, invalidateSize, recenterToStops, tileError } = useLeafletMap(containerRef, {
+  const { mapRef, invalidateSize, recenterToStops, flyToStop, tileError } = useLeafletMap(containerRef, {
     center: activeTrip?.center ?? DEFAULT_CENTER,
     stops,
     selectedStop,
     onSelectStop: handleSelectStop,
     onMapClick: handleMapClick,
   });
+
+  // After adding a stop via "Paste a Google Maps link", fly the map to it so
+  // the user immediately sees where their link landed, instead of staying
+  // wherever the map happened to be pointed.
+  useEffect(() => {
+    const coords = state.pendingFlyToCoords;
+    if (!coords) return;
+    flyToStop(coords.lat, coords.lng);
+    dispatch({ type: 'SET_PENDING_FLY_TO_COORDS', coords: null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.pendingFlyToCoords]);
 
   const { active: liveActive, toggle: toggleLiveLocation } = useLiveLocation(mapRef, setLocationNotice);
 

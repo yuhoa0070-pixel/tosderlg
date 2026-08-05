@@ -76,6 +76,7 @@ interface UseLeafletMapResult {
   mapRef: RefObject<L.Map | null>;
   invalidateSize: () => void;
   recenterToStops: () => void;
+  flyToStop: (lat: number, lng: number) => void;
   tileError: boolean;
 }
 
@@ -174,5 +175,9 @@ export function useLeafletMap(
     if (latlngs.length) map.fitBounds(latlngs, { padding: [30, 30] });
   }
 
-  return { mapRef, invalidateSize, recenterToStops, tileError };
+  function flyToStop(lat: number, lng: number) {
+    mapRef.current?.flyTo([lat, lng], 16, { animate: true, duration: 0.8 });
+  }
+
+  return { mapRef, invalidateSize, recenterToStops, flyToStop, tileError };
 }
