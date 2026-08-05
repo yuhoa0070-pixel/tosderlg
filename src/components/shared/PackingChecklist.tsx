@@ -9,7 +9,7 @@ export default function PackingChecklist({ trip }: { trip: Trip }) {
   const km = state.language === 'km';
   const items = trip.packingItems ?? [];
   const remaining = items.filter((item) => !item.packed).length;
-  const emojiOptions = ['🎒', '👕', '👟', '🪥', '💊', '🔌', '📷', '🛂', '👩', '👨'];
+  const emojiOptions = ['🎒', '👕', '👟', '🪥', '💊', '🔌', '📷', '🛂', '👗', '👔'];
   const suggestions = km
     ? [{ text: 'លិខិតឆ្លងដែន', emoji: '🛂' }, { text: 'ឆ្នាំងសាក', emoji: '🔌' }, { text: 'ថ្នាំពេទ្យ', emoji: '💊' }]
     : [{ text: 'Passport', emoji: '🛂' }, { text: 'Charger', emoji: '🔌' }, { text: 'Medication', emoji: '💊' }];
