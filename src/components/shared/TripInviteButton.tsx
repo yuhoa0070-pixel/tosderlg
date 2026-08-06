@@ -85,7 +85,8 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
       }
 
       await copyText(`${shareText}\n${appUrl}`);
-      setStatus(km ? 'បានចម្លងលេខកូដបន្ទប់' : 'Room code copied');
+      setStatus('');
+      setCodeCopied(true);
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return;
       setStatus(error instanceof Error ? error.message : km ? 'មិនអាចបង្កើតបន្ទប់បានទេ' : 'Could not create the trip room');
