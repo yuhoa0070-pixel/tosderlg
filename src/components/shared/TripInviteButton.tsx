@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { getTelegramUser, getTelegramWebApp, telegramUserDisplayName } from '../../lib/telegram';
 import { saveTripRoom } from '../../lib/tripRoom';
@@ -22,10 +22,33 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
   const { state, dispatch } = useAppContext();
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
   const km = state.language === 'km';
+
+  useEffect(() => {
+    if (!codeCopied) return;
+    const timer = window.setTimeout(() => {
+      setCodeCopied(false);
+      setStatus('');
+    }, 2400);
+    return () => window.clearTimeout(timer);
+  }, [codeCopied]);
+
+  async function copyRoomCode() {
+    if (!trip.roomCode) return;
+    try {
+      await copyText(trip.roomCode);
+      setCodeCopied(true);
+      setStatus(km ? 'បានចម្លងកូដ — ផ្ញើទៅមិត្តរបស់អ្នក' : 'Code copied — send it to your friend');
+    } catch {
+      setCodeCopied(false);
+      setStatus(km ? 'មិនអាចចម្លងកូដបានទេ' : 'Could not copy the code');
+    }
+  }
 
   async function inviteFriends() {
     if (busy) return;
+    setCodeCopied(false);
     setStatus('');
     setBusy(true);
     try {
@@ -92,10 +115,27 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
     <div className="trip-share-panel">
       <div className="trip-share-actions">
         {trip.roomCode && (
-          <div className="trip-room-code" aria-label={`Trip room code ${trip.roomCode}`}>
-            <span>{km ? 'កូដ' : 'Code'}</span>
+          <button
+            type="button"
+            className={`trip-room-code${codeCopied ? ' copied' : ''}`}
+            aria-label={km ? `ចម្លងកូដបន្ទប់ ${trip.roomCode}` : `Copy trip room code ${trip.roomCode}`}
+            onClick={copyRoomCode}
+          >
+            <span className="trip-room-code-label">{km ? 'កូដ' : 'Code'}</span>
             <strong>{trip.roomCode}</strong>
-          </div>
+            <span className="trip-room-copy-icon" aria-hidden="true">
+              {codeCopied ? (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m5 12 4 4L19 6" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="9" width="11" height="11" rx="2" />
+                  <path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3" />
+                </svg>
+              )}
+            </span>
+          </button>
         )}
         <button type="button" className="trip-invite-button" onClick={inviteFriends} disabled={busy}>
           <svg className="trip-invite-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -105,7 +145,7 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
           <span>{busy ? (km ? 'កំពុងបង្កើត…' : 'Creating…') : (km ? 'អញ្ជើញមិត្ត' : 'Invite friend')}</span>
         </button>
       </div>
-      {status && <p className="trip-share-status" role="status">{status}</p>}
+      {status && <p className={`trip-share-status${codeCopied ? ' copy-alert' : ''}`} role="status">{status}</p>}
     </div>
   );
 }
