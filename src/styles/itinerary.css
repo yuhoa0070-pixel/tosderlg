@@ -48,13 +48,12 @@
 .trip-share-status{margin:6px 2px 0;color:var(--accent);font-size:12px;font-weight:700;text-align:right;}
 .trip-members{min-width:0;display:flex;justify-content:flex-start;margin-top:10px;overflow:hidden;}
 .shared-trip-banner+.trip-members{margin-top:-5px;margin-bottom:16px;}
-.trip-members-avatar-stack{max-width:100%;display:flex;align-items:center;overflow-x:auto;overscroll-behavior-x:contain;padding:4px 14px 4px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.trip-members-avatar-stack{max-width:100%;display:flex;align-items:center;gap:10px;overflow-x:auto;overscroll-behavior-x:contain;padding:5px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
 .trip-members-avatar-stack::-webkit-scrollbar{display:none;}
 .trip-member-avatar{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto;border:1px solid rgba(46,204,113,.22);border-radius:50%;background:rgba(46,204,113,.1);color:var(--accent);font-size:11px;font-weight:800;}
 .trip-member-avatar.owner{border-color:var(--accent);box-shadow:0 0 0 2px rgba(46,204,113,.1);}
-.trip-member-avatar.compact{width:38px;height:38px;border:3px solid var(--bg);box-shadow:0 0 0 2px rgba(46,204,113,.82),0 3px 9px rgba(18,34,24,.15);}
+.trip-member-avatar.compact{width:46px;height:46px;border:3px solid var(--bg);font-size:13px;box-shadow:0 0 0 2px rgba(46,204,113,.82),0 3px 9px rgba(18,34,24,.15);}
 .trip-member-avatar.compact.owner{border-color:var(--bg);box-shadow:0 0 0 2px var(--accent),0 3px 9px rgba(18,34,24,.15);}
-.trip-member-avatar.compact+.trip-member-avatar.compact{margin-left:-11px;}
 .trip-member-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .trip-copy-toast{
   position:fixed;top:calc(env(safe-area-inset-top) + 16px);left:50%;z-index:1000;
