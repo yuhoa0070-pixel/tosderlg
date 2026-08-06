@@ -35,7 +35,8 @@
   .theme-mode-button[data-theme="dark"]:hover .theme-sun,.theme-mode-button[data-theme="light"]:hover .theme-moon{opacity:1;transform:scale(1);}
 }
 .app-header-controls .language-mode-button{font-size:17px;line-height:1;}
-.mode-flag{display:block;transform-origin:center;animation:modeIconSwap 280ms cubic-bezier(.2,.8,.2,1);}
+.mode-flag{width:21px;height:15px;display:block;overflow:hidden;border-radius:3px;transform-origin:center;box-shadow:0 1px 3px rgba(0,0,0,.22);animation:modeIconSwap 280ms cubic-bezier(.2,.8,.2,1);}
+.mode-flag svg{width:100%;height:100%;display:block;}
 @keyframes modeIconSwap{
   0%{opacity:0;transform:rotate(-28deg) scale(.45);}
   65%{opacity:1;transform:rotate(6deg) scale(1.13);}
