@@ -10,7 +10,7 @@
   color:var(--accent);font-size:12px;font-weight:800;
 }
 .map-day-tabs{margin-bottom:12px;}
-.map-day-tabs .day-tab{border:1px solid var(--glass-border);font-family:inherit;font-weight:700;}
+.map-day-tabs .day-tab{border:1px solid var(--glass-border);font-family:inherit;}
 .map-itinerary-list{display:grid;gap:8px;}
 .map-itinerary-item{border-radius:12px;cursor:pointer;}
 .map-itinerary-item .stop-card{margin:0;transition:outline-color .18s ease,background .18s ease;}
