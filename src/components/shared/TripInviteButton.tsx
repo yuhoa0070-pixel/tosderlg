@@ -144,12 +144,19 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
             </span>
           </button>
         )}
-        <button type="button" className="trip-invite-button" onClick={inviteFriends} disabled={busy}>
+        <button
+          type="button"
+          className="trip-invite-button"
+          onClick={inviteFriends}
+          disabled={busy}
+          aria-busy={busy}
+          aria-label={busy ? (km ? 'កំពុងបង្កើតការអញ្ជើញ' : 'Creating invitation') : (km ? 'អញ្ជើញមិត្ត' : 'Invite friend')}
+          title={km ? 'អញ្ជើញមិត្ត' : 'Invite friend'}
+        >
           <svg className="trip-invite-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="9" cy="8" r="3" />
             <path d="M3.5 19c0-3.4 2.3-5.5 5.5-5.5s5.5 2.1 5.5 5.5M17 8v6M14 11h6" />
           </svg>
-          <span>{busy ? (km ? 'កំពុងបង្កើត…' : 'Creating…') : (km ? 'អញ្ជើញមិត្ត' : 'Invite friend')}</span>
         </button>
       </div>
       {codeCopied &&
