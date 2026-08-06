@@ -9,6 +9,7 @@ import { keyFor } from '../lib/tripUtils';
 import { DEFAULT_CENTER } from '../lib/constants';
 import MemoryGrid from '../components/shared/MemoryGrid';
 import StopCard from '../components/shared/StopCard';
+import TripSummaryHeader from '../components/shared/TripSummaryHeader';
 
 export default function MapView() {
   const { state, dispatch } = useAppContext();
@@ -168,6 +169,8 @@ export default function MapView() {
 
   return (
     <section id="view-map" className="active">
+      <TripSummaryHeader trip={activeTrip} />
+
       <div className="itinerary-mode-tabs" aria-label={state.language === 'km' ? 'ជ្រើសរើសទិដ្ឋភាព' : 'Choose itinerary view'}>
         <button type="button" onClick={() => dispatch({ type: 'NAVIGATE', view: 'itinerary' })}>
           {state.language === 'km' ? 'ផែនការ' : 'Plan'}

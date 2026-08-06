@@ -3,6 +3,7 @@ import { useActiveTrip } from '../hooks/useActiveTrip';
 import { isPastTrip } from '../lib/tripUtils';
 import StopCard from '../components/shared/StopCard';
 import TripInviteButton from '../components/shared/TripInviteButton';
+import TripSummaryHeader from '../components/shared/TripSummaryHeader';
 
 export default function ItineraryView() {
   const { state, dispatch } = useAppContext();
@@ -14,13 +15,7 @@ export default function ItineraryView() {
 
   return (
     <section id="view-itinerary" className="active">
-      <p className="eyebrow" id="itinEyebrow">
-        Your itinerary
-      </p>
-      <h1 id="itineraryTitle">{activeTrip ? activeTrip.destination.split(',')[0] : ''}</h1>
-      <p className="sub" id="itinDates">
-        {activeTrip ? activeTrip.label : '—'}
-      </p>
+      <TripSummaryHeader trip={activeTrip} />
 
       {activeTrip && <TripInviteButton trip={activeTrip} />}
 
