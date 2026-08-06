@@ -40,10 +40,10 @@ export default function PasteLinkModal() {
     if (!coords && isShortMapsLink(trimmed)) {
       setBusy(true);
       setBusyLabel('Resolving link…');
-      const expanded = await resolveShortLink(trimmed);
-      if (expanded) {
-        finalLink = expanded;
-        coords = parseGoogleMapsLink(expanded);
+      const resolved = await resolveShortLink(trimmed);
+      if (resolved) {
+        finalLink = resolved.url;
+        coords = resolved.coords;
       }
       setBusy(false);
       setBusyLabel('Add stop');

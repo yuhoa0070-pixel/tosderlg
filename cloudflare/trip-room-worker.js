@@ -348,6 +348,50 @@ function isExpandedGoogleMapsUrl(value) {
   }
 }
 
+function googleMapsCoordinates(value) {
+  if (typeof value !== 'string' || !value) return null;
+  let normalized = value.trim();
+  try {
+    normalized = decodeURIComponent(normalized);
+  } catch {
+    // Keep the original value when Google includes a malformed escape.
+  }
+
+  const number = '(-?\\d{1,3}(?:\\.\\d+)?)';
+  const valid = (latValue, lngValue) => {
+    const lat = Number(latValue);
+    const lng = Number(lngValue);
+    return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
+      ? { lat, lng }
+      : null;
+  };
+  const directPatterns = [
+    new RegExp(`[?&]destination=\\(?(?:loc:)?${number}\\s*,\\s*${number}`, 'i'),
+    new RegExp(`[?&](?:q|query|ll|center)=\\(?(?:loc:)?${number}\\s*,\\s*${number}`, 'i'),
+    new RegExp(`/place/${number},${number}(?:[/@?]|$)`, 'i'),
+  ];
+  for (const pattern of directPatterns) {
+    const match = normalized.match(pattern);
+    const coords = match ? valid(match[1], match[2]) : null;
+    if (coords) return coords;
+  }
+
+  const placeMatches = Array.from(normalized.matchAll(new RegExp(`!3d${number}!4d${number}`, 'gi')));
+  for (let index = placeMatches.length - 1; index >= 0; index -= 1) {
+    const coords = valid(placeMatches[index][1], placeMatches[index][2]);
+    if (coords) return coords;
+  }
+
+  const reversedMatches = Array.from(normalized.matchAll(new RegExp(`!2d${number}!3d${number}`, 'gi')));
+  for (let index = reversedMatches.length - 1; index >= 0; index -= 1) {
+    const coords = valid(reversedMatches[index][2], reversedMatches[index][1]);
+    if (coords) return coords;
+  }
+
+  const camera = normalized.match(new RegExp(`@${number},${number}`, 'i'));
+  return camera ? valid(camera[1], camera[2]) : null;
+}
+
 function googleMapsUrlFromRedirect(value, baseUrl) {
   try {
     const candidate = new URL(value, baseUrl);
@@ -440,7 +484,11 @@ async function resolveMapLink(request, origin) {
     if (!expandedUrl) {
       return sendJson(origin, { error: 'Google Maps did not return a usable location.' }, 422);
     }
-    return sendJson(origin, { url: expandedUrl });
+    const coords = googleMapsCoordinates(expandedUrl);
+    if (!coords) {
+      return sendJson(origin, { error: 'Google Maps did not include coordinates for this place.' }, 422);
+    }
+    return sendJson(origin, { url: expandedUrl, lat: coords.lat, lng: coords.lng });
   } catch (error) {
     console.error(JSON.stringify({
       message: 'Google Maps short-link resolution failed',

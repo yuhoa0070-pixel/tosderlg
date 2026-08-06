@@ -113,11 +113,11 @@ export default function StopFormModal() {
 
     if (finalMapLink && !parsedCoords && isShortMapsLink(finalMapLink)) {
       setBusy(true);
-      const expanded = await resolveShortLink(finalMapLink);
-      if (expanded) {
-        finalMapLink = expanded;
-        parsedCoords = parseGoogleMapsLink(expanded);
-        setMapLink(expanded);
+      const resolved = await resolveShortLink(finalMapLink);
+      if (resolved) {
+        finalMapLink = resolved.url;
+        parsedCoords = resolved.coords;
+        setMapLink(resolved.url);
       }
       setBusy(false);
     }
