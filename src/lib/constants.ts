@@ -46,7 +46,7 @@ export const heroGalleryData: HeroGalleryCard[] = [
   {
     label: 'Mountain air',
     seed: 'mountain-air',
-    image: '/mountain-air.png',
+    image: '/mountain-air-camp.webp',
     icon: '<path d="M3 19l6-10 4 6 2-3 6 7z"/>',
   },
   {

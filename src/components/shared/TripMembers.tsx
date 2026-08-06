@@ -39,9 +39,6 @@ export default function TripMembers({ members, language }: { members: TripMember
           ))}
           {remainingMembers > 0 && <span className="trip-member-more">+{remainingMembers}</span>}
         </span>
-        <svg className="trip-members-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="m7 10 5 5 5-5" />
-        </svg>
       </button>
 
       {open && (
