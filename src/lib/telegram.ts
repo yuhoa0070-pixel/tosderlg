@@ -113,6 +113,7 @@ export function hasTelegramLocationManager(): boolean {
 }
 
 const LOCATION_MANAGER_INIT_TIMEOUT_MS = 2500;
+const LOCATION_REQUEST_TIMEOUT_MS = 12000;
 
 // Some client versions log "LocationManager is not supported" and never
 // invoke init()'s callback at all, rather than calling back to report
@@ -125,10 +126,15 @@ function ensureLocationManagerInited(manager: TelegramLocationManager): Promise<
       return;
     }
     const timer = setTimeout(resolve, LOCATION_MANAGER_INIT_TIMEOUT_MS);
-    manager.init(() => {
+    try {
+      manager.init(() => {
+        clearTimeout(timer);
+        resolve();
+      });
+    } catch {
       clearTimeout(timer);
       resolve();
-    });
+    }
   });
 }
 
@@ -146,18 +152,31 @@ export async function getTelegramLocation(): Promise<TelegramLocationResult> {
   if (!manager.isLocationAvailable) return { status: 'unavailable' };
 
   return new Promise((resolve) => {
-    manager.getLocation((data) => {
-      if (data) {
-        resolve({
-          status: 'success',
-          lat: data.latitude,
-          lng: data.longitude,
-          accuracy: typeof data.horizontal_accuracy === 'number' ? data.horizontal_accuracy : null,
-        });
-        return;
-      }
-      resolve(manager.isAccessRequested && !manager.isAccessGranted ? { status: 'denied' } : { status: 'unavailable' });
-    });
+    let settled = false;
+    const finish = (result: TelegramLocationResult) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+    const timer = setTimeout(() => finish({ status: 'unavailable' }), LOCATION_REQUEST_TIMEOUT_MS);
+
+    try {
+      manager.getLocation((data) => {
+        if (data) {
+          finish({
+            status: 'success',
+            lat: data.latitude,
+            lng: data.longitude,
+            accuracy: typeof data.horizontal_accuracy === 'number' ? data.horizontal_accuracy : null,
+          });
+          return;
+        }
+        finish(manager.isAccessRequested && !manager.isAccessGranted ? { status: 'denied' } : { status: 'unavailable' });
+      });
+    } catch {
+      finish({ status: 'unavailable' });
+    }
   });
 }
 

@@ -4,7 +4,7 @@ import { meDotIcon } from './useLeafletMap';
 import { getTelegramLocation, hasTelegramLocationManager, openTelegramLocationSettings } from '../lib/telegram';
 
 const TELEGRAM_POLL_MS = 4000;
-const MAX_USABLE_ACCURACY_METERS = 750;
+const PRECISE_LOCATION_THRESHOLD_METERS = 750;
 
 interface AcceptedPosition {
   lat: number;
@@ -18,6 +18,9 @@ function validCoordinates(latitude: number, longitude: number): boolean {
 
 function accuracyMessage(accuracy: number | null): string {
   if (accuracy === null) return 'Tracking your location';
+  if (accuracy > PRECISE_LOCATION_THRESHOLD_METERS) {
+    return `Tracking an approximate location · accurate to about ${Math.round(accuracy)} m. Enable Precise Location for a better result.`;
+  }
   return `Tracking your location · accurate to about ${Math.max(1, Math.round(accuracy))} m`;
 }
 
@@ -34,6 +37,8 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
   const [canOpenSettings, setCanOpenSettings] = useState(false);
   const watchIdRef = useRef<number | null>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const trackingRequestedRef = useRef(false);
+  const telegramRequestInFlightRef = useRef(false);
   const meMarkerRef = useRef<L.Marker | null>(null);
   const accuracyCircleRef = useRef<L.Circle | null>(null);
   const lastPositionRef = useRef<AcceptedPosition | null>(null);
@@ -50,19 +55,13 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
       }
 
       const accuracy = rawAccuracy !== null && Number.isFinite(rawAccuracy) && rawAccuracy > 0 ? rawAccuracy : null;
-      if (accuracy !== null && accuracy > MAX_USABLE_ACCURACY_METERS) {
-        onStatusRef.current(
-          `GPS accuracy is too low (${Math.round(accuracy)} m). Move near a window or enable Precise Location.`,
-        );
-        return false;
-      }
 
       const previous = lastPositionRef.current;
       const nextLatLng = L.latLng(latitude, longitude);
       if (previous) {
         const jumpMeters = nextLatLng.distanceTo([previous.lat, previous.lng]);
-        const previousAccuracy = previous.accuracy ?? MAX_USABLE_ACCURACY_METERS;
-        const nextAccuracy = accuracy ?? MAX_USABLE_ACCURACY_METERS;
+        const previousAccuracy = previous.accuracy ?? PRECISE_LOCATION_THRESHOLD_METERS;
+        const nextAccuracy = accuracy ?? PRECISE_LOCATION_THRESHOLD_METERS;
         if (jumpMeters > 3000 && nextAccuracy >= previousAccuracy) {
           onStatusRef.current('Ignoring an inaccurate GPS jump while finding a better signal.');
           return false;
@@ -96,7 +95,16 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
 
       const centerDistance = map.getCenter().distanceTo(nextLatLng);
       if (!hasCenteredRef.current) {
-        map.flyTo(nextLatLng, 16, { animate: true, duration: 0.8 });
+        if (accuracyCircleRef.current && accuracy !== null && accuracy > 100) {
+          map.fitBounds(accuracyCircleRef.current.getBounds(), {
+            padding: [28, 28],
+            maxZoom: 16,
+            animate: true,
+            duration: 0.8,
+          });
+        } else {
+          map.flyTo(nextLatLng, 16, { animate: true, duration: 0.8 });
+        }
         hasCenteredRef.current = true;
       } else if (centerDistance > Math.max(40, (accuracy ?? 30) * 0.75)) {
         map.panTo(nextLatLng, { animate: true, duration: 0.55, easeLinearity: 0.2 });
@@ -127,29 +135,50 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
     }
     lastPositionRef.current = null;
     hasCenteredRef.current = false;
+    trackingRequestedRef.current = false;
+    telegramRequestInFlightRef.current = false;
     setActive(false);
   }, []);
 
   const startBrowserGeolocation = useCallback(() => {
     setCanOpenSettings(false);
     if (!navigator.geolocation) {
+      trackingRequestedRef.current = false;
+      setActive(false);
       onStatusRef.current("Location isn't available in this browser");
       return;
     }
+    trackingRequestedRef.current = true;
     hasCenteredRef.current = false;
     lastPositionRef.current = null;
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      (pos) => applyPosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
-      (error) => {
-        stop();
-        onStatusRef.current(
-          error.code === error.PERMISSION_DENIED
-            ? 'Location access is off. Allow it in your device settings and try again.'
-            : 'Could not get a reliable location. Check that GPS and Precise Location are enabled.',
-        );
-      },
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
-    );
+
+    const beginWatch = (highAccuracy: boolean) => {
+      const watchId = navigator.geolocation.watchPosition(
+        (pos) => applyPosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
+        (error) => {
+          if (watchIdRef.current !== watchId) return;
+          if (error.code === error.PERMISSION_DENIED) {
+            stop();
+            onStatusRef.current('Location access is off. Allow it in your device settings and try again.');
+            return;
+          }
+          if (highAccuracy) {
+            navigator.geolocation.clearWatch(watchId);
+            watchIdRef.current = null;
+            onStatusRef.current('GPS is taking longer than expected. Trying the best available live location…');
+            beginWatch(false);
+            return;
+          }
+          onStatusRef.current('Still waiting for a location. Keep GPS on and move near a window.');
+        },
+        highAccuracy
+          ? { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+          : { enableHighAccuracy: false, maximumAge: 15000, timeout: 30000 },
+      );
+      watchIdRef.current = watchId;
+    };
+
+    beginWatch(true);
     setActive(true);
   }, [applyPosition, stop]);
 
@@ -159,10 +188,14 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
   // first getLocation() call actually succeeds — otherwise it falls back to
   // browser geolocation rather than surfacing an error.
   const startTelegramPolling = useCallback(async () => {
+    trackingRequestedRef.current = true;
+    setActive(true);
     hasCenteredRef.current = false;
     lastPositionRef.current = null;
     const first = await getTelegramLocation();
+    if (!trackingRequestedRef.current) return;
     if (first.status === 'denied') {
+      stop();
       setCanOpenSettings(true);
       onStatusRef.current('Location access is off for Waylo. Open settings to allow it.');
       return;
@@ -172,22 +205,31 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
       return;
     }
     setCanOpenSettings(false);
-    const firstApplied = applyPosition(first.lat, first.lng, first.accuracy);
-    setCanOpenSettings(!firstApplied && first.accuracy !== null && first.accuracy > MAX_USABLE_ACCURACY_METERS);
+    applyPosition(first.lat, first.lng, first.accuracy);
+    setCanOpenSettings(first.accuracy !== null && first.accuracy > PRECISE_LOCATION_THRESHOLD_METERS);
     pollIntervalRef.current = setInterval(async () => {
+      if (telegramRequestInFlightRef.current) return;
+      telegramRequestInFlightRef.current = true;
       const loc = await getTelegramLocation();
+      telegramRequestInFlightRef.current = false;
+      if (!trackingRequestedRef.current || pollIntervalRef.current === null) return;
       if (loc.status === 'success') {
-        const applied = applyPosition(loc.lat, loc.lng, loc.accuracy);
-        setCanOpenSettings(!applied && loc.accuracy !== null && loc.accuracy > MAX_USABLE_ACCURACY_METERS);
+        applyPosition(loc.lat, loc.lng, loc.accuracy);
+        setCanOpenSettings(loc.accuracy !== null && loc.accuracy > PRECISE_LOCATION_THRESHOLD_METERS);
       } else {
-        stop();
         const denied = loc.status === 'denied';
-        setCanOpenSettings(denied);
-        onStatusRef.current(
-          denied
-            ? 'Location access is off for Waylo. Open settings to allow it.'
-            : 'Could not get your location — check location services are available on this device',
-        );
+        if (denied) {
+          stop();
+          setCanOpenSettings(true);
+          onStatusRef.current('Location access is off for Waylo. Open settings to allow it.');
+          return;
+        }
+        if (pollIntervalRef.current !== null) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+        onStatusRef.current('Telegram location paused. Switching to device GPS…');
+        startBrowserGeolocation();
       }
     }, TELEGRAM_POLL_MS);
     setActive(true);
@@ -202,7 +244,7 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
   }, [startTelegramPolling, startBrowserGeolocation]);
 
   const toggle = useCallback(() => {
-    if (watchIdRef.current !== null || pollIntervalRef.current !== null) stop();
+    if (trackingRequestedRef.current) stop();
     else start();
   }, [start, stop]);
 
