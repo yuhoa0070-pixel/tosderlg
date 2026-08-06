@@ -1,101 +1,132 @@
 .travel-background{
-  position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
-  width:100%;max-width:420px;height:var(--tg-viewport-height,100dvh);margin:0 auto;
-  background:#fbf9f2;isolation:isolate;opacity:0;
-  transition:opacity .55s ease;
-}
-body[data-theme="light"] .travel-background{opacity:1;}
-body[data-theme="dark"] .travel-background{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  width:100%;
+  max-width:420px;
+  height:var(--tg-viewport-height,100dvh);
+  margin:0 auto;
+  overflow:hidden;
+  pointer-events:none;
+  isolation:isolate;
   opacity:1;
   background:
-    radial-gradient(ellipse 76% 43% at 48% 23%,rgba(20,126,105,.17),transparent 70%),
-    radial-gradient(ellipse 70% 38% at 82% 88%,rgba(21,107,76,.12),transparent 72%),
-    linear-gradient(165deg,#071523 0%,#081c20 48%,#071c18 76%,#04120f 100%);
+    radial-gradient(ellipse 72% 35% at 48% 24%,rgba(177,232,202,.24),transparent 72%),
+    radial-gradient(ellipse 60% 32% at 90% 83%,rgba(255,214,180,.2),transparent 74%),
+    linear-gradient(168deg,#fffdf8 0%,#faf9f2 58%,#f8f6ee 100%);
+  transition:background .55s ease;
 }
-.travel-background img{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;
-  -webkit-user-drag:none;user-select:none;
+
+body[data-theme="dark"] .travel-background{
+  background:
+    radial-gradient(ellipse 76% 42% at 48% 22%,rgba(28,137,113,.17),transparent 70%),
+    radial-gradient(ellipse 65% 38% at 91% 84%,rgba(55,54,91,.14),transparent 72%),
+    linear-gradient(168deg,#061925 0%,#082534 42%,#0b302f 72%,#071d1d 100%);
 }
-.travel-background-base{
-  z-index:0;clip-path:inset(0 0 25.4% 0);
-}
-body[data-theme="dark"] .travel-background-base{
-  opacity:.34;mix-blend-mode:screen;
-  filter:invert(.94) sepia(.34) saturate(1.8) hue-rotate(95deg) brightness(.42) contrast(1.08);
-}
-.travel-background-clouds{
-  position:absolute;inset:-1.25%;z-index:1;overflow:hidden;will-change:transform;
-}
-.travel-background-hills,
-.travel-background-leaves{
+
+.travel-background-atmosphere{
   position:absolute;
-  top:calc(-1.25% - var(--bottom-nav-height,67px));
-  right:-1.25%;
-  bottom:calc(-1.25% + var(--bottom-nav-height,67px));
-  left:-1.25%;
-  z-index:1;overflow:hidden;will-change:transform;
+  inset:0;
+  z-index:1;
+  width:100%;
+  height:100%;
+  overflow:visible;
 }
-.travel-background-clouds{
-  clip-path:polygon(68% 1%,100% 1%,100% 11%,67% 11%);
-  opacity:.64;animation:travelCloudDrift 8s ease-in-out infinite;
+
+.travel-stars{display:none;fill:#b9f6df;filter:url(#travel-star-glow);}
+body[data-theme="dark"] .travel-stars{display:block;opacity:.34;}
+
+.travel-cloud{
+  fill:#fff;
+  opacity:.42;
+  transform-box:fill-box;
+  transform-origin:center;
+  will-change:transform;
+  animation:travelCloudDrift 10s ease-in-out infinite;
 }
-body[data-theme="dark"] .travel-background-clouds{opacity:.16;mix-blend-mode:screen;}
-body[data-theme="dark"] .travel-background-clouds img{
-  filter:invert(.94) sepia(.28) saturate(1.5) hue-rotate(100deg) brightness(.48);
+.travel-cloud-large{opacity:.3;animation-delay:-5s;}
+body[data-theme="dark"] .travel-cloud{fill:#4d707b;opacity:.14;}
+body[data-theme="dark"] .travel-cloud-large{opacity:.1;}
+
+.travel-background-scenery{
+  position:absolute;
+  right:-1%;
+  bottom:var(--bottom-nav-height,67px);
+  left:-1%;
+  z-index:2;
+  width:102%;
+  height:32%;
+  overflow:visible;
 }
-.travel-background-hills{
-  clip-path:polygon(0 73%,100% 73%,100% 87%,88% 87%,83% 100%,17% 100%,12% 87%,0 87%);
-  animation:travelHillParallax 8s ease-in-out infinite;
+
+.travel-hills{
+  transform-box:fill-box;
+  transform-origin:center bottom;
+  will-change:transform;
 }
-body[data-theme="dark"] .travel-background-hills{opacity:.9;mix-blend-mode:screen;}
-body[data-theme="dark"] .travel-background-hills img{
-  filter:invert(.94) sepia(.6) saturate(2.25) hue-rotate(91deg) brightness(.62) contrast(1.08);
+.travel-hills-rear{opacity:.72;animation:travelHillRear 12s ease-in-out infinite;}
+.travel-hills-middle{opacity:.86;animation:travelHillMiddle 14s ease-in-out infinite;}
+.travel-hills-front{animation:travelHillFront 16s ease-in-out infinite;}
+
+.travel-hill-rear-start{stop-color:#dcefe4;}
+.travel-hill-rear-end{stop-color:#cadfd8;}
+.travel-hill-mid-start{stop-color:#c5e2cf;}
+.travel-hill-mid-end{stop-color:#acd4c0;}
+.travel-hill-front-start{stop-color:#afd9bd;}
+.travel-hill-front-end{stop-color:#8fc6ad;}
+.travel-hill-mist{fill:rgba(255,255,255,.19);}
+
+body[data-theme="dark"] .travel-hill-rear-start{stop-color:#175247;}
+body[data-theme="dark"] .travel-hill-rear-end{stop-color:#123d38;}
+body[data-theme="dark"] .travel-hill-mid-start{stop-color:#10433d;}
+body[data-theme="dark"] .travel-hill-mid-end{stop-color:#0b3435;}
+body[data-theme="dark"] .travel-hill-front-start{stop-color:#082731;}
+body[data-theme="dark"] .travel-hill-front-end{stop-color:#061a23;}
+body[data-theme="dark"] .travel-hill-mist{fill:rgba(82,171,149,.055);}
+
+.travel-botanical{
+  transform-box:fill-box;
+  transform-origin:center bottom;
+  will-change:transform;
 }
-.travel-background-leaves{z-index:2;}
-.travel-background-leaves-left{
-  clip-path:polygon(0 76%,20% 76%,28% 100%,0 100%);
-  transform-origin:4% 100%;animation:travelLeafSwayLeft 8s ease-in-out infinite;
-}
-.travel-background-leaves-right{
-  clip-path:polygon(80% 76%,100% 76%,100% 100%,72% 100%);
-  transform-origin:96% 100%;animation:travelLeafSwayRight 8s ease-in-out infinite;
-}
-body[data-theme="dark"] .travel-background-leaves{opacity:.96;mix-blend-mode:screen;}
-body[data-theme="dark"] .travel-background-leaves img{
-  filter:invert(.94) sepia(.72) saturate(2.5) hue-rotate(88deg) brightness(.84) contrast(1.08);
-}
-.travel-background-route{
-  position:absolute;inset:0;z-index:3;width:100%;height:100%;overflow:visible;
-}
-.travel-dark-cloud{display:none;}
-body[data-theme="dark"] .travel-dark-cloud{
-  display:block;fill:#5d7f85;opacity:.16;filter:blur(.35px);
-  transform-box:fill-box;transform-origin:center;animation:travelDarkCloudDrift 8s ease-in-out infinite;
-}
-body[data-theme="dark"] .travel-dark-cloud-large{animation-delay:-4s;opacity:.13;}
+.travel-botanical-left{animation:travelLeafSwayLeft 8s ease-in-out infinite;}
+.travel-botanical-right{animation:travelLeafSwayRight 8s ease-in-out infinite;animation-delay:-4s;}
+.travel-plant-stem{fill:none;stroke:#69ad87;stroke-width:1.35;stroke-linecap:round;opacity:.58;}
+.travel-leaf-start{stop-color:#94d0a8;}
+.travel-leaf-end{stop-color:#5eae82;}
+body[data-theme="dark"] .travel-plant-stem{stroke:#5ea98b;opacity:.5;}
+body[data-theme="dark"] .travel-leaf-start{stop-color:#4a967b;}
+body[data-theme="dark"] .travel-leaf-end{stop-color:#1e6657;}
+
 @keyframes travelCloudDrift{
-  0%,100%{transform:translate3d(-2px,0,0);opacity:.58;}
-  50%{transform:translate3d(4px,-1px,0);opacity:.7;}
+  0%,100%{transform:translate3d(-3px,0,0);}
+  50%{transform:translate3d(5px,-1px,0);}
 }
-@keyframes travelDarkCloudDrift{
-  0%,100%{translate:-3px 0;}
-  50%{translate:4px -1px;}
+@keyframes travelHillRear{
+  0%,100%{transform:translate3d(-1px,1px,0) scale(1.008);}
+  50%{transform:translate3d(2px,-1px,0) scale(1.012);}
 }
-@keyframes travelHillParallax{
-  0%,100%{transform:translate3d(-1px,1px,0) scale(1.012);}
-  50%{transform:translate3d(1px,-1px,0) scale(1.014);}
+@keyframes travelHillMiddle{
+  0%,100%{transform:translate3d(1px,0,0) scale(1.006);}
+  50%{transform:translate3d(-2px,-1px,0) scale(1.01);}
+}
+@keyframes travelHillFront{
+  0%,100%{transform:translate3d(-1px,0,0) scale(1.004);}
+  50%{transform:translate3d(1px,-1px,0) scale(1.008);}
 }
 @keyframes travelLeafSwayLeft{
-  0%,100%{transform:rotate(-.45deg) translate3d(-1px,1px,0) scale(1.012);}
-  50%{transform:rotate(.55deg) translate3d(1px,0,0) scale(1.013);}
+  0%,100%{transform:rotate(-.6deg) translate3d(-1px,1px,0);}
+  50%{transform:rotate(.7deg) translate3d(1px,0,0);}
 }
 @keyframes travelLeafSwayRight{
-  0%,100%{transform:rotate(.45deg) translate3d(1px,1px,0) scale(1.012);}
-  50%{transform:rotate(-.55deg) translate3d(-1px,0,0) scale(1.013);}
+  0%,100%{transform:rotate(.6deg) translate3d(1px,1px,0);}
+  50%{transform:rotate(-.7deg) translate3d(-1px,0,0);}
 }
+
 .app.map-active .travel-background{visibility:hidden;}
 
 @media(prefers-reduced-motion:reduce){
-  .travel-background-clouds,.travel-background-hills,.travel-background-leaves,
-  .travel-dark-cloud{animation:none;}
+  .travel-cloud,
+  .travel-hills,
+  .travel-botanical{animation:none;}
 }
