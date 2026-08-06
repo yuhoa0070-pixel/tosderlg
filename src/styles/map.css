@@ -5,7 +5,7 @@
 }
 .map-only-view{
   height:calc(var(--tg-viewport-height, 100dvh) - 118px - env(safe-area-inset-bottom));
-  min-height:300px;padding:8px 0 0;overflow:hidden;
+  min-height:300px;padding:0;overflow:hidden;
 }
 .app.map-active{
   height:var(--tg-viewport-height, 100dvh);min-height:var(--tg-viewport-height, 100dvh);
