@@ -99,22 +99,44 @@ export function useLeafletMap(
   // original's single persistent `leafletMap` global).
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, { zoomControl: false, attributionControl: false });
+    const container = containerRef.current;
+    const map = L.map(container, { zoomControl: false, attributionControl: false });
     L.control.zoom({ position: 'topright' }).addTo(map);
     map.setView([optsRef.current.center.lat, optsRef.current.center.lng], 14);
-    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 19,
+      crossOrigin: true,
+      updateWhenIdle: true,
+      keepBuffer: 3,
     }).addTo(map);
     let tileFailCount = 0;
     tiles.on('tileerror', () => {
       tileFailCount++;
-      if (tileFailCount === 6) setTileError(true);
+      if (tileFailCount >= 8) setTileError(true);
+    });
+    tiles.on('tileload', () => {
+      tileFailCount = 0;
+      setTileError(false);
     });
     map.on('click', (e: L.LeafletMouseEvent) => optsRef.current.onMapClick(e.latlng.lat, e.latlng.lng));
     mapRef.current = map;
 
+    // Telegram's iOS WebView often changes width/height several times while
+    // expanding. Leaflet otherwise keeps the first (sometimes zero-width)
+    // measurement and paints a blank map until the page is reopened.
+    const refreshSize = () => window.requestAnimationFrame(() => map.invalidateSize({ pan: false }));
+    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(refreshSize);
+    resizeObserver?.observe(container);
+    window.visualViewport?.addEventListener('resize', refreshSize);
+    window.addEventListener('orientationchange', refreshSize);
+    const settleTimers = [0, 120, 360, 900].map((delay) => window.setTimeout(refreshSize, delay));
+
     return () => {
+      settleTimers.forEach((timer) => window.clearTimeout(timer));
+      resizeObserver?.disconnect();
+      window.visualViewport?.removeEventListener('resize', refreshSize);
+      window.removeEventListener('orientationchange', refreshSize);
       map.remove();
       mapRef.current = null;
       markersRef.current = {};

@@ -36,7 +36,13 @@
 .chip-close:hover,.chip-close:focus-visible{background:rgba(127,127,127,.16);opacity:1;}
 .chip-close:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
 
-.map-frame{height:220px;border-radius:16px;background:var(--card);border:1px solid var(--border);position:relative;margin-bottom:16px;overflow:hidden;}
+.map-frame{height:220px;min-height:220px;border-radius:16px;background:var(--card);border:1px solid var(--border);position:relative;margin-bottom:16px;overflow:hidden;isolation:isolate;}
+.map-tile-notice{
+  position:absolute;left:50%;top:12px;z-index:850;transform:translateX(-50%);
+  width:max-content;max-width:calc(100% - 100px);padding:6px 10px;border:1px solid var(--border);
+  border-radius:999px;background:var(--card);color:var(--text-secondary);font-size:12px;font-weight:700;
+  box-shadow:0 3px 10px rgba(0,0,0,.16);pointer-events:none;
+}
 .map-stats-pill{
   position:absolute;left:12px;bottom:12px;z-index:800;
   background:var(--card);border:1px solid var(--border);border-radius:20px;
@@ -78,6 +84,12 @@
 #leafletMap{height:100%;width:100%;background:#FBF3EC;}
 .leaflet-container{font-family:'Baloo 2',sans-serif;}
 .leaflet-tile-pane{filter:sepia(0.3) saturate(1.35) brightness(1.08) hue-rotate(-6deg) contrast(0.96);}
+@supports (-webkit-touch-callout:none){
+  /* CSS filters on Leaflet's translated tile pane can render it transparent
+     in iOS Safari and Telegram's WKWebView. Keep native tile colors there. */
+  .leaflet-tile-pane{filter:none;}
+  #leafletMap,.leaflet-container{-webkit-transform:translateZ(0);transform:translateZ(0);}
+}
 
 #view-map .eyebrow{color:#F2A488;}
 #view-map h2{font-weight:800;font-size:24px;letter-spacing:-0.01em;}

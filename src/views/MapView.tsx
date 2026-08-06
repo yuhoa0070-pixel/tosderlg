@@ -200,22 +200,8 @@ export default function MapView() {
       <div className="map-frame">
         <div id="leafletMap" ref={containerRef} />
         {tileError && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-muted)',
-              fontSize: 12,
-              padding: '0 24px',
-              textAlign: 'center',
-              background: 'var(--card)',
-              zIndex: 400,
-            }}
-          >
-            Map tiles couldn't load — check your connection and reopen the file.
+          <div className="map-tile-notice" role="status">
+            Map is reconnecting…
           </div>
         )}
         <div className="map-stats-pill" id="mapStatsPill">
