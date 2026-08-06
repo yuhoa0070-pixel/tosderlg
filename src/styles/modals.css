@@ -22,9 +22,29 @@
 .join-room-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;border-radius:15px;background:rgba(46,204,113,.12);color:var(--accent);}
 .stop-form-card .join-room-icon+h2{text-align:center;margin-bottom:6px;}
 .join-room-sub{max-width:290px;margin:0 auto 18px;color:var(--text-secondary);font-size:14px;font-weight:600;line-height:1.45;text-align:center;}
-.join-room-input{text-align:center;text-transform:uppercase;font-size:24px!important;font-weight:900!important;letter-spacing:.2em!important;}
+.join-room-code-field{position:relative;margin-bottom:14px;}
+.join-room-code-boxes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;}
+.join-room-code-cell{
+  height:54px;display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--border);border-radius:14px;background:var(--card-hover);
+  color:var(--heading);font-size:21px;font-weight:900;line-height:1;
+  font-variant-numeric:tabular-nums;
+  transition:border-color .16s ease,background-color .16s ease,transform .16s ease,box-shadow .16s ease;
+}
+.join-room-code-cell.filled{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.1);animation:joinCodePop .18s cubic-bezier(.22,1,.36,1);}
+.join-room-code-cell.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(46,204,113,.13);transform:translateY(-1px);}
+.join-room-code-field.is-complete .join-room-code-cell{border-color:var(--accent);}
+.join-room-code-field input.join-room-input{
+  position:absolute;inset:0;z-index:2;width:100%;height:100%;margin:0;padding:0;
+  border:0;border-radius:14px;background:transparent;color:transparent;caret-color:transparent;
+  opacity:.01;cursor:text;text-transform:uppercase;
+}
+.join-room-code-field input.join-room-input:focus{outline:none;}
 .join-room-error{margin:8px 2px 0;color:var(--danger);font-size:13px;font-weight:700;line-height:1.35;}
 .join-room-actions{margin-top:14px;}
+@keyframes joinCodePop{from{transform:scale(.88);}to{transform:scale(1);}}
+@media(max-width:340px){.join-room-code-boxes{gap:6px;}.join-room-code-cell{height:50px;border-radius:12px;font-size:19px;}}
+@media(prefers-reduced-motion:reduce){.join-room-code-cell{transition:none;}.join-room-code-cell.filled{animation:none;}}
 .emoji-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
 .emoji-chip{
   width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);

@@ -10,6 +10,7 @@ export default function JoinTripRoomModal() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [fieldFocused, setFieldFocused] = useState(false);
   const km = state.language === 'km';
 
   useEffect(() => {
@@ -17,6 +18,7 @@ export default function JoinTripRoomModal() {
     setCode('');
     setError('');
     setBusy(false);
+    setFieldFocused(false);
   }, [isOpen]);
 
   function close() {
@@ -43,25 +45,45 @@ export default function JoinTripRoomModal() {
       <form onSubmit={submit}>
         <div className="join-room-icon"><TripRoomIcon size={25} /></div>
         <h2>{km ? 'ចូលបន្ទប់ដំណើរ' : 'Join a trip room'}</h2>
-        <p className="join-room-sub">
+        <p className="join-room-sub" id="joinTripRoomHelp">
           {km ? 'សុំលេខកូដ ៦ តួពីមិត្តភក្តិរបស់អ្នក។' : 'Ask your friend for their 6-character room code.'}
         </p>
         <label className="field-label" htmlFor="tripRoomCode">
           {km ? 'លេខកូដបន្ទប់' : 'Room code'}
         </label>
-        <input
-          id="tripRoomCode"
-          className="join-room-input"
-          value={code}
-          onChange={(event) => setCode(event.target.value.toUpperCase().replace(/[^A-Z2-9]/g, '').slice(0, 6))}
-          placeholder="ABC234"
-          autoCapitalize="characters"
-          autoComplete="off"
-          spellCheck={false}
-          inputMode="text"
-          autoFocus
-        />
-        {error && <p className="join-room-error" role="alert">{error}</p>}
+        <div className={`join-room-code-field${fieldFocused ? ' is-focused' : ''}${code.length === 6 ? ' is-complete' : ''}`}>
+          <input
+            id="tripRoomCode"
+            className="join-room-input"
+            value={code}
+            onChange={(event) => setCode(event.target.value.toUpperCase().replace(/[^A-Z2-9]/g, '').slice(0, 6))}
+            onFocus={() => setFieldFocused(true)}
+            onBlur={() => setFieldFocused(false)}
+            aria-describedby={error ? 'joinTripRoomHelp joinTripRoomError' : 'joinTripRoomHelp'}
+            aria-invalid={Boolean(error)}
+            maxLength={6}
+            autoCapitalize="characters"
+            autoComplete="off"
+            spellCheck={false}
+            inputMode="text"
+          />
+          <div className="join-room-code-boxes" aria-hidden="true">
+            {Array.from({ length: 6 }, (_, index) => {
+              const character = code[index] ?? '';
+              const activeIndex = Math.min(code.length, 5);
+              const active = fieldFocused && index === activeIndex;
+              return (
+                <span
+                  className={`join-room-code-cell${character ? ' filled' : ''}${active ? ' active' : ''}`}
+                  key={index}
+                >
+                  {character}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+        {error && <p className="join-room-error" id="joinTripRoomError" role="alert">{error}</p>}
         <div className="row2 join-room-actions">
           <button type="button" className="btn btn-ghost" onClick={close} disabled={busy}>
             {km ? 'បោះបង់' : 'Cancel'}

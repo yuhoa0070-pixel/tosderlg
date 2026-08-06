@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 interface BottomSheetModalProps {
   isOpen: boolean;
@@ -8,6 +8,16 @@ interface BottomSheetModalProps {
 }
 
 export default function BottomSheetModal({ isOpen, onClose, children, overlayId }: BottomSheetModalProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const frame = window.requestAnimationFrame(() => {
+      if (cardRef.current) cardRef.current.scrollTop = 0;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [isOpen]);
+
   return (
     <div
       className={`stop-form-overlay${isOpen ? ' open' : ''}`}
@@ -38,7 +48,7 @@ export default function BottomSheetModal({ isOpen, onClose, children, overlayId 
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="stop-form-card">{children}</div>
+      <div className="stop-form-card" ref={cardRef}>{children}</div>
     </div>
   );
 }
