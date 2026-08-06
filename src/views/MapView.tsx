@@ -37,14 +37,6 @@ export default function MapView() {
     dispatch({ type: 'SET_SELECTED_STOP', index: 0 });
   }
 
-  function handleRemoveStop(i: number) {
-    if (readOnly) return;
-    if (selectedStop >= i) {
-      dispatch({ type: 'SET_SELECTED_STOP', index: Math.max(0, Math.min(selectedStop - 1, stops.length - 2)) });
-    }
-    dispatch({ type: 'REMOVE_STOP', dayIndex: state.currentDay, stopIndex: i });
-  }
-
   function handleMapClick(lat: number, lng: number) {
     if (readOnly) return;
     dispatch({ type: 'SET_PENDING_TAP_COORDS', coords: { lat, lng } });
@@ -282,27 +274,6 @@ export default function MapView() {
         </div>
       </div>
 
-      <div className="chip-row" id="stopChips">
-        {stops.map((s, i) => (
-          <div key={i} className={`chip${i === selectedStop ? ' active' : ''}`} onClick={() => handleSelectStop(i)}>
-            {s.title}
-            {!readOnly && (
-              <button
-                type="button"
-                className="chip-close"
-                title={`Remove ${s.title}`}
-                aria-label={`Remove ${s.title}`}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleRemoveStop(i);
-                }}
-              >
-                &times;
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
       {!readOnly && (
         <>
           <button
