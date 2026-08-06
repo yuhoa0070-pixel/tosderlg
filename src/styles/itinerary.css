@@ -33,6 +33,18 @@
 .shared-trip-banner small{display:block;margin-top:2px;color:var(--text-secondary);font-size:12px;font-weight:600;line-height:1.35;}
 .trip-invite-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .trip-share-status{margin:6px 2px 0;color:var(--accent);font-size:12px;font-weight:700;text-align:right;}
+.trip-members{margin-top:11px;}
+.shared-trip-banner+.trip-members{margin-top:-5px;margin-bottom:16px;}
+.trip-members-heading{display:flex;align-items:center;gap:7px;margin-bottom:7px;color:var(--text-muted);font-size:12px;font-weight:700;}
+.trip-members-heading small{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 6px;border-radius:999px;background:rgba(46,204,113,.1);color:var(--accent);font-size:10px;font-weight:800;}
+.trip-members-track{display:flex;gap:7px;overflow-x:auto;padding:1px 1px 3px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.trip-members-track::-webkit-scrollbar{display:none;}
+.trip-member-chip{min-width:0;flex:0 0 auto;max-width:180px;display:flex;align-items:center;gap:8px;padding:6px 10px 6px 6px;border:1px solid var(--border);border-radius:14px;background:var(--card);}
+.trip-member-avatar{position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto;border:1px solid rgba(46,204,113,.22);border-radius:11px;background:rgba(46,204,113,.1);color:var(--accent);font-size:11px;font-weight:800;}
+.trip-member-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.trip-member-copy{min-width:0;display:block;line-height:1.12;}
+.trip-member-copy strong{display:block;overflow:hidden;color:var(--heading);font-size:12px;font-weight:700;text-overflow:ellipsis;white-space:nowrap;}
+.trip-member-copy small{display:block;margin-top:2px;color:var(--text-muted);font-size:10px;font-weight:600;}
 .trip-copy-toast{
   position:fixed;top:calc(env(safe-area-inset-top) + 16px);left:50%;z-index:1000;
   display:flex;align-items:center;gap:8px;min-height:42px;padding:9px 16px;

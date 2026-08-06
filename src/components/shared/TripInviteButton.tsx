@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAppContext } from '../../context/AppContext';
 import { getTelegramUser, getTelegramWebApp, telegramUserDisplayName } from '../../lib/telegram';
-import { saveTripRoom } from '../../lib/tripRoom';
+import { currentTripMember, saveTripRoom } from '../../lib/tripRoom';
 import type { Trip } from '../../types';
 import TripRoomIcon from './TripRoomIcon';
+import TripMembers from './TripMembers';
 
 function copyText(value: string): Promise<void> {
   if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(value);
@@ -55,13 +56,15 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
     try {
       const telegramUser = getTelegramUser();
       const sharedBy = telegramUser ? telegramUserDisplayName(telegramUser) : state.profileName || 'A friend';
-      const room = await saveTripRoom(trip, sharedBy);
+      const member = currentTripMember(state.profileName, state.profilePhoto);
+      const room = await saveTripRoom(trip, sharedBy, member);
       dispatch({
         type: 'SET_TRIP_ROOM',
         tripId: trip.id,
         code: room.code,
         ownerToken: room.ownerToken,
         updatedAt: room.updatedAt,
+        members: room.members,
       });
 
       const destination = trip.destination.split(',')[0];
@@ -97,18 +100,21 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
 
   if (trip.readOnly) {
     return (
-      <div className="shared-trip-banner">
-        <span className="shared-trip-icon"><TripRoomIcon size={20} /></span>
-        <span>
-          <strong>{km ? 'ដំណើរដែលបានចែករំលែក' : 'Shared trip'}</strong>
-          <small>
-            {km
-              ? `ចែករំលែកដោយ ${trip.sharedBy || 'មិត្តភក្តិ'} · មើលតែប៉ុណ្ណោះ`
-              : `Shared by ${trip.sharedBy || 'a friend'} · View only`}
-            {trip.roomCode ? ` · ${trip.roomCode}` : ''}
-          </small>
-        </span>
-      </div>
+      <>
+        <div className="shared-trip-banner">
+          <span className="shared-trip-icon"><TripRoomIcon size={20} /></span>
+          <span>
+            <strong>{km ? 'ដំណើរដែលបានចែករំលែក' : 'Shared trip'}</strong>
+            <small>
+              {km
+                ? `ចែករំលែកដោយ ${trip.sharedBy || 'មិត្តភក្តិ'} · មើលតែប៉ុណ្ណោះ`
+                : `Shared by ${trip.sharedBy || 'a friend'} · View only`}
+              {trip.roomCode ? ` · ${trip.roomCode}` : ''}
+            </small>
+          </span>
+        </div>
+        <TripMembers members={trip.members ?? []} language={state.language} />
+      </>
     );
   }
 
@@ -158,6 +164,7 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
           document.body,
         )}
       {status && <p className="trip-share-status" role="status">{status}</p>}
+      {trip.roomCode && <TripMembers members={trip.members ?? []} language={state.language} />}
     </div>
   );
 }

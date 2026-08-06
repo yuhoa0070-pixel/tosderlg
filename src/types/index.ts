@@ -48,6 +48,14 @@ export interface PackingItem {
   emoji?: string;
 }
 
+export interface TripMember {
+  id: string;
+  name: string;
+  photoUrl?: string;
+  role: 'owner' | 'member';
+  joinedAt: number;
+}
+
 export interface GeoCenter {
   lat: number;
   lng: number;
@@ -69,6 +77,7 @@ export interface Trip {
   roomCode?: string;
   roomOwnerToken?: string;
   roomUpdatedAt?: number;
+  members?: TripMember[];
 }
 
 export interface MomentGroup {

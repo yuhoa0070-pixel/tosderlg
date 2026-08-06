@@ -147,7 +147,14 @@ export function appReducer(state: AppState, action: Action): AppState {
           roomCode: action.code,
           roomOwnerToken: action.ownerToken,
           roomUpdatedAt: action.updatedAt,
+          members: action.members,
         })),
+      };
+
+    case 'SET_TRIP_MEMBERS':
+      return {
+        ...state,
+        trips: state.trips.map((trip) => (trip.id === action.tripId ? { ...trip, members: action.members } : trip)),
       };
 
     case 'DELETE_TRIP': {

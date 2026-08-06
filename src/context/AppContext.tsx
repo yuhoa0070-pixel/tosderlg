@@ -5,7 +5,7 @@ import type { Action } from './actions';
 import { loadState, persistState } from './persistence';
 import { getTelegramUser, initTelegramWebApp, telegramUserDisplayName } from '../lib/telegram';
 import { clearTripInviteFromUrl, readTripInviteFromUrl } from '../lib/tripInvite';
-import { joinTripRoom, saveTripRoom } from '../lib/tripRoom';
+import { currentTripMember, getTripRoom, saveTripRoom } from '../lib/tripRoom';
 
 interface AppContextValue {
   state: AppState;
@@ -75,7 +75,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const ownerRooms = state.trips.filter((trip) => !trip.readOnly && trip.roomCode && trip.roomOwnerToken);
     const signature = JSON.stringify(
-      ownerRooms.map(({ photos: _photos, roomUpdatedAt: _updatedAt, ...trip }) => trip),
+      ownerRooms.map(({ photos: _photos, roomUpdatedAt: _updatedAt, members: _members, ...trip }) => trip),
     ) + `|${state.profileName}`;
     if (signature === lastOwnerSyncRef.current) return;
     lastOwnerSyncRef.current = signature;
@@ -84,26 +84,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const timer = window.setTimeout(() => {
       const telegramUser = getTelegramUser();
       const sharedBy = telegramUser ? telegramUserDisplayName(telegramUser) : state.profileName || 'A friend';
-      void Promise.allSettled(ownerRooms.map((trip) => saveTripRoom(trip, sharedBy)));
+      const member = currentTripMember(state.profileName, state.profilePhoto);
+      void Promise.allSettled(ownerRooms.map((trip) => saveTripRoom(trip, sharedBy, member)));
     }, 900);
     return () => window.clearTimeout(timer);
-  }, [state.trips, state.profileName]);
+  }, [state.trips, state.profileName, state.profilePhoto]);
 
-  const activeSharedTrip = state.trips.find(
-    (trip) => trip.id === state.currentTripId && trip.readOnly && trip.roomCode,
+  const activeRoomTrip = state.trips.find(
+    (trip) => trip.id === state.currentTripId && trip.roomCode,
   );
-  const sharedRoomCode = activeSharedTrip?.roomCode;
-  const sharedRoomUpdatedAt = activeSharedTrip?.roomUpdatedAt ?? 0;
+  const activeRoomTripId = activeRoomTrip?.id;
+  const activeRoomCode = activeRoomTrip?.roomCode;
+  const activeRoomReadOnly = activeRoomTrip?.readOnly === true;
+  const activeRoomUpdatedAt = activeRoomTrip?.roomUpdatedAt ?? 0;
 
   useEffect(() => {
-    if (!sharedRoomCode) return;
-    const roomCode = sharedRoomCode;
+    if (!activeRoomCode || activeRoomTripId == null) return;
+    const roomCode = activeRoomCode;
+    const tripId = activeRoomTripId;
     let cancelled = false;
 
     async function refreshRoom() {
       try {
-        const refreshed = await joinTripRoom(roomCode);
-        if (!cancelled && (refreshed.roomUpdatedAt ?? 0) > sharedRoomUpdatedAt) {
+        const refreshed = await getTripRoom(roomCode);
+        if (cancelled) return;
+        dispatch({ type: 'SET_TRIP_MEMBERS', tripId, members: refreshed.members ?? [] });
+        if (activeRoomReadOnly && (refreshed.roomUpdatedAt ?? 0) > activeRoomUpdatedAt) {
           dispatch({ type: 'REFRESH_SHARED_TRIP', trip: refreshed });
         }
       } catch {
@@ -117,7 +123,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [sharedRoomCode, sharedRoomUpdatedAt]);
+  }, [activeRoomCode, activeRoomReadOnly, activeRoomTripId, activeRoomUpdatedAt]);
 
   useEffect(() => {
     document.body.dataset.theme = state.theme;

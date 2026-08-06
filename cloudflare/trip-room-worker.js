@@ -2,6 +2,7 @@ const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const CODE_PATTERN = /^[A-Z2-9]{6}$/;
 const MAX_BODY_BYTES = 220_000;
 const MAX_TRIP_BYTES = 200_000;
+const MAX_MEMBERS_PER_ROOM = 50;
 const ROOM_TTL_MS = 180 * 24 * 60 * 60 * 1000;
 const SHORT_MAP_HOSTS = new Set(['maps.app.goo.gl', 'goo.gl']);
 
@@ -88,12 +89,85 @@ function validTrip(trip) {
   );
 }
 
-async function getRoom(request, env, origin) {
-  const code = normalizeCode(new URL(request.url).searchParams.get('code'));
-  if (!CODE_PATTERN.test(code)) {
-    return sendJson(origin, { error: 'Enter a valid 6-character room code.' }, 400);
+function normalizeMember(value) {
+  if (!value || typeof value !== 'object') return null;
+  const id = typeof value.id === 'string' ? value.id.trim() : '';
+  const name = typeof value.name === 'string' ? value.name.trim().slice(0, 80) : '';
+  if (!/^[A-Za-z0-9:_-]{8,100}$/.test(id) || !name) return null;
+
+  let photoUrl = null;
+  if (typeof value.photoUrl === 'string' && value.photoUrl.length <= 1000) {
+    try {
+      const url = new URL(value.photoUrl);
+      if (url.protocol === 'https:') photoUrl = url.toString();
+    } catch {
+      // Invalid or non-HTTPS photos fall back to initials in the UI.
+    }
+  }
+  return { id, name, photoUrl };
+}
+
+async function listRoomMembers(env, code) {
+  try {
+    const result = await env.DB.prepare(
+      `SELECT member_id, display_name, photo_url, role, joined_at
+       FROM trip_room_members
+       WHERE room_code = ?
+       ORDER BY CASE role WHEN 'owner' THEN 0 ELSE 1 END, joined_at ASC
+       LIMIT ?`,
+    )
+      .bind(code, MAX_MEMBERS_PER_ROOM)
+      .all();
+
+    return (result.results || []).map((member) => ({
+      id: member.member_id,
+      name: member.display_name,
+      photoUrl: member.photo_url || undefined,
+      role: member.role,
+      joinedAt: member.joined_at,
+    }));
+  } catch (error) {
+    console.error(JSON.stringify({
+      message: 'Trip room members could not be loaded',
+      code,
+      error: error instanceof Error ? error.message : String(error),
+    }));
+    return [];
+  }
+}
+
+async function upsertRoomMember(env, code, member, role) {
+  const now = Date.now();
+  const existing = await env.DB.prepare(
+    `SELECT role FROM trip_room_members WHERE room_code = ? AND member_id = ?`,
+  )
+    .bind(code, member.id)
+    .first();
+
+  if (!existing) {
+    const count = await env.DB.prepare(
+      `SELECT COUNT(*) AS total FROM trip_room_members WHERE room_code = ?`,
+    )
+      .bind(code)
+      .first();
+    if (Number(count?.total || 0) >= MAX_MEMBERS_PER_ROOM) throw new Error('ROOM_FULL');
   }
 
+  await env.DB.prepare(
+    `INSERT INTO trip_room_members
+     (room_code, member_id, display_name, photo_url, role, joined_at, last_seen_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(room_code, member_id) DO UPDATE SET
+       display_name = excluded.display_name,
+       photo_url = excluded.photo_url,
+       role = CASE WHEN trip_room_members.role = 'owner' THEN 'owner' ELSE excluded.role END,
+       last_seen_at = excluded.last_seen_at`,
+  )
+    .bind(code, member.id, member.name, member.photoUrl, role, now, now)
+    .run();
+}
+
+async function loadRoom(env, code) {
   const room = await env.DB.prepare(
     `SELECT code, shared_by, trip_json, updated_at
      FROM trip_rooms
@@ -101,24 +175,76 @@ async function getRoom(request, env, origin) {
   )
     .bind(code, Date.now())
     .first();
+  if (!room) return null;
 
-  if (!room) {
-    return sendJson(origin, { error: 'Trip room not found. Check the code and try again.' }, 404);
+  try {
+    return { room, trip: JSON.parse(room.trip_json) };
+  } catch {
+    throw new Error('INVALID_ROOM_DATA');
+  }
+}
+
+async function roomPayload(env, loaded) {
+  return {
+    code: loaded.room.code,
+    sharedBy: loaded.room.shared_by,
+    trip: loaded.trip,
+    updatedAt: loaded.room.updated_at,
+    members: await listRoomMembers(env, loaded.room.code),
+  };
+}
+
+async function getRoom(request, env, origin) {
+  const code = normalizeCode(new URL(request.url).searchParams.get('code'));
+  if (!CODE_PATTERN.test(code)) {
+    return sendJson(origin, { error: 'Enter a valid 6-character room code.' }, 400);
   }
 
-  let trip;
+  let loaded;
   try {
-    trip = JSON.parse(room.trip_json);
+    loaded = await loadRoom(env, code);
   } catch {
     return sendJson(origin, { error: 'This trip room contains invalid data.' }, 502);
   }
+  if (!loaded) {
+    return sendJson(origin, { error: 'Trip room not found. Check the code and try again.' }, 404);
+  }
+  return sendJson(origin, await roomPayload(env, loaded));
+}
 
-  return sendJson(origin, {
-    code: room.code,
-    sharedBy: room.shared_by,
-    trip,
-    updatedAt: room.updated_at,
-  });
+async function joinRoom(request, env, origin) {
+  let body;
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    return sendJson(origin, { error: 'Valid member data is required.' }, 400);
+  }
+
+  const code = normalizeCode(body?.code);
+  const member = normalizeMember(body?.member);
+  if (!CODE_PATTERN.test(code) || !member) {
+    return sendJson(origin, { error: 'A valid room code and profile are required.' }, 400);
+  }
+
+  let loaded;
+  try {
+    loaded = await loadRoom(env, code);
+  } catch {
+    return sendJson(origin, { error: 'This trip room contains invalid data.' }, 502);
+  }
+  if (!loaded) {
+    return sendJson(origin, { error: 'Trip room not found. Check the code and try again.' }, 404);
+  }
+
+  try {
+    await upsertRoomMember(env, code, member, 'member');
+  } catch (error) {
+    if (error instanceof Error && error.message === 'ROOM_FULL') {
+      return sendJson(origin, { error: 'This trip room is full.' }, 409);
+    }
+    throw error;
+  }
+  return sendJson(origin, await roomPayload(env, loaded));
 }
 
 async function saveRoom(request, env, origin) {
@@ -144,6 +270,8 @@ async function saveRoom(request, env, origin) {
   const sharedBy = typeof body.sharedBy === 'string' && body.sharedBy.trim()
     ? body.sharedBy.trim().slice(0, 80)
     : 'A friend';
+  const owner = normalizeMember(body.member);
+  if (!owner) return sendJson(origin, { error: 'A valid owner profile is required.' }, 400);
   const updatedAt = Date.now();
   const expiresAt = updatedAt + ROOM_TTL_MS;
 
@@ -164,7 +292,13 @@ async function saveRoom(request, env, origin) {
       return sendJson(origin, { error: 'You no longer have permission to update this room.' }, 403);
     }
 
-    return sendJson(origin, { code: requestedCode, ownerToken: requestedToken, updatedAt });
+    await upsertRoomMember(env, requestedCode, owner, 'owner');
+    return sendJson(origin, {
+      code: requestedCode,
+      ownerToken: requestedToken,
+      updatedAt,
+      members: await listRoomMembers(env, requestedCode),
+    });
   }
 
   const ownerToken = crypto.randomUUID();
@@ -179,7 +313,13 @@ async function saveRoom(request, env, origin) {
       .run();
 
     if (result.success && (result.meta?.changes || 0) > 0) {
-      return sendJson(origin, { code, ownerToken, updatedAt });
+      await upsertRoomMember(env, code, owner, 'owner');
+      return sendJson(origin, {
+        code,
+        ownerToken,
+        updatedAt,
+        members: await listRoomMembers(env, code),
+      });
     }
   }
 
@@ -258,6 +398,10 @@ export default {
       if (url.pathname === '/api/trip-room') {
         if (request.method === 'GET') return await getRoom(request, env, origin);
         if (request.method === 'POST') return await saveRoom(request, env, origin);
+        return sendJson(origin, { error: 'Method not allowed.' }, 405);
+      }
+      if (url.pathname === '/api/trip-room/join') {
+        if (request.method === 'POST') return await joinRoom(request, env, origin);
         return sendJson(origin, { error: 'Method not allowed.' }, 405);
       }
       if (url.pathname === '/api/resolve-map-link') return await resolveMapLink(request, origin);

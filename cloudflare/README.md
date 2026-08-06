@@ -34,6 +34,8 @@ npx wrangler@latest d1 migrations apply waylo-trip-rooms --remote
 ```
 
 The initial `0001_create_trip_rooms.sql` migration has already been applied.
+Apply `0002_create_trip_room_members.sql` before deploying the member-profile
+feature so room joins can record and display participants.
 
 ## Local Cloudflare preview
 

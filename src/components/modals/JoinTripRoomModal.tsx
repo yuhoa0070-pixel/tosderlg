@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { joinTripRoom } from '../../lib/tripRoom';
+import { currentTripMember, joinTripRoom } from '../../lib/tripRoom';
 import BottomSheetModal from './BottomSheetModal';
 import TripRoomIcon from '../shared/TripRoomIcon';
 
@@ -31,7 +31,8 @@ export default function JoinTripRoomModal() {
     setBusy(true);
     setError('');
     try {
-      const trip = await joinTripRoom(code);
+      const member = currentTripMember(state.profileName, state.profilePhoto);
+      const trip = await joinTripRoom(code, member);
       dispatch({ type: 'IMPORT_SHARED_TRIP', trip });
       dispatch({ type: 'CLOSE_MODAL' });
     } catch (joinError) {
