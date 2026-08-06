@@ -39,6 +39,7 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const trackingRequestedRef = useRef(false);
   const telegramRequestInFlightRef = useRef(false);
+  const telegramMissesRef = useRef(0);
   const meMarkerRef = useRef<L.Marker | null>(null);
   const accuracyCircleRef = useRef<L.Circle | null>(null);
   const lastPositionRef = useRef<AcceptedPosition | null>(null);
@@ -137,6 +138,7 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
     hasCenteredRef.current = false;
     trackingRequestedRef.current = false;
     telegramRequestInFlightRef.current = false;
+    telegramMissesRef.current = 0;
     setActive(false);
   }, []);
 
@@ -206,6 +208,7 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
     }
     setCanOpenSettings(false);
     applyPosition(first.lat, first.lng, first.accuracy);
+    telegramMissesRef.current = 0;
     setCanOpenSettings(first.accuracy !== null && first.accuracy > PRECISE_LOCATION_THRESHOLD_METERS);
     pollIntervalRef.current = setInterval(async () => {
       if (telegramRequestInFlightRef.current) return;
@@ -214,6 +217,7 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
       telegramRequestInFlightRef.current = false;
       if (!trackingRequestedRef.current || pollIntervalRef.current === null) return;
       if (loc.status === 'success') {
+        telegramMissesRef.current = 0;
         applyPosition(loc.lat, loc.lng, loc.accuracy);
         setCanOpenSettings(loc.accuracy !== null && loc.accuracy > PRECISE_LOCATION_THRESHOLD_METERS);
       } else {
@@ -222,6 +226,11 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
           stop();
           setCanOpenSettings(true);
           onStatusRef.current('Location access is off for Waylo. Open settings to allow it.');
+          return;
+        }
+        telegramMissesRef.current += 1;
+        if (telegramMissesRef.current < 3) {
+          onStatusRef.current('Android GPS is reconnecting… Live tracking will continue automatically.');
           return;
         }
         if (pollIntervalRef.current !== null) {

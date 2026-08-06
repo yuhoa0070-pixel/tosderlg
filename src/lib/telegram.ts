@@ -7,7 +7,7 @@ interface TelegramUser {
   photo_url?: string;
 }
 
-type TelegramEvent = 'themeChanged' | 'viewportChanged';
+type TelegramEvent = 'themeChanged' | 'viewportChanged' | 'locationManagerUpdated';
 
 interface TelegramLocationData {
   latitude: number;
@@ -113,7 +113,47 @@ export function hasTelegramLocationManager(): boolean {
 }
 
 const LOCATION_MANAGER_INIT_TIMEOUT_MS = 2500;
-const LOCATION_REQUEST_TIMEOUT_MS = 12000;
+const LOCATION_REQUEST_TIMEOUT_MS = 10000;
+const LOCATION_PERMISSION_UPDATE_TIMEOUT_MS = 2000;
+
+function waitForLocationManagerUpdate(webApp: TelegramWebApp, manager: TelegramLocationManager): Promise<boolean> {
+  return new Promise((resolve) => {
+    const initialRequested = manager.isAccessRequested;
+    const initialGranted = manager.isAccessGranted;
+    let settled = false;
+    const finish = (changed: boolean) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      webApp.offEvent('locationManagerUpdated', handleUpdate);
+      resolve(changed);
+    };
+    const handleUpdate = () => {
+      const changed = manager.isAccessRequested !== initialRequested || manager.isAccessGranted !== initialGranted;
+      if (changed) finish(true);
+    };
+    const timer = setTimeout(() => finish(false), LOCATION_PERMISSION_UPDATE_TIMEOUT_MS);
+    webApp.onEvent('locationManagerUpdated', handleUpdate);
+  });
+}
+
+function requestTelegramLocation(manager: TelegramLocationManager): Promise<TelegramLocationData | null> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (data: TelegramLocationData | null) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(data);
+    };
+    const timer = setTimeout(() => finish(null), LOCATION_REQUEST_TIMEOUT_MS);
+    try {
+      manager.getLocation(finish);
+    } catch {
+      finish(null);
+    }
+  });
+}
 
 // Some client versions log "LocationManager is not supported" and never
 // invoke init()'s callback at all, rather than calling back to report
@@ -151,33 +191,25 @@ export async function getTelegramLocation(): Promise<TelegramLocationResult> {
   await ensureLocationManagerInited(manager);
   if (!manager.isLocationAvailable) return { status: 'unavailable' };
 
-  return new Promise((resolve) => {
-    let settled = false;
-    const finish = (result: TelegramLocationResult) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      resolve(result);
-    };
-    const timer = setTimeout(() => finish({ status: 'unavailable' }), LOCATION_REQUEST_TIMEOUT_MS);
+  let data = await requestTelegramLocation(manager);
 
-    try {
-      manager.getLocation((data) => {
-        if (data) {
-          finish({
-            status: 'success',
-            lat: data.latitude,
-            lng: data.longitude,
-            accuracy: typeof data.horizontal_accuracy === 'number' ? data.horizontal_accuracy : null,
-          });
-          return;
-        }
-        finish(manager.isAccessRequested && !manager.isAccessGranted ? { status: 'denied' } : { status: 'unavailable' });
-      });
-    } catch {
-      finish({ status: 'unavailable' });
-    }
-  });
+  // Android can invoke getLocation's callback before its permission flags
+  // have finished updating. Wait for Telegram's native state-change event,
+  // then retry once instead of treating that first empty callback as denial.
+  if (!data) {
+    await waitForLocationManagerUpdate(webApp, manager);
+    if (manager.isAccessGranted) data = await requestTelegramLocation(manager);
+  }
+
+  if (data) {
+    return {
+      status: 'success',
+      lat: data.latitude,
+      lng: data.longitude,
+      accuracy: typeof data.horizontal_accuracy === 'number' ? data.horizontal_accuracy : null,
+    };
+  }
+  return manager.isAccessRequested && !manager.isAccessGranted ? { status: 'denied' } : { status: 'unavailable' };
 }
 
 /** Opens Telegram's native bot-location settings from a direct user action. */
