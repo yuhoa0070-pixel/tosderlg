@@ -114,7 +114,7 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
 
   return (
     <div className="trip-share-panel">
-      <div className="trip-share-actions">
+      <div className={`trip-share-actions${trip.roomCode ? ' has-room-code' : ''}`}>
         {trip.roomCode && (
           <button
             type="button"
