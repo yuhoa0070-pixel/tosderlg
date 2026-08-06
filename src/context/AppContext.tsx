@@ -18,10 +18,16 @@ function init(base: AppState): AppState {
   const loaded = loadState({
     trips: base.trips,
     currentTripId: base.currentTripId,
+    currentDay: base.currentDay,
+    selectedStop: base.selectedStop,
     profileName: base.profileName,
     profilePhoto: base.profilePhoto,
     theme: base.theme,
     language: base.language,
+    currentView: base.currentView,
+    memoryReturnView: base.memoryReturnView,
+    activeMomentGroup: base.activeMomentGroup,
+    viewingPhoto: base.viewingPhoto,
   });
   return { ...base, ...loaded };
 }
@@ -40,12 +46,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     persistState({
       trips: state.trips,
       currentTripId: state.currentTripId,
+      currentDay: state.currentDay,
+      selectedStop: state.selectedStop,
       profileName: state.profileName,
       profilePhoto: state.profilePhoto,
       theme: state.theme,
       language: state.language,
+      currentView: state.currentView,
+      memoryReturnView: state.memoryReturnView,
+      activeMomentGroup: state.activeMomentGroup,
+      viewingPhoto: state.viewingPhoto,
     });
-  }, [state.trips, state.currentTripId, state.profileName, state.profilePhoto, state.theme, state.language]);
+  }, [
+    state.trips,
+    state.currentTripId,
+    state.currentDay,
+    state.selectedStop,
+    state.profileName,
+    state.profilePhoto,
+    state.theme,
+    state.language,
+    state.currentView,
+    state.memoryReturnView,
+    state.activeMomentGroup,
+    state.viewingPhoto,
+  ]);
 
   useEffect(() => {
     const ownerRooms = state.trips.filter((trip) => !trip.readOnly && trip.roomCode && trip.roomOwnerToken);
