@@ -10,7 +10,7 @@ export default function TripMembers({ members, language }: { members: TripMember
   const [open, setOpen] = useState(false);
   if (members.length === 0) return null;
   const km = language === 'km';
-  const visibleMembers = members.slice(0, 4);
+  const visibleMembers = members.slice(0, 5);
   const remainingMembers = Math.max(0, members.length - visibleMembers.length);
   const panelId = `trip-members-${members.map((member) => member.id).join('-').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40)}`;
 
@@ -26,7 +26,7 @@ export default function TripMembers({ members, language }: { members: TripMember
       >
         <span className="trip-members-avatar-stack" aria-hidden="true">
           {visibleMembers.map((member) => (
-            <span className="trip-member-avatar compact" key={member.id}>
+            <span className={`trip-member-avatar compact ${member.role}`} key={member.id}>
               <span>{initials(member.name)}</span>
               {member.photoUrl && (
                 <img
@@ -53,7 +53,7 @@ export default function TripMembers({ members, language }: { members: TripMember
           <div className="trip-members-list">
             {members.map((member) => (
               <div className="trip-member-row" key={member.id}>
-                <div className="trip-member-avatar" aria-hidden="true">
+                <div className={`trip-member-avatar ${member.role}`} aria-hidden="true">
                   <span>{initials(member.name)}</span>
                   {member.photoUrl && (
                     <img
