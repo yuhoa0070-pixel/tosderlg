@@ -40,6 +40,7 @@ export const heroGalleryData: HeroGalleryCard[] = [
   {
     label: 'Coastal days',
     seed: 'coastal-days',
+    image: '/coastal-days.webp',
     icon: '<path d="M2 15c2 2 4 2 6 0s4-2 6 0 4 2 6 0"/><path d="M2 19c2 2 4 2 6 0s4-2 6 0 4 2 6 0"/><circle cx="17" cy="7" r="3"/>',
   },
   {
