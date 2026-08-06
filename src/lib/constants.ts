@@ -34,7 +34,7 @@ export const heroGalleryData: HeroGalleryCard[] = [
   {
     label: 'City escapes',
     seed: 'city-escapes',
-    image: '/city-escape.jpg',
+    image: '/city-escape-traveler.png',
     icon: '<path d="M3 17l5-6 4 4 5-7 4 5"/>',
   },
   {
