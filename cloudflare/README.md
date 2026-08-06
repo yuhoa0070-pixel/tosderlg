@@ -5,6 +5,7 @@ Waylo is hosted entirely by one Cloudflare Worker:
 - Vite builds the React application into `dist/`.
 - Cloudflare Static Assets serves the frontend and handles SPA navigation.
 - `/api/trip-room` stores shared trip rooms in D1.
+- `/api/trip-room/leave` removes a departing member profile from a room.
 - `/api/resolve-map-link` expands supported Google Maps short links.
 - Telegram CloudStorage synchronizes each user's trip plans between their
   Telegram mobile and desktop apps. Browser local storage remains the offline
@@ -22,9 +23,24 @@ same Telegram account restores them when the Mini App opens. Cloud values are
 chunked below Telegram's per-value limit and local browser storage remains the
 offline fallback.
 
-## Deploy
+## Automatic deployment from GitHub
 
-From the repository root:
+Pushing a commit to the `main` branch starts
+`.github/workflows/deploy-cloudflare.yml`. The workflow installs dependencies,
+runs lint and the production build, then deploys the Worker and static assets.
+
+Add these repository secrets under **GitHub > Settings > Secrets and variables >
+Actions** before the first push:
+
+- `CLOUDFLARE_API_TOKEN`: a Cloudflare API token created from the **Edit
+  Cloudflare Workers** template for the account that owns this Worker.
+- `CLOUDFLARE_ACCOUNT_ID`: the Cloudflare account ID shown in the dashboard.
+
+The workflow can also be started manually from the repository's **Actions**
+tab. Keep Cloudflare's separate Git integration disconnected when using this
+workflow, otherwise the same push can create two deployments.
+
+For a manual fallback from the repository root:
 
 ```bash
 npm run deploy
@@ -58,13 +74,11 @@ npm run dev:cloudflare
 This builds the latest frontend and serves the app, Worker API, and a local D1
 database together at the URL printed by Wrangler.
 
-## Manual deployments
+## Deployment source of truth
 
-Git pushes should not deploy this Worker. In Cloudflare, keep the Git repository
-disconnected under **Worker > Settings > Builds**, then deploy a reviewed version
-manually with `npm run deploy`. The root `wrangler.jsonc` remains the deployment
-source of truth so the frontend assets, Worker API, and D1 binding are published
-together.
+The root `wrangler.jsonc` remains the deployment source of truth. D1 migrations
+are intentionally not run by the automatic workflow; apply a new migration
+manually before pushing code that depends on it.
 
 ## Retire Vercel
 

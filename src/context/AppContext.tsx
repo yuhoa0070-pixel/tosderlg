@@ -5,7 +5,7 @@ import type { Action } from './actions';
 import { loadState, persistState } from './persistence';
 import { getTelegramUser, initTelegramWebApp, telegramUserDisplayName } from '../lib/telegram';
 import { clearTripInviteFromUrl, readTripInviteFromUrl } from '../lib/tripInvite';
-import { currentTripMember, getTripRoom, saveTripRoom } from '../lib/tripRoom';
+import { currentTripMember, getTripRoom, leaveTripRoom, saveTripRoom } from '../lib/tripRoom';
 import {
   hasTelegramCloudStorage,
   loadTelegramCloudState,
@@ -17,6 +17,7 @@ import {
 interface AppContextValue {
   state: AppState;
   dispatch: Dispatch<Action>;
+  removeTrip: (tripId: number) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -57,6 +58,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (invitedTrip) dispatch({ type: 'IMPORT_SHARED_TRIP', trip: invitedTrip });
     clearTripInviteFromUrl();
   }, []);
+
+  async function removeTrip(tripId: number): Promise<void> {
+    const trip = state.trips.find((item) => item.id === tripId);
+    if (!trip) return;
+
+    if (trip.readOnly && trip.roomCode) {
+      const member = currentTripMember(state.profileName, state.profilePhoto);
+      await leaveTripRoom(trip.roomCode, member, trip.roomMemberId);
+    }
+
+    dispatch({ type: 'DELETE_TRIP', tripId });
+  }
 
   useEffect(() => {
     if (!hasTelegramCloudStorage()) return;
@@ -162,7 +175,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const telegramUser = getTelegramUser();
       const sharedBy = telegramUser ? telegramUserDisplayName(telegramUser) : state.profileName || 'A friend';
       const member = currentTripMember(state.profileName, state.profilePhoto);
-      void Promise.allSettled(ownerRooms.map((trip) => saveTripRoom(trip, sharedBy, member)));
+      void Promise.allSettled(ownerRooms.map((trip) => {
+        const existingOwner = trip.members?.find((roomMember) => roomMember.role === 'owner');
+        const owner = existingOwner ? { ...member, id: existingOwner.id } : member;
+        return saveTripRoom(trip, sharedBy, owner);
+      }));
     }, 900);
     return () => window.clearTimeout(timer);
   }, [state.trips, state.profileName, state.profilePhoto]);
@@ -228,7 +245,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>;
+  return <AppContext.Provider value={{ state, dispatch, removeTrip }}>{children}</AppContext.Provider>;
 }
 
 export function useAppContext(): AppContextValue {

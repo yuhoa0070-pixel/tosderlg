@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import TripCard from '../components/shared/TripCard';
 import TripRoomIcon from '../components/shared/TripRoomIcon';
 
 export default function MyTripsView() {
-  const { state, dispatch } = useAppContext();
+  const { state, dispatch, removeTrip } = useAppContext();
+  const [deleteError, setDeleteError] = useState('');
+  const [deletingTripId, setDeletingTripId] = useState<number | null>(null);
   const trips = state.trips.slice().reverse();
   const km = state.language === 'km';
 
@@ -14,6 +17,19 @@ export default function MyTripsView() {
       destinationInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       destinationInput?.focus({ preventScroll: true });
     }, 60);
+  }
+
+  async function handleDeleteTrip(tripId: number) {
+    if (deletingTripId !== null) return;
+    setDeletingTripId(tripId);
+    setDeleteError('');
+    try {
+      await removeTrip(tripId);
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'Could not leave this trip room. Try again.');
+    } finally {
+      setDeletingTripId(null);
+    }
   }
 
   return (
@@ -41,11 +57,12 @@ export default function MyTripsView() {
               active={trip.id === state.currentTripId}
               onSelect={(id) => dispatch({ type: 'LOAD_TRIP', tripId: id })}
               allowDelete
-              onDelete={(id) => dispatch({ type: 'DELETE_TRIP', tripId: id })}
+              onDelete={(id) => void handleDeleteTrip(id)}
             />
           ))}
         </div>
       )}
+      {deleteError && <p className="status err" role="alert">{deleteError}</p>}
       <button
         type="button"
         className="btn btn-ghost my-trips-join"

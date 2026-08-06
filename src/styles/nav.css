@@ -1,6 +1,7 @@
+:root{--bottom-nav-height:calc(67px + env(safe-area-inset-bottom));}
 .bottom-nav{
   position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:420px;
+  width:100%;max-width:420px;height:var(--bottom-nav-height);
   background:var(--card);border-top:1px solid var(--border);
   display:flex;justify-content:space-around;align-items:center;
   padding:10px 0 calc(10px + env(safe-area-inset-bottom));

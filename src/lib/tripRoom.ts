@@ -38,6 +38,7 @@ function roomSnapshot(trip: Trip): Omit<Trip, 'id' | 'photos'> {
     photos: _photos,
     readOnly: _readOnly,
     roomOwnerToken: _roomOwnerToken,
+    roomMemberId: _roomMemberId,
     members: _members,
     ...snapshot
   } = trip;
@@ -67,7 +68,7 @@ export function currentTripMember(profileName: string, profilePhoto: string | nu
   const name = telegramUser ? telegramUserDisplayName(telegramUser) : profileName.trim() || 'Traveler';
   const candidatePhoto = telegramUser?.photo_url || profilePhoto || '';
   return {
-    id: persistentMemberId(),
+    id: telegramUser ? `telegram:${telegramUser.id}` : persistentMemberId(),
     name: name.slice(0, 80),
     photoUrl: candidatePhoto.startsWith('https://') ? candidatePhoto : undefined,
   };
@@ -98,7 +99,7 @@ export async function saveTripRoom(trip: Trip, sharedBy: string, member: TripMem
   return (await response.json()) as SavedRoom;
 }
 
-function roomResponseToTrip(room: RoomResponse): Trip {
+function roomResponseToTrip(room: RoomResponse, roomMemberId?: string): Trip {
   if (!room.trip || !room.code || !Array.isArray(room.trip.tripDays)) {
     throw new Error('This trip room contains invalid data.');
   }
@@ -108,6 +109,7 @@ function roomResponseToTrip(room: RoomResponse): Trip {
     photos: {},
     readOnly: true,
     roomCode: room.code,
+    roomMemberId,
     sharedBy: room.sharedBy,
     roomUpdatedAt: room.updatedAt,
     members: Array.isArray(room.members) ? room.members : [],
@@ -122,7 +124,26 @@ export async function joinTripRoom(rawCode: string, member: TripMemberInput): Pr
     body: JSON.stringify({ code, member }),
   });
   if (!response.ok) throw new Error(await readError(response));
-  return roomResponseToTrip((await response.json()) as RoomResponse);
+  return roomResponseToTrip((await response.json()) as RoomResponse, member.id);
+}
+
+export async function leaveTripRoom(
+  rawCode: string,
+  member: TripMemberInput,
+  joinedMemberId?: string,
+): Promise<void> {
+  const code = rawCode.trim().toUpperCase();
+  const memberIds = Array.from(new Set([
+    joinedMemberId,
+    member.id,
+    persistentMemberId(),
+  ].filter((id): id is string => Boolean(id))));
+  const response = await fetch(`${tripRoomApiUrl()}/leave`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ code, memberIds }),
+  });
+  if (!response.ok) throw new Error(await readError(response));
 }
 
 export async function getTripRoom(rawCode: string): Promise<Trip> {

@@ -76,6 +76,7 @@ export interface Trip {
   readOnly?: boolean;
   roomCode?: string;
   roomOwnerToken?: string;
+  roomMemberId?: string;
   roomUpdatedAt?: number;
   members?: TripMember[];
 }

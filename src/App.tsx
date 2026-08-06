@@ -20,6 +20,7 @@ import JoinTripRoomModal from './components/modals/JoinTripRoomModal';
 import EditTripDatesModal from './components/modals/EditTripDatesModal';
 import ThemeSkyTransition from './components/shared/ThemeSkyTransition';
 import AppHeader from './components/shared/AppHeader';
+import AnimatedTravelBackground from './components/shared/AnimatedTravelBackground';
 
 function renderView(view: ViewName) {
   switch (view) {
@@ -52,6 +53,7 @@ function App() {
   return (
     <div className={`app${state.currentView === 'map' ? ' map-active' : ''}`}>
       <div className="app-glow" />
+      <AnimatedTravelBackground />
       <ThemeSkyTransition />
       <AppHeader />
 

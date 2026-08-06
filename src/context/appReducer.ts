@@ -163,7 +163,12 @@ export function appReducer(state: AppState, action: Action): AppState {
         (trip) => trip.readOnly && action.trip.roomCode && trip.roomCode === action.trip.roomCode,
       );
       if (!existing) return state;
-      const refreshedTrip = { ...action.trip, id: existing.id, readOnly: true };
+      const refreshedTrip = {
+        ...action.trip,
+        id: existing.id,
+        readOnly: true,
+        roomMemberId: existing.roomMemberId,
+      };
       return {
         ...state,
         trips: state.trips.map((trip) => (trip.id === existing.id ? refreshedTrip : trip)),

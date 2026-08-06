@@ -107,6 +107,16 @@ function normalizeMember(value) {
   return { id, name, photoUrl };
 }
 
+function normalizeMemberIds(value) {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(
+    value
+      .filter((id) => typeof id === 'string')
+      .map((id) => id.trim())
+      .filter((id) => /^[A-Za-z0-9:_-]{8,100}$/.test(id)),
+  )).slice(0, 3);
+}
+
 async function listRoomMembers(env, code) {
   try {
     const result = await env.DB.prepare(
@@ -245,6 +255,33 @@ async function joinRoom(request, env, origin) {
     throw error;
   }
   return sendJson(origin, await roomPayload(env, loaded));
+}
+
+async function leaveRoom(request, env, origin) {
+  let body;
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    return sendJson(origin, { error: 'Valid member data is required.' }, 400);
+  }
+
+  const code = normalizeCode(body?.code);
+  const memberIds = normalizeMemberIds(body?.memberIds);
+  if (!CODE_PATTERN.test(code) || memberIds.length === 0) {
+    return sendJson(origin, { error: 'A valid room code and member profile are required.' }, 400);
+  }
+
+  const placeholders = memberIds.map(() => '?').join(', ');
+  const result = await env.DB.prepare(
+    `DELETE FROM trip_room_members
+     WHERE room_code = ? AND member_id IN (${placeholders}) AND role = 'member'`,
+  )
+    .bind(code, ...memberIds)
+    .run();
+
+  // The owner row is intentionally protected by role = 'member'. Leaving is
+  // idempotent, so retrying after a lost response is always safe.
+  return sendJson(origin, { left: result.success });
 }
 
 async function saveRoom(request, env, origin) {
@@ -513,6 +550,10 @@ export default {
       }
       if (url.pathname === '/api/trip-room/join') {
         if (request.method === 'POST') return await joinRoom(request, env, origin);
+        return sendJson(origin, { error: 'Method not allowed.' }, 405);
+      }
+      if (url.pathname === '/api/trip-room/leave') {
+        if (request.method === 'POST') return await leaveRoom(request, env, origin);
         return sendJson(origin, { error: 'Method not allowed.' }, 405);
       }
       if (url.pathname === '/api/resolve-map-link') return await resolveMapLink(request, origin);
