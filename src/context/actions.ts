@@ -12,6 +12,7 @@ export type Action =
   | { type: 'OPEN_MODAL'; modal: ModalName; editingStopIndex?: number | null }
   | { type: 'CLOSE_MODAL' }
   | { type: 'CREATE_TRIP'; trip: Trip }
+  | { type: 'UPDATE_TRIP_DATES'; tripId: number; startDate: string; endDate: string }
   | { type: 'LOAD_TRIP'; tripId: number }
   | { type: 'IMPORT_SHARED_TRIP'; trip: Trip }
   | { type: 'REFRESH_SHARED_TRIP'; trip: Trip }

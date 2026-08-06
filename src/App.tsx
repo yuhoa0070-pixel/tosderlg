@@ -18,6 +18,7 @@ import ConfirmDeletePhotoModal from './components/modals/ConfirmDeletePhotoModal
 import EditProfileModal from './components/modals/EditProfileModal';
 import ConfirmClearModal from './components/modals/ConfirmClearModal';
 import JoinTripRoomModal from './components/modals/JoinTripRoomModal';
+import EditTripDatesModal from './components/modals/EditTripDatesModal';
 import ThemeSkyTransition from './components/shared/ThemeSkyTransition';
 import AppHeader from './components/shared/AppHeader';
 
@@ -66,6 +67,7 @@ function App() {
       <EditProfileModal />
       <ConfirmClearModal />
       <JoinTripRoomModal />
+      <EditTripDatesModal />
 
       <BottomNav />
     </div>

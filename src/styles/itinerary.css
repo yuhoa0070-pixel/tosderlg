@@ -1,4 +1,17 @@
 .day-tabs{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}
+.trip-date-edit-trigger{
+  display:flex;align-items:center;gap:7px;max-width:100%;min-height:34px;
+  margin:1px 0 17px;padding:4px 8px 4px 0;border:0;background:transparent;
+  color:var(--text-secondary);font-family:inherit;font-size:15px;font-weight:500;text-align:left;cursor:pointer;
+}
+.trip-date-edit-trigger>svg{width:16px;height:16px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.trip-date-edit-trigger span{min-width:0;line-height:1.35;}
+.trip-date-edit-trigger .trip-date-edit-pencil{width:14px;height:14px;margin-left:2px;color:var(--accent);transition:transform .18s ease;}
+.trip-date-edit-trigger:hover .trip-date-edit-pencil{transform:rotate(-7deg) scale(1.08);}
+.trip-date-edit-trigger:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px;}
+.trip-date-edit-trigger:active{transform:translateY(1px);}
+@media(prefers-reduced-motion:reduce){.trip-date-edit-trigger .trip-date-edit-pencil{transition:none;}}
+
 .itinerary-mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:0 0 18px;padding:4px;border:1px solid var(--border);border-radius:14px;background:var(--card-hover);}
 .itinerary-mode-tabs button{min-height:38px;border:0;border-radius:10px;background:transparent;color:var(--text-muted);font-size:14px;font-weight:800;cursor:pointer;}
 .itinerary-mode-tabs button.active{background:var(--card);color:var(--accent);box-shadow:0 3px 10px rgba(0,0,0,.08);}

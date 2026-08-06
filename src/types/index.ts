@@ -15,6 +15,7 @@ export type ViewName =
 
 export type ModalName =
   | 'stopForm'
+  | 'editTripDates'
   | 'pasteLink'
   | 'memoryCollection'
   | 'joinTripRoom'

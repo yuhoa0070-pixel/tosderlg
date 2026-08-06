@@ -1,5 +1,5 @@
 import type { AppState, Trip } from '../types';
-import { isPastTrip } from '../lib/tripUtils';
+import { dayCount, isPastTrip } from '../lib/tripUtils';
 import type { Action } from './actions';
 
 export const initialState: AppState = {
@@ -88,6 +88,34 @@ export function appReducer(state: AppState, action: Action): AppState {
         currentDay: 0,
         currentView: 'customize',
       };
+
+    case 'UPDATE_TRIP_DATES': {
+      const trip = state.trips.find((item) => item.id === action.tripId);
+      if (!trip || trip.readOnly) return state;
+
+      const count = dayCount(action.startDate, action.endDate);
+      const tripDays = trip.tripDays.slice(0, count);
+      while (tripDays.length < count) tripDays.push({ stops: [] });
+
+      const photos = Object.fromEntries(
+        Object.entries(trip.photos).filter(([key]) => {
+          const match = key.match(/^d(\d+)-s\d+$/);
+          return !match || Number(match[1]) < count;
+        }),
+      );
+      const label = `${action.startDate} - ${action.endDate} · ${count} day${count === 1 ? '' : 's'}`;
+
+      return {
+        ...state,
+        trips: state.trips.map((item) =>
+          item.id === action.tripId
+            ? { ...item, startDate: action.startDate, endDate: action.endDate, label, tripDays, photos }
+            : item,
+        ),
+        currentDay: state.currentTripId === action.tripId ? Math.min(state.currentDay, count - 1) : state.currentDay,
+        selectedStop: state.currentTripId === action.tripId ? 0 : state.selectedStop,
+      };
+    }
 
     case 'LOAD_TRIP': {
       const trip = state.trips.find((t) => t.id === action.tripId);
