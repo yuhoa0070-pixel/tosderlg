@@ -34,7 +34,7 @@
 .trip-invite-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .trip-share-status{margin:6px 2px 0;color:var(--accent);font-size:12px;font-weight:700;text-align:right;}
 .trip-copy-toast{
-  position:fixed;top:calc(env(safe-area-inset-top) + 16px);left:50%;z-index:60;
+  position:fixed;top:calc(env(safe-area-inset-top) + 16px);left:50%;z-index:1000;
   display:flex;align-items:center;gap:8px;min-height:42px;padding:9px 16px;
   border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(20,22,20,.9);
   color:#fff;font-size:14px;font-weight:800;line-height:1;white-space:nowrap;pointer-events:none;

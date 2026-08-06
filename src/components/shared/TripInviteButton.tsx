@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAppContext } from '../../context/AppContext';
 import { getTelegramUser, getTelegramWebApp, telegramUserDisplayName } from '../../lib/telegram';
 import { saveTripRoom } from '../../lib/tripRoom';
@@ -145,15 +146,17 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
           <span>{busy ? (km ? 'កំពុងបង្កើត…' : 'Creating…') : (km ? 'អញ្ជើញមិត្ត' : 'Invite friend')}</span>
         </button>
       </div>
-      {codeCopied && (
-        <div className="trip-copy-toast" role="status" aria-live="polite">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" />
-            <path d="m8 12 2.6 2.6L16.5 9" />
-          </svg>
-          <span>Copied</span>
-        </div>
-      )}
+      {codeCopied &&
+        createPortal(
+          <div className="trip-copy-toast" role="status" aria-live="polite">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="m8 12 2.6 2.6L16.5 9" />
+            </svg>
+            <span>Copied</span>
+          </div>,
+          document.body,
+        )}
       {status && <p className="trip-share-status" role="status">{status}</p>}
     </div>
   );
