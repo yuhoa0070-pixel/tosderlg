@@ -25,6 +25,8 @@ export function parseGoogleMapsLink(url: string | null | undefined): GeoCenter |
     if (parsed) return parsed;
     parsed = coordinates(normalized.match(new RegExp(`@${number},${number}`, 'i')));
     if (parsed) return parsed;
+    parsed = coordinates(normalized.match(new RegExp(`/place/${number},${number}(?:[/@?]|$)`, 'i')));
+    if (parsed) return parsed;
     parsed = coordinates(
       normalized.match(new RegExp(`[?&](?:q|query|ll|center|destination)=\\(?(?:loc:)?${number}\\s*,\\s*${number}`, 'i')),
     );

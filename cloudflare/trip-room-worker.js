@@ -348,6 +348,78 @@ function isExpandedGoogleMapsUrl(value) {
   }
 }
 
+function googleMapsUrlFromRedirect(value, baseUrl) {
+  try {
+    const candidate = new URL(value, baseUrl);
+    if (isExpandedGoogleMapsUrl(candidate.href) || allowedShortMapUrl(candidate.href)) return candidate;
+
+    // Google may route through its consent page. The continue parameter is
+    // still validated as a Google Maps URL before it is followed or returned.
+    if (candidate.hostname === 'consent.google.com') {
+      const continued = candidate.searchParams.get('continue');
+      if (continued && isExpandedGoogleMapsUrl(continued)) return new URL(continued);
+    }
+  } catch {
+    // Invalid or non-Google redirect targets are intentionally ignored.
+  }
+  return null;
+}
+
+function googleMapsUrlFromHtml(html, baseUrl) {
+  const normalized = html
+    .replaceAll('\\/', '/')
+    .replaceAll('\\u0026', '&')
+    .replaceAll('&amp;', '&');
+  const candidates = normalized.match(/https:\/\/(?:www\.)?(?:google\.com\/maps|maps\.google\.com\/)[^"'<>\s]+/gi) || [];
+  for (const candidate of candidates) {
+    const url = googleMapsUrlFromRedirect(candidate, baseUrl);
+    if (url && isExpandedGoogleMapsUrl(url.href)) return url;
+  }
+  return null;
+}
+
+async function expandGoogleMapsShortUrl(shortUrl) {
+  let current = shortUrl;
+  for (let hop = 0; hop < 6; hop += 1) {
+    const response = await fetch(current, {
+      method: 'GET',
+      redirect: 'manual',
+      headers: {
+        // A normal mobile browser user-agent avoids Google returning a bot
+        // preview page that hides the actual Maps redirect.
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1',
+        Accept: 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+    });
+
+    const location = response.headers.get('Location');
+    if (location) {
+      if (response.body) await response.body.cancel();
+      const next = googleMapsUrlFromRedirect(location, current.href);
+      if (!next) return null;
+      if (isExpandedGoogleMapsUrl(next.href)) return next.href;
+      current = next;
+      continue;
+    }
+
+    if (isExpandedGoogleMapsUrl(response.url)) {
+      if (response.body) await response.body.cancel();
+      return response.url;
+    }
+
+    if (response.ok) {
+      const html = await response.text();
+      const embedded = googleMapsUrlFromHtml(html.slice(0, 750_000), current.href);
+      if (embedded) return embedded.href;
+    } else if (response.body) {
+      await response.body.cancel();
+    }
+    return null;
+  }
+  return null;
+}
+
 async function resolveMapLink(request, origin) {
   if (request.method !== 'GET') {
     return sendJson(origin, { error: 'Method not allowed.' }, 405);
@@ -364,17 +436,8 @@ async function resolveMapLink(request, origin) {
   }
 
   try {
-    const expandedResponse = await fetch(shortUrl, {
-      method: 'GET',
-      redirect: 'follow',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; Waylo/1.0; +https://waylo.app)',
-        'Accept-Language': 'en',
-      },
-    });
-    const expandedUrl = expandedResponse.url;
-    if (expandedResponse.body) await expandedResponse.body.cancel();
-    if (!expandedResponse.ok || !expandedUrl || !isExpandedGoogleMapsUrl(expandedUrl)) {
+    const expandedUrl = await expandGoogleMapsShortUrl(shortUrl);
+    if (!expandedUrl) {
       return sendJson(origin, { error: 'Google Maps did not return a usable location.' }, 422);
     }
     return sendJson(origin, { url: expandedUrl });
