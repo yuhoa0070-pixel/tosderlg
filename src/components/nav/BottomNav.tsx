@@ -1,13 +1,13 @@
 import { useAppContext } from '../../context/AppContext';
 import type { ViewName } from '../../types';
 
-export type NavId = 'navHome' | 'navItinerary' | 'navPacking' | 'navProfile';
+export type NavId = 'navHome' | 'navItinerary' | 'navMap' | 'navPacking' | 'navProfile';
 
 const NAV_MAP: Record<ViewName, NavId | undefined> = {
   home: 'navHome',
   itinerary: 'navItinerary',
   customize: 'navItinerary',
-  map: 'navItinerary',
+  map: 'navMap',
   packing: 'navPacking',
   memory: 'navItinerary',
   'all-photos': undefined,
@@ -24,6 +24,7 @@ export default function BottomNav() {
   const km = state.language === 'km';
 
   const goItinerary = () => dispatch({ type: 'NAVIGATE', view: hasTrip ? 'itinerary' : 'home' });
+  const goMap = () => dispatch({ type: 'NAVIGATE', view: hasTrip ? 'map' : 'home' });
   const goPacking = () => dispatch({ type: 'NAVIGATE', view: hasTrip ? 'packing' : 'home' });
 
   return (
@@ -45,6 +46,13 @@ export default function BottomNav() {
           <path d="M8.5 12.3l2.2 2.2 4.8-5.2" />
         </svg>
         <span>{km ? 'កាលវិភាគ' : 'Itinerary'}</span>
+      </button>
+      <button className={`nav-item${active === 'navMap' ? ' active' : ''}`} disabled={!hasTrip} onClick={goMap}>
+        <svg className="nav-icon" viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 21s6.8-6.1 6.8-11.6a6.8 6.8 0 1 0-13.6 0C5.2 14.9 12 21 12 21z" />
+          <circle cx="12" cy="9.3" r="2.4" />
+        </svg>
+        <span>{km ? 'ផែនទី' : 'Map'}</span>
       </button>
       <button className={`nav-item${active === 'navPacking' ? ' active' : ''}`} disabled={!hasTrip} onClick={goPacking}>
         <svg className="nav-icon" viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
