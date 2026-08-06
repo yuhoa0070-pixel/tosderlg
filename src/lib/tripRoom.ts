@@ -16,8 +16,8 @@ interface RoomResponse {
 function tripRoomApiUrl(): string {
   const configured = import.meta.env.VITE_TRIP_ROOM_API_URL?.replace(/\/+$/, '');
   if (configured) return configured;
-  if (import.meta.env.DEV) return 'http://localhost:8787';
-  throw new Error('Trip rooms need the Cloudflare API URL configured in Vercel.');
+  if (import.meta.env.DEV) return 'http://localhost:8787/api/trip-room';
+  return '/api/trip-room';
 }
 
 function roomSnapshot(trip: Trip): Omit<Trip, 'id' | 'photos'> {

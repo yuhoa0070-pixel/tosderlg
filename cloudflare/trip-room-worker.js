@@ -3,6 +3,7 @@ const CODE_PATTERN = /^[A-Z2-9]{6}$/;
 const MAX_BODY_BYTES = 220_000;
 const MAX_TRIP_BYTES = 200_000;
 const ROOM_TTL_MS = 180 * 24 * 60 * 60 * 1000;
+const SHORT_MAP_HOSTS = new Set(['maps.app.goo.gl', 'goo.gl']);
 
 function allowedOrigin(request, env) {
   const origin = request.headers.get('Origin');
@@ -185,23 +186,90 @@ async function saveRoom(request, env, origin) {
   return sendJson(origin, { error: 'Could not create a unique room code. Try again.' }, 503);
 }
 
+function allowedShortMapUrl(value) {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' || !SHORT_MAP_HOSTS.has(url.hostname)) return null;
+    if (url.hostname === 'goo.gl' && !url.pathname.startsWith('/maps/')) return null;
+    return url;
+  } catch {
+    return null;
+  }
+}
+
+function isExpandedGoogleMapsUrl(value) {
+  try {
+    const url = new URL(value);
+    const isGoogleHost = url.hostname === 'google.com' || url.hostname.endsWith('.google.com');
+    return url.protocol === 'https:' && isGoogleHost &&
+      (url.pathname.startsWith('/maps') || url.hostname === 'maps.google.com');
+  } catch {
+    return false;
+  }
+}
+
+async function resolveMapLink(request, origin) {
+  if (request.method !== 'GET') {
+    return sendJson(origin, { error: 'Method not allowed.' }, 405);
+  }
+
+  const rawUrl = new URL(request.url).searchParams.get('url');
+  if (!rawUrl || rawUrl.length > 2048) {
+    return sendJson(origin, { error: 'A Google Maps short link is required.' }, 400);
+  }
+
+  const shortUrl = allowedShortMapUrl(rawUrl);
+  if (!shortUrl) {
+    return sendJson(origin, { error: 'Only Google Maps short links are supported.' }, 400);
+  }
+
+  try {
+    const expandedResponse = await fetch(shortUrl, {
+      method: 'GET',
+      redirect: 'follow',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Waylo/1.0; +https://waylo.app)',
+        'Accept-Language': 'en',
+      },
+    });
+    const expandedUrl = expandedResponse.url;
+    if (expandedResponse.body) await expandedResponse.body.cancel();
+    if (!expandedResponse.ok || !expandedUrl || !isExpandedGoogleMapsUrl(expandedUrl)) {
+      return sendJson(origin, { error: 'Google Maps did not return a usable location.' }, 422);
+    }
+    return sendJson(origin, { url: expandedUrl });
+  } catch (error) {
+    console.error(JSON.stringify({
+      message: 'Google Maps short-link resolution failed',
+      error: error instanceof Error ? error.message : String(error),
+    }));
+    return sendJson(origin, { error: 'Could not resolve this Google Maps link.' }, 502);
+  }
+}
+
 export default {
   async fetch(request, env) {
+    const url = new URL(request.url);
     const origin = allowedOrigin(request, env);
     if (!origin) return sendJson('null', { error: 'Origin not allowed.' }, 403);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: responseHeaders(origin) });
 
     try {
-      if (request.method === 'GET') return await getRoom(request, env, origin);
-      if (request.method === 'POST') return await saveRoom(request, env, origin);
-      return sendJson(origin, { error: 'Method not allowed.' }, 405);
+      if (url.pathname === '/api/trip-room') {
+        if (request.method === 'GET') return await getRoom(request, env, origin);
+        if (request.method === 'POST') return await saveRoom(request, env, origin);
+        return sendJson(origin, { error: 'Method not allowed.' }, 405);
+      }
+      if (url.pathname === '/api/resolve-map-link') return await resolveMapLink(request, origin);
+      return sendJson(origin, { error: 'API route not found.' }, 404);
     } catch (error) {
       console.error(JSON.stringify({
-        message: 'Trip room request failed',
+        message: 'Waylo API request failed',
         method: request.method,
+        path: url.pathname,
         error: error instanceof Error ? error.message : String(error),
       }));
-      return sendJson(origin, { error: 'Trip rooms are temporarily unavailable.' }, 502);
+      return sendJson(origin, { error: 'Waylo services are temporarily unavailable.' }, 502);
     }
   },
 };

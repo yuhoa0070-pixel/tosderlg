@@ -1,28 +1,58 @@
-# Waylo trip-room API
+# Waylo on Cloudflare
 
-This Worker stores six-character trip rooms in Cloudflare D1 while the main
-Waylo frontend remains deployed on Vercel.
+Waylo is hosted entirely by one Cloudflare Worker:
+
+- Vite builds the React application into `dist/`.
+- Cloudflare Static Assets serves the frontend and handles SPA navigation.
+- `/api/trip-room` stores shared trip rooms in D1.
+- `/api/resolve-map-link` expands supported Google Maps short links.
+
+Vercel and `VITE_TRIP_ROOM_API_URL` are not required in production because the
+frontend and API use the same `workers.dev` origin.
 
 ## Deploy
 
 From the repository root:
 
 ```bash
-npx wrangler@latest login
-npx wrangler@latest deploy --config cloudflare/wrangler.jsonc
+npm run deploy
+```
+
+That command builds the frontend and deploys the Worker, assets, API routes,
+and D1 binding together. The production URL is:
+
+```text
+https://waylo-trip-rooms.yuhoa0070.workers.dev
+```
+
+## Database migrations
+
+Only run the migration command when a new migration has been added:
+
+```bash
 npx wrangler@latest d1 migrations apply waylo-trip-rooms --remote --config cloudflare/wrangler.jsonc
 ```
 
-Wrangler automatically provisions the D1 database during the first deploy and
-writes its database ID into `cloudflare/wrangler.jsonc`. Copy the deployed
-`workers.dev` URL into the Vercel environment variable:
+The initial `0001_create_trip_rooms.sql` migration has already been applied.
 
-```text
-VITE_TRIP_ROOM_API_URL=https://waylo-trip-rooms.YOUR_SUBDOMAIN.workers.dev
+## Local Cloudflare preview
+
+```bash
+npm run dev:cloudflare
 ```
 
-Redeploy the Vercel project after adding the variable because Vite embeds
-`VITE_` variables during the production build.
+This builds the latest frontend and serves the app, Worker API, and a local D1
+database together at the URL printed by Wrangler.
 
-For production, replace `ALLOWED_ORIGINS: "*"` in `wrangler.jsonc` with the
-comma-separated Vercel origins that should be allowed to call this API.
+## Retire Vercel
+
+After confirming the Cloudflare URL loads and both trip invitations and Google
+Maps links work, disconnect any custom domain from Vercel and then stop or
+delete the Vercel project.
+
+For the Telegram Mini App, open `@BotFather`, select the bot, and replace the
+old Vercel URL anywhere it is configured under **Bot Settings > Menu Button**
+or **Configure Mini App** with the Cloudflare production URL above.
+
+If a custom domain is used later, add it to the Worker and include its origin
+in `ALLOWED_ORIGINS` in `wrangler.jsonc`.
