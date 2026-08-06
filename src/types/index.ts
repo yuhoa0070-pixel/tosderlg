@@ -6,7 +6,6 @@ export type ViewName =
   | 'itinerary'
   | 'customize'
   | 'map'
-  | 'packing'
   | 'all-photos'
   | 'memory'
   | 'recap'
