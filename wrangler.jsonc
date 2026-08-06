@@ -1,11 +1,11 @@
 {
-  "$schema": "../node_modules/wrangler/config-schema.json",
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "waylo-trip-rooms",
-  "main": "./trip-room-worker.js",
+  "main": "./cloudflare/trip-room-worker.js",
   "compatibility_date": "2026-08-06",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
-    "directory": "../dist",
+    "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
@@ -21,7 +21,7 @@
     {
       "binding": "DB",
       "database_name": "waylo-trip-rooms",
-      "migrations_dir": "./migrations",
+      "migrations_dir": "./cloudflare/migrations",
       "database_id": "1e319e70-1bda-495c-8b73-0fd2a57327e5"
     }
   ]

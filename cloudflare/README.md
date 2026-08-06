@@ -30,7 +30,7 @@ https://waylo-trip-rooms.yuhoa0070.workers.dev
 Only run the migration command when a new migration has been added:
 
 ```bash
-npx wrangler@latest d1 migrations apply waylo-trip-rooms --remote --config cloudflare/wrangler.jsonc
+npx wrangler@latest d1 migrations apply waylo-trip-rooms --remote
 ```
 
 The initial `0001_create_trip_rooms.sql` migration has already been applied.
@@ -43,6 +43,22 @@ npm run dev:cloudflare
 
 This builds the latest frontend and serves the app, Worker API, and a local D1
 database together at the URL printed by Wrangler.
+
+## GitHub automatic deployments
+
+The root `wrangler.jsonc` is the deployment source of truth, so Cloudflare
+Workers Builds can use its standard settings:
+
+```text
+Root directory: /
+Build command: npm run build
+Deploy command: npx wrangler deploy
+Production branch: main
+```
+
+Keeping the Wrangler configuration at the repository root is important. If it
+is missing there, Cloudflare may auto-detect Vite and publish only the static
+assets, leaving `/api/trip-room` and the D1 binding unavailable.
 
 ## Retire Vercel
 

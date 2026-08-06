@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "deploy": "npm run build && npx wrangler@latest deploy --config cloudflare/wrangler.jsonc",
-    "dev:cloudflare": "npm run build && npx wrangler@latest dev --config cloudflare/wrangler.jsonc",
+    "deploy": "npm run build && npx wrangler@latest deploy",
+    "dev:cloudflare": "npm run build && npx wrangler@latest dev",
     "lint": "oxlint",
     "preview": "vite preview"
   },
