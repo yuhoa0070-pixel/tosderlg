@@ -50,7 +50,7 @@ function App() {
   const { state } = useAppContext();
 
   return (
-    <div className="app">
+    <div className={`app${state.currentView === 'map' ? ' map-active' : ''}`}>
       <div className="app-glow" />
       <ThemeSkyTransition />
       <AppHeader />
