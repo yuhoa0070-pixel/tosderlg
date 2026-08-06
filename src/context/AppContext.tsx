@@ -6,6 +6,13 @@ import { loadState, persistState } from './persistence';
 import { getTelegramUser, initTelegramWebApp, telegramUserDisplayName } from '../lib/telegram';
 import { clearTripInviteFromUrl, readTripInviteFromUrl } from '../lib/tripInvite';
 import { currentTripMember, getTripRoom, saveTripRoom } from '../lib/tripRoom';
+import {
+  hasTelegramCloudStorage,
+  loadTelegramCloudState,
+  saveTelegramCloudState,
+  telegramCloudStateFromApp,
+  telegramCloudStateSignature,
+} from '../lib/telegramCloudState';
 
 interface AppContextValue {
   state: AppState;
@@ -35,11 +42,56 @@ function init(base: AppState): AppState {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState, init);
   const lastOwnerSyncRef = useRef('');
+  const cloudSyncReadyRef = useRef(false);
+  const cloudStateExistsRef = useRef(false);
+  const lastCloudSyncRef = useRef('');
+  const initialCloudStateRef = useRef(telegramCloudStateFromApp({
+    trips: state.trips,
+    currentTripId: state.currentTripId,
+    profileName: state.profileName,
+    profilePhoto: state.profilePhoto,
+  }));
 
   useEffect(() => {
     const invitedTrip = readTripInviteFromUrl();
     if (invitedTrip) dispatch({ type: 'IMPORT_SHARED_TRIP', trip: invitedTrip });
     clearTripInviteFromUrl();
+  }, []);
+
+  useEffect(() => {
+    if (!hasTelegramCloudStorage()) return;
+    let cancelled = false;
+
+    async function hydrateFromTelegram() {
+      try {
+        const cloudState = await loadTelegramCloudState();
+        if (cancelled) return;
+
+        if (cloudState) {
+          cloudSyncReadyRef.current = true;
+          cloudStateExistsRef.current = true;
+          lastCloudSyncRef.current = telegramCloudStateSignature(cloudState);
+          dispatch({ type: 'RESTORE_TELEGRAM_CLOUD_STATE', cloudState });
+          return;
+        }
+
+        const localState = initialCloudStateRef.current;
+        if (localState.trips.length > 0) {
+          await saveTelegramCloudState(localState);
+          if (cancelled) return;
+          cloudStateExistsRef.current = true;
+        }
+        lastCloudSyncRef.current = telegramCloudStateSignature(localState);
+        cloudSyncReadyRef.current = true;
+      } catch (error) {
+        console.warn('Telegram cloud sync could not start.', error);
+      }
+    }
+
+    void hydrateFromTelegram();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -71,6 +123,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     state.activeMomentGroup,
     state.viewingPhoto,
   ]);
+
+  useEffect(() => {
+    if (!cloudSyncReadyRef.current || !hasTelegramCloudStorage()) return;
+    const cloudState = telegramCloudStateFromApp({
+      trips: state.trips,
+      currentTripId: state.currentTripId,
+      profileName: state.profileName,
+      profilePhoto: state.profilePhoto,
+    });
+    const signature = telegramCloudStateSignature(cloudState);
+    if (signature === lastCloudSyncRef.current) return;
+    if (!cloudStateExistsRef.current && cloudState.trips.length === 0) return;
+
+    const timer = window.setTimeout(() => {
+      void saveTelegramCloudState(cloudState)
+        .then(() => {
+          cloudStateExistsRef.current = true;
+          lastCloudSyncRef.current = signature;
+        })
+        .catch((error) => {
+          console.warn('Telegram cloud state could not be saved.', error);
+        });
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [state.trips, state.currentTripId, state.profileName, state.profilePhoto]);
 
   useEffect(() => {
     const ownerRooms = state.trips.filter((trip) => !trip.readOnly && trip.roomCode && trip.roomOwnerToken);

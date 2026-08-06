@@ -25,6 +25,15 @@ function mapTrip(state: AppState, tripId: number | null, fn: (trip: Trip) => Tri
   return state.trips.map((t) => (t.id === tripId && !t.readOnly ? fn(t) : t));
 }
 
+function mergeLocalPhotos(cloudTrip: Trip, localTrip?: Trip): Trip {
+  if (!localTrip) return cloudTrip;
+  const photos = { ...cloudTrip.photos };
+  for (const [key, localPhotos] of Object.entries(localTrip.photos)) {
+    if (localPhotos.length > 0) photos[key] = localPhotos;
+  }
+  return { ...cloudTrip, photos };
+}
+
 export function appReducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'NAVIGATE':
@@ -184,6 +193,35 @@ export function appReducer(state: AppState, action: Action): AppState {
         ...state,
         trips: state.trips.map((trip) => (trip.id === action.tripId ? { ...trip, members: action.members } : trip)),
       };
+
+    case 'RESTORE_TELEGRAM_CLOUD_STATE': {
+      const cloudIds = new Set(action.cloudState.trips.map((trip) => trip.id));
+      const localTrips = new Map(state.trips.map((trip) => [trip.id, trip]));
+      const trips = [
+        ...action.cloudState.trips.map((trip) => mergeLocalPhotos(trip, localTrips.get(trip.id))),
+        ...state.trips.filter((trip) => !cloudIds.has(trip.id)),
+      ];
+      const requestedTripId = action.cloudState.currentTripId;
+      const currentTripId = trips.some((trip) => trip.id === requestedTripId)
+        ? requestedTripId
+        : trips.at(-1)?.id ?? null;
+      const activeTrip = trips.find((trip) => trip.id === currentTripId);
+      const currentDay = activeTrip
+        ? Math.min(state.currentDay, Math.max(activeTrip.tripDays.length - 1, 0))
+        : 0;
+
+      return {
+        ...state,
+        trips,
+        currentTripId,
+        currentDay,
+        selectedStop: 0,
+        profileName: action.cloudState.profileName || state.profileName,
+        profilePhoto: action.cloudState.profilePhoto || state.profilePhoto,
+        activeMomentGroup: null,
+        viewingPhoto: null,
+      };
+    }
 
     case 'DELETE_TRIP': {
       const trips = state.trips.filter((t) => t.id !== action.tripId);

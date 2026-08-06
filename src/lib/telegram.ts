@@ -1,6 +1,7 @@
 import type { Theme } from '../types';
 
 interface TelegramUser {
+  id: number;
   first_name: string;
   last_name?: string;
   username?: string;
@@ -30,13 +31,38 @@ interface TelegramLocationManager {
   openSettings: () => void;
 }
 
+interface TelegramCloudStorage {
+  setItem: (
+    key: string,
+    value: string,
+    callback?: (error: unknown, stored?: boolean) => void,
+  ) => TelegramCloudStorage;
+  getItem: (
+    key: string,
+    callback: (error: unknown, value?: string) => void,
+  ) => TelegramCloudStorage;
+  getItems: (
+    keys: string[],
+    callback: (error: unknown, values?: Record<string, string>) => void,
+  ) => TelegramCloudStorage;
+  removeItems: (
+    keys: string[],
+    callback?: (error: unknown, removed?: boolean) => void,
+  ) => TelegramCloudStorage;
+  getKeys: (
+    callback: (error: unknown, keys?: string[]) => void,
+  ) => TelegramCloudStorage;
+}
+
 interface TelegramWebApp {
+  initData: string;
   ready: () => void;
   expand: () => void;
   colorScheme: 'light' | 'dark';
   viewportHeight: number;
   viewportStableHeight: number;
   initDataUnsafe?: { user?: TelegramUser };
+  CloudStorage?: TelegramCloudStorage;
   LocationManager?: TelegramLocationManager;
   openTelegramLink?: (url: string) => void;
   onEvent: (eventType: TelegramEvent, callback: () => void) => void;
@@ -55,6 +81,10 @@ export function getTelegramWebApp(): TelegramWebApp | null {
 
 export function getTelegramUser(): TelegramUser | null {
   return getTelegramWebApp()?.initDataUnsafe?.user ?? null;
+}
+
+export function getTelegramCloudStorage(): TelegramCloudStorage | null {
+  return getTelegramWebApp()?.CloudStorage ?? null;
 }
 
 export function telegramUserDisplayName(user: TelegramUser): string {

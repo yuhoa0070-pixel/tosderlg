@@ -80,6 +80,15 @@ export interface Trip {
   members?: TripMember[];
 }
 
+export interface TelegramCloudState {
+  version: 1;
+  trips: Trip[];
+  currentTripId: number | null;
+  profileName: string;
+  profilePhoto: string | null;
+  updatedAt: number;
+}
+
 export interface MomentGroup {
   tripId?: number;
   key?: string;
