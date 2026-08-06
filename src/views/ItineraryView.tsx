@@ -19,15 +19,6 @@ export default function ItineraryView() {
 
       {activeTrip && <TripInviteButton trip={activeTrip} />}
 
-      <div className="itinerary-mode-tabs" aria-label={state.language === 'km' ? 'ជ្រើសរើសទិដ្ឋភាព' : 'Choose itinerary view'}>
-        <button type="button" className="active">
-          {state.language === 'km' ? 'ផែនការ' : 'Plan'}
-        </button>
-        <button type="button" onClick={() => dispatch({ type: 'NAVIGATE', view: 'map' })}>
-          {state.language === 'km' ? 'ផែនទី' : 'Map'}
-        </button>
-      </div>
-
       <div className="day-tabs" id="dayTabs">
         {tripDays.map((_, i) => (
           <div
