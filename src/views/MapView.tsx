@@ -10,6 +10,7 @@ import { DEFAULT_CENTER } from '../lib/constants';
 import MemoryGrid from '../components/shared/MemoryGrid';
 import StopCard from '../components/shared/StopCard';
 import TripSummaryHeader from '../components/shared/TripSummaryHeader';
+import LocationConsentModal from '../components/modals/LocationConsentModal';
 
 export default function MapView() {
   const { state, dispatch } = useAppContext();
@@ -25,6 +26,7 @@ export default function MapView() {
   const routeLayersRef = useRef<L.Polyline[]>([]);
   const [statsText, setStatsText] = useState('—');
   const [locationNotice, setLocationNotice] = useState<string | null>(null);
+  const [locationConsentOpen, setLocationConsentOpen] = useState(false);
 
   function handleSelectStop(i: number) {
     dispatch({ type: 'SET_SELECTED_STOP', index: i });
@@ -76,6 +78,16 @@ export default function MapView() {
   } = useLiveLocation(mapRef, setLocationNotice);
 
   function handleToggleLiveLocation() {
+    if (!liveActive) {
+      setLocationConsentOpen(true);
+      return;
+    }
+    setLocationNotice(null);
+    toggleLiveLocation();
+  }
+
+  function handleAllowLocationTracking() {
+    setLocationConsentOpen(false);
     setLocationNotice(null);
     toggleLiveLocation();
   }
@@ -356,6 +368,12 @@ export default function MapView() {
         sandboxed — open the file directly in a regular browser tab for it to persist across refreshes.
       </p>
       {!readOnly && <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />}
+      <LocationConsentModal
+        isOpen={locationConsentOpen}
+        language={state.language}
+        onClose={() => setLocationConsentOpen(false)}
+        onAllow={handleAllowLocationTracking}
+      />
     </section>
   );
 }
