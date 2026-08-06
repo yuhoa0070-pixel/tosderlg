@@ -67,24 +67,23 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
       const shareText = km
         ? `ចូលបន្ទប់ដំណើរ ${destination} របស់ខ្ញុំនៅ Waylo ✈️\nលេខកូដបន្ទប់៖ ${room.code}`
         : `Join my ${destination} trip room in Waylo ✈️\nRoom code: ${room.code}`;
-      const appUrl = `${window.location.origin}${window.location.pathname}`;
       const webApp = getTelegramWebApp();
 
       if (webApp?.openTelegramLink) {
         webApp.openTelegramLink(
-          `https://t.me/share/url?url=${encodeURIComponent(appUrl)}&text=${encodeURIComponent(shareText)}`,
+          `https://t.me/share/url?url=&text=${encodeURIComponent(shareText)}`,
         );
         setStatus(km ? 'កំពុងបើក Telegram…' : 'Opening Telegram…');
         return;
       }
 
       if (navigator.share) {
-        await navigator.share({ title: `${destination} trip room`, text: shareText, url: appUrl });
+        await navigator.share({ title: `${destination} trip room`, text: shareText });
         setStatus(km ? 'បានចែករំលែកលេខកូដបន្ទប់' : 'Room code shared');
         return;
       }
 
-      await copyText(`${shareText}\n${appUrl}`);
+      await copyText(shareText);
       setStatus('');
       setCodeCopied(true);
     } catch (error) {
