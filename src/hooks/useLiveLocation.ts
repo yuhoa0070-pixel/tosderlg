@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import L from 'leaflet';
 import { meDotIcon } from './useLeafletMap';
-import { getTelegramLocation, hasTelegramLocationManager } from '../lib/telegram';
+import { getTelegramLocation, hasTelegramLocationManager, openTelegramLocationSettings } from '../lib/telegram';
 
 const TELEGRAM_POLL_MS = 4000;
 
@@ -15,6 +15,7 @@ const TELEGRAM_POLL_MS = 4000;
  */
 export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg: string) => void) {
   const [active, setActive] = useState(false);
+  const [canOpenSettings, setCanOpenSettings] = useState(false);
   const watchIdRef = useRef<number | null>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const meMarkerRef = useRef<L.Marker | null>(null);
@@ -53,6 +54,7 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
   }, []);
 
   const startBrowserGeolocation = useCallback(() => {
+    setCanOpenSettings(false);
     if (!navigator.geolocation) {
       onStatusRef.current("Location isn't available in this browser");
       return;
@@ -77,18 +79,30 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
   const startTelegramPolling = useCallback(async () => {
     hasCenteredRef.current = false;
     const first = await getTelegramLocation();
-    if (!first) {
+    if (first.status === 'denied') {
+      setCanOpenSettings(true);
+      onStatusRef.current('Location access is off for Waylo. Open settings to allow it.');
+      return;
+    }
+    if (first.status === 'unavailable') {
       startBrowserGeolocation();
       return;
     }
+    setCanOpenSettings(false);
     applyPosition(first.lat, first.lng);
     pollIntervalRef.current = setInterval(async () => {
       const loc = await getTelegramLocation();
-      if (loc) {
+      if (loc.status === 'success') {
         applyPosition(loc.lat, loc.lng);
       } else {
         stop();
-        onStatusRef.current('Could not get your location — check location access is allowed for this app');
+        const denied = loc.status === 'denied';
+        setCanOpenSettings(denied);
+        onStatusRef.current(
+          denied
+            ? 'Location access is off for Waylo. Open settings to allow it.'
+            : 'Could not get your location — check location services are available on this device',
+        );
       }
     }, TELEGRAM_POLL_MS);
     setActive(true);
@@ -106,6 +120,14 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
     if (watchIdRef.current !== null || pollIntervalRef.current !== null) stop();
     else start();
   }, [start, stop]);
+
+  const openSettings = useCallback(() => {
+    if (openTelegramLocationSettings()) {
+      onStatusRef.current('Allow location access, then return and tap the location button again.');
+    } else {
+      onStatusRef.current('Open Telegram settings and allow location access for Waylo.');
+    }
+  }, []);
 
   // Clean up any active watch/poll + the "me" marker on unmount (map view swap).
   useEffect(() => {
@@ -125,5 +147,5 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
     };
   }, []);
 
-  return { active, toggle };
+  return { active, toggle, canOpenSettings, openSettings };
 }

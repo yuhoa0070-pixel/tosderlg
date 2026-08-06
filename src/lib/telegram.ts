@@ -14,6 +14,11 @@ interface TelegramLocationData {
   longitude: number;
 }
 
+export type TelegramLocationResult =
+  | { status: 'success'; lat: number; lng: number }
+  | { status: 'denied' }
+  | { status: 'unavailable' };
+
 interface TelegramLocationManager {
   isInited: boolean;
   isLocationAvailable: boolean;
@@ -131,17 +136,29 @@ function ensureLocationManagerInited(manager: TelegramLocationManager): Promise<
  * "watch" API here (unlike navigator.geolocation.watchPosition), so callers
  * that want continuous tracking should poll this on an interval.
  */
-export async function getTelegramLocation(): Promise<{ lat: number; lng: number } | null> {
+export async function getTelegramLocation(): Promise<TelegramLocationResult> {
   const webApp = getTelegramWebApp();
   const manager = webApp?.LocationManager;
-  if (!manager) return null;
+  if (!manager) return { status: 'unavailable' };
 
   await ensureLocationManagerInited(manager);
-  if (!manager.isLocationAvailable) return null;
+  if (!manager.isLocationAvailable) return { status: 'unavailable' };
 
   return new Promise((resolve) => {
     manager.getLocation((data) => {
-      resolve(data ? { lat: data.latitude, lng: data.longitude } : null);
+      if (data) {
+        resolve({ status: 'success', lat: data.latitude, lng: data.longitude });
+        return;
+      }
+      resolve(manager.isAccessRequested && !manager.isAccessGranted ? { status: 'denied' } : { status: 'unavailable' });
     });
   });
+}
+
+/** Opens Telegram's native bot-location settings from a direct user action. */
+export function openTelegramLocationSettings(): boolean {
+  const manager = getTelegramWebApp()?.LocationManager;
+  if (!manager?.isInited || !manager.isLocationAvailable) return false;
+  manager.openSettings();
+  return true;
 }

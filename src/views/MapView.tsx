@@ -68,7 +68,12 @@ export default function MapView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.pendingFlyToCoords]);
 
-  const { active: liveActive, toggle: toggleLiveLocation } = useLiveLocation(mapRef, setLocationNotice);
+  const {
+    active: liveActive,
+    toggle: toggleLiveLocation,
+    canOpenSettings: canOpenLocationSettings,
+    openSettings: openLocationSettings,
+  } = useLiveLocation(mapRef, setLocationNotice);
 
   function handleToggleLiveLocation() {
     setLocationNotice(null);
@@ -232,7 +237,16 @@ export default function MapView() {
           </svg>
         </div>
       </div>
-      {locationNotice && <p className="note map-location-notice">{locationNotice}</p>}
+      {locationNotice && (
+        <div className="note map-location-notice" role="status">
+          <span>{locationNotice}</span>
+          {canOpenLocationSettings && (
+            <button type="button" onClick={openLocationSettings}>
+              {state.language === 'km' ? 'បើកការកំណត់' : 'Open settings'}
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="map-itinerary-section">
         <div className="map-itinerary-heading">
