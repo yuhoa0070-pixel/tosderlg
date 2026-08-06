@@ -12,10 +12,11 @@ type TelegramEvent = 'themeChanged' | 'viewportChanged';
 interface TelegramLocationData {
   latitude: number;
   longitude: number;
+  horizontal_accuracy: number | null;
 }
 
 export type TelegramLocationResult =
-  | { status: 'success'; lat: number; lng: number }
+  | { status: 'success'; lat: number; lng: number; accuracy: number | null }
   | { status: 'denied' }
   | { status: 'unavailable' };
 
@@ -147,7 +148,12 @@ export async function getTelegramLocation(): Promise<TelegramLocationResult> {
   return new Promise((resolve) => {
     manager.getLocation((data) => {
       if (data) {
-        resolve({ status: 'success', lat: data.latitude, lng: data.longitude });
+        resolve({
+          status: 'success',
+          lat: data.latitude,
+          lng: data.longitude,
+          accuracy: typeof data.horizontal_accuracy === 'number' ? data.horizontal_accuracy : null,
+        });
         return;
       }
       resolve(manager.isAccessRequested && !manager.isAccessGranted ? { status: 'denied' } : { status: 'unavailable' });

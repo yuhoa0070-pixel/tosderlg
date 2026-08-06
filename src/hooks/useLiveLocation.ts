@@ -4,6 +4,22 @@ import { meDotIcon } from './useLeafletMap';
 import { getTelegramLocation, hasTelegramLocationManager, openTelegramLocationSettings } from '../lib/telegram';
 
 const TELEGRAM_POLL_MS = 4000;
+const MAX_USABLE_ACCURACY_METERS = 750;
+
+interface AcceptedPosition {
+  lat: number;
+  lng: number;
+  accuracy: number | null;
+}
+
+function validCoordinates(latitude: number, longitude: number): boolean {
+  return Number.isFinite(latitude) && Number.isFinite(longitude) && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180;
+}
+
+function accuracyMessage(accuracy: number | null): string {
+  if (accuracy === null) return 'Tracking your location';
+  return `Tracking your location · accurate to about ${Math.max(1, Math.round(accuracy))} m`;
+}
 
 /**
  * Ports the original's live-location tracking (startLiveTracking /
@@ -19,24 +35,75 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
   const watchIdRef = useRef<number | null>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const meMarkerRef = useRef<L.Marker | null>(null);
+  const accuracyCircleRef = useRef<L.Circle | null>(null);
+  const lastPositionRef = useRef<AcceptedPosition | null>(null);
   const hasCenteredRef = useRef(false);
   const onStatusRef = useRef(onStatus);
   onStatusRef.current = onStatus;
 
   const applyPosition = useCallback(
-    (latitude: number, longitude: number) => {
+    (latitude: number, longitude: number, rawAccuracy: number | null) => {
       const map = mapRef.current;
-      if (!map) return;
+      if (!map || !validCoordinates(latitude, longitude)) {
+        onStatusRef.current('The device returned an invalid location. Try again.');
+        return false;
+      }
+
+      const accuracy = rawAccuracy !== null && Number.isFinite(rawAccuracy) && rawAccuracy > 0 ? rawAccuracy : null;
+      if (accuracy !== null && accuracy > MAX_USABLE_ACCURACY_METERS) {
+        onStatusRef.current(
+          `GPS accuracy is too low (${Math.round(accuracy)} m). Move near a window or enable Precise Location.`,
+        );
+        return false;
+      }
+
+      const previous = lastPositionRef.current;
+      const nextLatLng = L.latLng(latitude, longitude);
+      if (previous) {
+        const jumpMeters = nextLatLng.distanceTo([previous.lat, previous.lng]);
+        const previousAccuracy = previous.accuracy ?? MAX_USABLE_ACCURACY_METERS;
+        const nextAccuracy = accuracy ?? MAX_USABLE_ACCURACY_METERS;
+        if (jumpMeters > 3000 && nextAccuracy >= previousAccuracy) {
+          onStatusRef.current('Ignoring an inaccurate GPS jump while finding a better signal.');
+          return false;
+        }
+      }
+
       if (meMarkerRef.current) {
-        meMarkerRef.current.setLatLng([latitude, longitude]);
+        meMarkerRef.current.setLatLng(nextLatLng);
       } else {
-        meMarkerRef.current = L.marker([latitude, longitude], { icon: meDotIcon(), zIndexOffset: 1000 }).addTo(map);
+        meMarkerRef.current = L.marker(nextLatLng, { icon: meDotIcon(), zIndexOffset: 1000 }).addTo(map);
       }
+
+      if (accuracy !== null) {
+        if (accuracyCircleRef.current) {
+          accuracyCircleRef.current.setLatLng(nextLatLng).setRadius(accuracy);
+        } else {
+          accuracyCircleRef.current = L.circle(nextLatLng, {
+            radius: accuracy,
+            color: '#2ecc71',
+            weight: 1,
+            opacity: 0.5,
+            fillColor: '#2ecc71',
+            fillOpacity: 0.1,
+            interactive: false,
+          }).addTo(map);
+        }
+      } else if (accuracyCircleRef.current) {
+        accuracyCircleRef.current.remove();
+        accuracyCircleRef.current = null;
+      }
+
+      const centerDistance = map.getCenter().distanceTo(nextLatLng);
       if (!hasCenteredRef.current) {
-        map.flyTo([latitude, longitude], 16, { animate: true, duration: 0.8 });
+        map.flyTo(nextLatLng, 16, { animate: true, duration: 0.8 });
         hasCenteredRef.current = true;
-        onStatusRef.current('Tracking your location');
+      } else if (centerDistance > Math.max(40, (accuracy ?? 30) * 0.75)) {
+        map.panTo(nextLatLng, { animate: true, duration: 0.55, easeLinearity: 0.2 });
       }
+      lastPositionRef.current = { lat: latitude, lng: longitude, accuracy };
+      onStatusRef.current(accuracyMessage(accuracy));
+      return true;
     },
     [mapRef],
   );
@@ -50,6 +117,16 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
       clearInterval(pollIntervalRef.current);
       pollIntervalRef.current = null;
     }
+    if (meMarkerRef.current) {
+      meMarkerRef.current.remove();
+      meMarkerRef.current = null;
+    }
+    if (accuracyCircleRef.current) {
+      accuracyCircleRef.current.remove();
+      accuracyCircleRef.current = null;
+    }
+    lastPositionRef.current = null;
+    hasCenteredRef.current = false;
     setActive(false);
   }, []);
 
@@ -60,13 +137,18 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
       return;
     }
     hasCenteredRef.current = false;
+    lastPositionRef.current = null;
     watchIdRef.current = navigator.geolocation.watchPosition(
-      (pos) => applyPosition(pos.coords.latitude, pos.coords.longitude),
-      () => {
+      (pos) => applyPosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
+      (error) => {
         stop();
-        onStatusRef.current('Could not get your location — check location access is allowed for this page');
+        onStatusRef.current(
+          error.code === error.PERMISSION_DENIED
+            ? 'Location access is off. Allow it in your device settings and try again.'
+            : 'Could not get a reliable location. Check that GPS and Precise Location are enabled.',
+        );
       },
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
     );
     setActive(true);
   }, [applyPosition, stop]);
@@ -78,6 +160,7 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
   // browser geolocation rather than surfacing an error.
   const startTelegramPolling = useCallback(async () => {
     hasCenteredRef.current = false;
+    lastPositionRef.current = null;
     const first = await getTelegramLocation();
     if (first.status === 'denied') {
       setCanOpenSettings(true);
@@ -89,11 +172,13 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
       return;
     }
     setCanOpenSettings(false);
-    applyPosition(first.lat, first.lng);
+    const firstApplied = applyPosition(first.lat, first.lng, first.accuracy);
+    setCanOpenSettings(!firstApplied && first.accuracy !== null && first.accuracy > MAX_USABLE_ACCURACY_METERS);
     pollIntervalRef.current = setInterval(async () => {
       const loc = await getTelegramLocation();
       if (loc.status === 'success') {
-        applyPosition(loc.lat, loc.lng);
+        const applied = applyPosition(loc.lat, loc.lng, loc.accuracy);
+        setCanOpenSettings(!applied && loc.accuracy !== null && loc.accuracy > MAX_USABLE_ACCURACY_METERS);
       } else {
         stop();
         const denied = loc.status === 'denied';
@@ -143,6 +228,10 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
       if (meMarkerRef.current) {
         meMarkerRef.current.remove();
         meMarkerRef.current = null;
+      }
+      if (accuracyCircleRef.current) {
+        accuracyCircleRef.current.remove();
+        accuracyCircleRef.current = null;
       }
     };
   }, []);
