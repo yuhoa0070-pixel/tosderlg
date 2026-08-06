@@ -52,6 +52,7 @@ export const heroGalleryData: HeroGalleryCard[] = [
   {
     label: 'Night markets',
     seed: 'night-markets',
+    image: '/night-markets.webp',
     icon: '<path d="M5 21V9l7-6 7 6v12"/><path d="M9 21v-6h6v6"/>',
   },
 ];
