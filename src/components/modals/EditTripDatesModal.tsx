@@ -91,6 +91,7 @@ export default function EditTripDatesModal() {
           id="editTripStartDate"
           label={km ? 'ចេញដំណើរ' : 'Depart'}
           value={startDate}
+          language={state.language}
           onChange={(value) => handleDateChange(setStartDate, value)}
         />
         <DatePickerField
@@ -98,6 +99,7 @@ export default function EditTripDatesModal() {
           label={km ? 'ត្រឡប់' : 'Return'}
           min={startDate || undefined}
           value={endDate}
+          language={state.language}
           onChange={(value) => handleDateChange(setEndDate, value)}
         />
       </div>

@@ -3,6 +3,7 @@ import type { ViewName } from './types';
 import BottomNav from './components/nav/BottomNav';
 import HomeView from './views/HomeView';
 import ItineraryView from './views/ItineraryView';
+import BudgetView from './views/BudgetView';
 import CustomizeView from './views/CustomizeView';
 import MapView from './views/MapView';
 import AllPhotosView from './views/AllPhotosView';
@@ -18,6 +19,7 @@ import EditProfileModal from './components/modals/EditProfileModal';
 import ConfirmClearModal from './components/modals/ConfirmClearModal';
 import JoinTripRoomModal from './components/modals/JoinTripRoomModal';
 import EditTripDatesModal from './components/modals/EditTripDatesModal';
+import TripCreatedModal from './components/modals/TripCreatedModal';
 import ThemeSkyTransition from './components/shared/ThemeSkyTransition';
 import AppHeader from './components/shared/AppHeader';
 import AnimatedTravelBackground from './components/shared/AnimatedTravelBackground';
@@ -28,6 +30,8 @@ function renderView(view: ViewName) {
       return <HomeView />;
     case 'itinerary':
       return <ItineraryView />;
+    case 'budget':
+      return <BudgetView />;
     case 'customize':
       return <CustomizeView />;
     case 'map':
@@ -67,6 +71,7 @@ function App() {
       <ConfirmClearModal />
       <JoinTripRoomModal />
       <EditTripDatesModal />
+      <TripCreatedModal />
 
       <BottomNav />
     </div>

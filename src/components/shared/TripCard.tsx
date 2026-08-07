@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Trip } from '../../types';
 import { getUpcomingTripAlert, isPastTrip } from '../../lib/tripUtils';
 import { useAppContext } from '../../context/AppContext';
@@ -9,6 +9,12 @@ interface TripCardProps {
   onSelect: (id: number) => void;
   allowDelete?: boolean;
   onDelete?: (id: number) => void;
+}
+
+const TRIP_STROKE_COLORS = ['#7FB8FF', '#FF8A73', '#FFD83D', '#A57CFF', '#4FD1C5', '#FF6FA5'];
+
+function tripStrokeColor(tripId: number): string {
+  return TRIP_STROKE_COLORS[Math.abs(tripId) % TRIP_STROKE_COLORS.length];
 }
 
 function formatTripSchedule(trip: Trip, km: boolean) {
@@ -123,7 +129,10 @@ export default function TripCard({ trip, active, onSelect, allowDelete = false, 
       )}
       <div
         className={`trip-card${active ? ' active' : ''}${dragging ? ' dragging' : ''}`}
-        style={{ transform: `translateX(${swipeOffset}px)` }}
+        style={{
+          transform: `translateX(${swipeOffset}px)`,
+          '--trip-stroke': tripStrokeColor(trip.id),
+        } as CSSProperties}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={finishSwipe}

@@ -4,6 +4,7 @@ export type Language = 'en' | 'km';
 export type ViewName =
   | 'home'
   | 'itinerary'
+  | 'budget'
   | 'customize'
   | 'map'
   | 'all-photos'
@@ -14,6 +15,7 @@ export type ViewName =
 
 export type ModalName =
   | 'stopForm'
+  | 'tripCreated'
   | 'editTripDates'
   | 'pasteLink'
   | 'memoryCollection'
@@ -56,6 +58,32 @@ export interface TripMember {
   joinedAt: number;
 }
 
+export type BudgetCurrency = 'USD' | 'KHR';
+
+export type BudgetCategory = 'stay' | 'transport' | 'food' | 'activity' | 'other';
+
+export interface BudgetExpense {
+  id: string;
+  title: string;
+  amount: number;
+  category: BudgetCategory;
+  assignedToMemberId?: string;
+  createdAt: number;
+}
+
+export interface BudgetCommitment {
+  memberId: string;
+  amount: number;
+  lockedAt: number;
+}
+
+export interface TripBudget {
+  currency: BudgetCurrency;
+  targetAmount: number;
+  expenses: BudgetExpense[];
+  commitments: BudgetCommitment[];
+}
+
 export interface GeoCenter {
   lat: number;
   lng: number;
@@ -71,6 +99,7 @@ export interface Trip {
   tripDays: TripDay[];
   photos: Record<string, Photo[]>;
   packingItems?: PackingItem[];
+  budget?: TripBudget;
   shareId?: string;
   sharedBy?: string;
   readOnly?: boolean;

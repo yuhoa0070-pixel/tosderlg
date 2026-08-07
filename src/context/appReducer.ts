@@ -96,6 +96,7 @@ export function appReducer(state: AppState, action: Action): AppState {
         currentTripId: action.trip.id,
         currentDay: 0,
         currentView: 'customize',
+        activeModal: 'tripCreated',
       };
 
     case 'UPDATE_TRIP_DATES': {
@@ -197,6 +198,28 @@ export function appReducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         trips: state.trips.map((trip) => (trip.id === action.tripId ? { ...trip, members: action.members } : trip)),
+      };
+
+    case 'SET_TRIP_ROOM_UPDATED_AT':
+      return {
+        ...state,
+        trips: state.trips.map((trip) =>
+          trip.id === action.tripId ? { ...trip, roomUpdatedAt: action.updatedAt } : trip,
+        ),
+      };
+
+    case 'SET_TRIP_BUDGET':
+      return {
+        ...state,
+        trips: state.trips.map((trip) =>
+          trip.id === action.tripId
+            ? {
+                ...trip,
+                budget: action.budget,
+                roomUpdatedAt: action.updatedAt ?? trip.roomUpdatedAt,
+              }
+            : trip,
+        ),
       };
 
     case 'RESTORE_TELEGRAM_CLOUD_STATE': {

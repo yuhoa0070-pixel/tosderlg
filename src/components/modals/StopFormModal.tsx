@@ -4,6 +4,7 @@ import { useActiveTrip } from '../../hooks/useActiveTrip';
 import { parseGoogleMapsLink, isShortMapsLink, resolveShortLink } from '../../lib/mapsLink';
 import { reverseGeocode } from '../../lib/geocode';
 import { DEFAULT_CENTER } from '../../lib/constants';
+import { formatStopTime } from '../../lib/stopTime';
 import BottomSheetModal from './BottomSheetModal';
 
 // Ported verbatim from the original's #emojiPicker: unicode category chips
@@ -96,7 +97,7 @@ export default function StopFormModal() {
   }
 
   async function handleSave() {
-    const finalTime = time || '--:--';
+    const finalTime = formatStopTime(time) || '--:--';
     const finalTitle = title.trim();
     const finalNote = note.trim();
     let finalMapLink = mapLink.trim();
@@ -176,7 +177,15 @@ export default function StopFormModal() {
     <BottomSheetModal isOpen={isOpen} onClose={close} overlayId="stopFormOverlay">
       <h2>{isEdit ? 'Edit stop' : 'Add a stop'}</h2>
       <label className="field-label">Time</label>
-      <input type="text" placeholder="9:00 AM" value={time} onChange={(e) => setTime(e.target.value)} />
+      <input
+        type="text"
+        placeholder="9:00 AM"
+        value={time}
+        onChange={(event) => setTime(event.target.value)}
+        onBlur={() => setTime((value) => formatStopTime(value))}
+        autoCapitalize="none"
+        spellCheck={false}
+      />
       <label className="field-label">Place</label>
       <input
         type="text"

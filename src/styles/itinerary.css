@@ -19,7 +19,7 @@
 .trip-share-panel{margin:0 0 14px;}
 .trip-share-actions{width:100%;display:flex;align-items:center;justify-content:flex-end;gap:10px;}
 .trip-share-actions.has-room-code{
-  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;
 }
 .trip-room-code{
   min-width:0;min-height:46px;display:flex;align-items:center;gap:8px;padding:6px 7px 6px 13px;
@@ -34,17 +34,18 @@
 .trip-room-code.copied{border-color:var(--accent);background:rgba(46,204,113,.08);}
 .trip-room-code.copied .trip-room-copy-icon{background:var(--accent);color:#07150c;transform:scale(1.04);}
 .trip-room-code:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
-.trip-invite-button{width:46px;height:46px;min-height:46px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1.5px solid var(--accent);border-radius:50%;background:transparent;color:var(--heading);font-family:inherit;cursor:pointer;box-shadow:0 3px 12px rgba(18,34,24,.04);transition:transform .16s ease,background-color .16s ease,box-shadow .16s ease;}
-.trip-share-actions.has-room-code .trip-invite-button{
+.trip-invite-button,.trip-budget-button{width:46px;height:46px;min-height:46px;display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:50%;background:transparent;font-family:inherit;cursor:pointer;box-shadow:0 3px 12px rgba(18,34,24,.04);transition:transform .16s ease,background-color .16s ease,box-shadow .16s ease;}
+.trip-invite-button,.trip-budget-button{border:1.5px solid var(--accent);background:transparent;color:var(--heading);}
+.trip-share-actions.has-room-code .trip-invite-button,.trip-share-actions.has-room-code .trip-budget-button{
   align-self:center;
 }
 .trip-invite-button:disabled{opacity:.65;cursor:wait;}
-.trip-invite-button:not(:disabled):active{transform:scale(.97);background:rgba(46,204,113,.08);box-shadow:none;}
+.trip-invite-button:not(:disabled):active,.trip-budget-button:active{transform:scale(.94);background:rgba(46,204,113,.14);box-shadow:none;}
 .trip-invite-icon{display:block;flex:0 0 auto;}
 .shared-trip-icon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;border-radius:12px;background:var(--accent);color:#07150c;}
 .shared-trip-banner strong{color:var(--heading);font-size:15px;font-weight:800;line-height:1.25;}
 .shared-trip-banner small{display:block;margin-top:2px;color:var(--text-secondary);font-size:12px;font-weight:600;line-height:1.35;}
-.trip-invite-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.trip-invite-button:focus-visible,.trip-budget-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .trip-share-status{margin:6px 2px 0;color:var(--accent);font-size:12px;font-weight:700;text-align:right;}
 .trip-members{min-width:0;display:flex;justify-content:flex-start;margin-top:10px;overflow:hidden;}
 .shared-trip-banner+.trip-members{margin-top:-5px;margin-bottom:16px;}
@@ -122,5 +123,5 @@
 .packing-readonly-empty{margin-top:14px;padding:14px;border:1px dashed var(--border);border-radius:12px;color:var(--text-muted);font-size:13px;font-weight:600;text-align:center;}
 .packing-add:focus-visible,.packing-check:focus-visible,.packing-remove:focus-visible,.packing-suggestions button:focus-visible,.packing-emoji-picker button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 body[data-theme="dark"] .packing-count{color:#f3b24b;}
-@media(max-width:350px){.trip-room-code{padding-left:11px;gap:6px;}.trip-room-code strong{font-size:13px;letter-spacing:.1em;}}
-@media(prefers-reduced-motion:reduce){.trip-invite-button,.trip-room-code{transition:none;}.trip-copy-toast{animation:none;transform:translateX(-50%);}}
+@media(max-width:350px){.trip-share-actions.has-room-code{gap:7px;}.trip-room-code{padding-left:9px;gap:5px;}.trip-room-code strong{font-size:12px;letter-spacing:.08em;}.trip-invite-button,.trip-budget-button{width:42px;height:42px;min-height:42px;}}
+@media(prefers-reduced-motion:reduce){.trip-invite-button,.trip-budget-button,.trip-room-code{transition:none;}.trip-copy-toast{animation:none;transform:translateX(-50%);}}

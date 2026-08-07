@@ -174,7 +174,7 @@ body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header
   font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;
 }
 .trip-card-delete-action:focus-visible{outline:2px solid #fff;outline-offset:-4px;}
-.trip-card{position:relative;z-index:1;width:100%;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin:0;cursor:pointer;touch-action:pan-y;user-select:none;will-change:transform;box-shadow:0 7px 20px rgba(31,35,24,.06);transition:transform .24s cubic-bezier(.22,1,.36,1),border-color .2s ease,box-shadow .2s ease;}
+.trip-card{position:relative;z-index:1;width:100%;background:var(--card);border:1.5px solid var(--trip-stroke,var(--border));border-radius:18px;padding:16px;margin:0;cursor:pointer;touch-action:pan-y;user-select:none;will-change:transform;box-shadow:inset 3px 0 0 var(--trip-stroke,transparent),0 7px 20px rgba(31,35,24,.06);transition:transform .24s cubic-bezier(.22,1,.36,1),border-color .2s ease,box-shadow .2s ease;}
 .trip-card.dragging{transition:none;cursor:grabbing;}
 .trip-card.active{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent),0 8px 22px rgba(31,35,24,.08);}
 .trip-card-body{display:flex;flex-direction:column;gap:12px;min-width:0;}

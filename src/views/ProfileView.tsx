@@ -7,13 +7,6 @@ export default function ProfileView() {
 
   return (
     <section id="view-profile" className="active">
-      <div className="topbar">
-        <div className="icon-btn" onClick={() => dispatch({ type: 'NAVIGATE', view: 'home' })}>
-          &#8592;
-        </div>
-        <div />
-      </div>
-
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 26 }}>
         <div
           className="avatar-edit"

@@ -45,6 +45,7 @@ export type LoadedState = Pick<
 const VIEW_NAMES = new Set<ViewName>([
   'home',
   'itinerary',
+  'budget',
   'customize',
   'map',
   'all-photos',
@@ -56,6 +57,7 @@ const VIEW_NAMES = new Set<ViewName>([
 
 const TRIP_VIEWS = new Set<ViewName>([
   'itinerary',
+  'budget',
   'customize',
   'map',
   'all-photos',

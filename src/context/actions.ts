@@ -1,4 +1,4 @@
-import type { GeoCenter, Language, ModalName, MomentGroup, PackingItem, Photo, Stop, TelegramCloudState, Theme, Trip, TripMember, ViewingPhoto, ViewName } from '../types';
+import type { GeoCenter, Language, ModalName, MomentGroup, PackingItem, Photo, Stop, TelegramCloudState, Theme, Trip, TripBudget, TripMember, ViewingPhoto, ViewName } from '../types';
 
 export type Action =
   | { type: 'NAVIGATE'; view: ViewName }
@@ -19,6 +19,8 @@ export type Action =
   | { type: 'SET_TRIP_SHARE_ID'; tripId: number; shareId: string }
   | { type: 'SET_TRIP_ROOM'; tripId: number; code: string; ownerToken: string; updatedAt: number; members: TripMember[] }
   | { type: 'SET_TRIP_MEMBERS'; tripId: number; members: TripMember[] }
+  | { type: 'SET_TRIP_ROOM_UPDATED_AT'; tripId: number; updatedAt: number }
+  | { type: 'SET_TRIP_BUDGET'; tripId: number; budget: TripBudget; updatedAt?: number }
   | { type: 'RESTORE_TELEGRAM_CLOUD_STATE'; cloudState: TelegramCloudState }
   | { type: 'DELETE_TRIP'; tripId: number }
   | { type: 'ADD_STOP'; dayIndex: number; stop: Stop }

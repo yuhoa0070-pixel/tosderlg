@@ -1,4 +1,4 @@
-import type { Trip, TripMember } from '../types';
+import type { Trip, TripBudget, TripMember } from '../types';
 import { getTelegramUser, telegramUserDisplayName } from './telegram';
 
 const MEMBER_ID_KEY = 'waylo_room_member_id_v1';
@@ -23,6 +23,11 @@ interface RoomResponse {
   trip: Omit<Trip, 'id' | 'photos'>;
   updatedAt: number;
   members?: TripMember[];
+}
+
+interface BudgetCommitmentResponse {
+  budget: TripBudget;
+  updatedAt: number;
 }
 
 function tripRoomApiUrl(): string {
@@ -153,4 +158,19 @@ export async function getTripRoom(rawCode: string): Promise<Trip> {
   });
   if (!response.ok) throw new Error(await readError(response));
   return roomResponseToTrip((await response.json()) as RoomResponse);
+}
+
+export async function lockTripBudgetAmount(
+  rawCode: string,
+  member: TripMemberInput,
+  amount: number,
+): Promise<BudgetCommitmentResponse> {
+  const code = rawCode.trim().toUpperCase();
+  const response = await fetch(`${tripRoomApiUrl()}/budget/commitment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ code, member, amount }),
+  });
+  if (!response.ok) throw new Error(await readError(response));
+  return (await response.json()) as BudgetCommitmentResponse;
 }

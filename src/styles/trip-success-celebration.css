@@ -1,0 +1,100 @@
+.trip-success-overlay{
+  position:fixed;inset:0;z-index:500;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;padding:24px 20px calc(24px + env(safe-area-inset-bottom));
+  height:var(--tg-viewport-height,100dvh);overflow:hidden;
+  background:rgba(0,0,0,0);
+  animation:tripSuccessOverlayIn .2s ease forwards;
+}
+@keyframes tripSuccessOverlayIn{to{background:rgba(0,0,0,.4);}}
+
+.trip-success-art{
+  position:relative;width:clamp(230px,76vw,340px);
+  aspect-ratio:1402/1122;flex:0 0 auto;
+}
+.trip-success-friends{
+  position:relative;z-index:1;display:block;width:100%;height:100%;
+  object-fit:contain;object-position:center;
+  opacity:0;transform:translateY(26px) scale(.65);
+  animation:tripSuccessArtIn .6s ease-out .15s both;
+}
+.trip-success-friends.no-anim{opacity:1;transform:none;animation:none;}
+@keyframes tripSuccessArtIn{
+  0%{opacity:0;transform:translateY(26px) scale(.65);}
+  55%{opacity:1;transform:translateY(-6px) scale(1.08);}
+  78%{transform:translateY(2px) scale(.98);}
+  100%{opacity:1;transform:translateY(0) scale(1);}
+}
+
+.trip-success-fx{position:absolute;inset:0;overflow:visible;pointer-events:none;transition:opacity .4s ease;}
+.trip-success-fx.is-fading{opacity:0;}
+
+.firework-burst{position:absolute;width:0;height:0;}
+.firework-particle{
+  position:absolute;top:0;left:0;width:6px;height:6px;margin:-3px 0 0 -3px;
+  border-radius:50%;opacity:0;box-shadow:0 0 5px 1px currentColor;
+  animation:fireworkPop .8s cubic-bezier(.16,.84,.44,1) forwards;
+}
+@keyframes fireworkPop{
+  0%{transform:translate(0,0) scale(.4);opacity:1;}
+  65%{opacity:1;}
+  100%{transform:translate(var(--tx),var(--ty)) scale(.15);opacity:0;}
+}
+
+.trip-confetti-piece{
+  position:absolute;top:50%;left:50%;opacity:0;
+  animation-name:tripConfettiRise;animation-timing-function:ease-out;animation-fill-mode:forwards;
+}
+.trip-confetti-rect{width:6px;height:9px;border-radius:2px;}
+.trip-confetti-circle{width:6px;height:6px;border-radius:50%;}
+@keyframes tripConfettiRise{
+  0%{transform:translate(-50%,-50%) rotate(0deg);opacity:0;}
+  14%{opacity:1;}
+  42%{transform:translate(calc(-50% + var(--dx) * .5),calc(-50% - 52px)) rotate(calc(var(--rot) * .4));}
+  100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + 78px)) rotate(var(--rot));opacity:0;}
+}
+
+.trip-success-close{
+  position:relative;z-index:1;flex:0 0 auto;
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;border:1px solid rgba(255,255,255,.4);
+  background:rgba(255,255,255,.16);color:#fff;cursor:pointer;
+  backdrop-filter:blur(10px) saturate(1.4);-webkit-backdrop-filter:blur(10px) saturate(1.4);
+  box-shadow:0 6px 16px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.3);
+  opacity:0;transform:scale(.7);
+  animation:tripSuccessCloseIn .35s cubic-bezier(.22,1,.36,1) .4s both;
+  transition:transform .16s ease,background-color .2s ease;
+}
+.trip-success-close:hover{background:rgba(255,255,255,.26);}
+.trip-success-close:active{transform:scale(.92);}
+.trip-success-close:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+.trip-success-close svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+.trip-success-close.no-anim{opacity:1;transform:none;animation:none;}
+@keyframes tripSuccessCloseIn{to{opacity:1;transform:scale(1);}}
+
+.trip-success-card{
+  position:relative;z-index:1;width:100%;max-width:340px;
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;
+  padding:20px 22px calc(20px + env(safe-area-inset-bottom));
+  border-radius:20px;background:var(--card);box-shadow:0 18px 40px rgba(0,0,0,.28);
+  opacity:0;transform:translateY(16px) scale(.95);
+  animation:tripSuccessCardIn .4s cubic-bezier(.22,1,.36,1) .5s both;
+}
+.trip-success-card.no-anim{opacity:1;transform:none;animation:none;}
+@keyframes tripSuccessCardIn{to{opacity:1;transform:translateY(0) scale(1);}}
+
+.trip-success-check{
+  width:38px;height:38px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;background:rgba(46,204,113,.14);color:var(--accent);
+}
+.trip-success-check svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;}
+.trip-success-card h2{margin:0 0 2px;color:var(--heading);font-size:21px;line-height:1.2;}
+.trip-success-card p{margin:0 0 14px;color:var(--text-secondary);font-size:14px;font-weight:500;line-height:1.45;}
+.trip-success-actions{width:100%;display:flex;flex-direction:column;gap:8px;}
+.trip-success-actions .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+@media(prefers-reduced-motion:reduce){
+  .trip-success-overlay{animation:none;background:rgba(0,0,0,.4);}
+  .trip-success-friends,.trip-success-card{animation:none;opacity:1;transform:none;}
+  .trip-success-fx{display:none;}
+}

@@ -18,6 +18,57 @@
   transition:transform .25s cubic-bezier(.22,1,.36,1);
 }
 .stop-form-overlay.open .stop-form-card{transform:translateY(0);}
+.date-sheet-overlay{
+  position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center;
+  height:var(--tg-viewport-height,100dvh);padding-top:env(safe-area-inset-top);
+  background:rgba(12,16,13,.58);opacity:0;
+  animation:dateSheetFadeIn .2s ease forwards;
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+}
+.date-sheet{
+  width:min(100%,420px);padding:10px 20px calc(20px + env(safe-area-inset-bottom));
+  border:1px solid var(--border);border-bottom:0;border-radius:24px 24px 0 0;
+  background:var(--card);color:var(--text);box-shadow:0 -18px 50px rgba(15,26,19,.2);
+  transform:translateY(100%);animation:dateSheetSlideUp .32s cubic-bezier(.22,1,.36,1) forwards;
+}
+.date-sheet-handle{display:block;width:42px;height:4px;margin:0 auto 15px;border-radius:99px;background:var(--border);}
+.date-sheet-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:17px;}
+.date-sheet-heading>span{display:flex;min-width:0;flex-direction:column;gap:1px;}
+.date-sheet-heading small{color:var(--accent);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+.date-sheet-heading strong{color:var(--heading);font-size:21px;font-weight:800;line-height:1.2;}
+.date-sheet-today{
+  flex:0 0 auto;padding:7px 12px;border:1px solid rgba(46,204,113,.32);border-radius:999px;
+  background:rgba(46,204,113,.08);color:var(--accent);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;
+}
+.date-sheet-month-nav{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;gap:8px;margin-bottom:9px;}
+.date-sheet-month-nav>strong{color:var(--heading);font-size:16px;font-weight:800;text-align:center;}
+.date-sheet-month-nav button{
+  width:38px;height:38px;padding:0;border:1px solid var(--border);border-radius:12px;background:var(--card-hover);color:var(--text-secondary);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.date-sheet-month-nav button:disabled{opacity:.3;cursor:default;}
+.date-sheet-month-nav svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.date-sheet-weekdays,.date-sheet-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));}
+.date-sheet-weekdays{margin-bottom:4px;}
+.date-sheet-weekdays span{display:flex;height:28px;align-items:center;justify-content:center;color:var(--text-muted);font-size:10px;font-weight:800;}
+.date-sheet-days{gap:3px 1px;}
+.date-sheet-days button,.date-sheet-day-spacer{aspect-ratio:1;min-width:0;}
+.date-sheet-days button{
+  position:relative;padding:0;border:0;border-radius:50%;background:transparent;color:var(--text-secondary);
+  font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;
+}
+.date-sheet-days button:hover:not(:disabled),.date-sheet-days button:focus-visible{background:var(--card-hover);outline:none;}
+.date-sheet-days button.today::after{
+  content:'';position:absolute;left:50%;bottom:5px;width:4px;height:4px;border-radius:50%;background:var(--accent);transform:translateX(-50%);
+}
+.date-sheet-days button.selected{background:var(--accent);color:#06190E;font-weight:900;box-shadow:0 5px 14px rgba(46,204,113,.28);}
+.date-sheet-days button.selected::after{background:#06190E;}
+.date-sheet-days button:disabled{color:var(--border);cursor:default;}
+.date-sheet-actions{display:grid;grid-template-columns:1fr 1.16fr;gap:11px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);}
+.date-sheet-actions .btn{min-height:48px;border-radius:13px;}
+@keyframes dateSheetFadeIn{to{opacity:1;}}
+@keyframes dateSheetSlideUp{to{transform:translateY(0);}}
+@media(prefers-reduced-motion:reduce){.date-sheet-overlay,.date-sheet{animation-duration:.01ms;}}
 .stop-form-card h2{margin-bottom:16px;}
 .join-room-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;border-radius:15px;background:rgba(46,204,113,.12);color:var(--accent);}
 .stop-form-card .join-room-icon+h2{text-align:center;margin-bottom:6px;}
@@ -53,9 +104,52 @@
 .edit-dates-title{text-align:center;margin-bottom:5px!important;}
 .edit-dates-copy{margin:0 auto 18px;color:var(--text-secondary);font-size:14px;font-weight:500;line-height:1.4;text-align:center;}
 .edit-dates-warning{margin:0 0 14px;padding:10px 12px;border:1px solid rgba(239,137,57,.34);border-radius:12px;background:rgba(239,137,57,.1);color:var(--text-secondary);font-size:13px;font-weight:600;line-height:1.4;}
+#tripCreatedOverlay{align-items:center;padding:20px;}
+#tripCreatedOverlay .stop-form-card{
+  background:none;border:none;box-shadow:none;padding:0;overflow:visible;
+  width:auto;max-width:min(84vw,360px);max-height:none;
+  transform:none;transition:none;
+}
+.trip-created-art{
+  position:relative;width:100%;aspect-ratio:1402/1122;color:var(--accent);
+  cursor:pointer;transform:scale(.7) translateY(10px);opacity:0;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .35s ease;
+}
+#tripCreatedOverlay.open .trip-created-art{transform:scale(1) translateY(0);opacity:1;}
+.trip-created-art::before{
+  content:'';position:absolute;inset:-20%;z-index:0;
+  background:
+    radial-gradient(closest-side, rgba(46,204,113,.32), rgba(46,204,113,0) 70%) 22% 30%/55% 65% no-repeat,
+    radial-gradient(closest-side, rgba(165,124,255,.28), rgba(165,124,255,0) 70%) 78% 70%/55% 65% no-repeat;
+  filter:blur(6px);
+  animation:tripCreatedGlowPulse 3.2s ease-in-out infinite;
+}
+.trip-created-friends{
+  position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:contain;object-position:center;
+  animation:tripCreatedFriendsFloat 3.2s ease-in-out .5s infinite;
+}
+@keyframes tripCreatedFriendsFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+@keyframes tripCreatedGlowPulse{0%,100%{opacity:.85;}50%{opacity:1;}}
+.firework-layer{position:fixed;inset:0;z-index:5;overflow:hidden;pointer-events:none;}
+.firework-burst{position:absolute;width:0;height:0;}
+.firework-particle{
+  position:absolute;top:0;left:0;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;
+  border-radius:50%;opacity:0;box-shadow:0 0 6px 1px currentColor;
+  animation:fireworkPop .85s cubic-bezier(.16,.84,.44,1) forwards;
+}
+@keyframes fireworkPop{
+  0%{transform:translate(0,0) scale(.4);opacity:1;}
+  65%{opacity:1;}
+  100%{transform:translate(var(--tx),var(--ty)) scale(.15);opacity:0;}
+}
 @keyframes joinCodePop{from{transform:scale(.88);}to{transform:scale(1);}}
 @media(max-width:340px){.join-room-code-boxes{gap:6px;}.join-room-code-cell{height:50px;border-radius:12px;font-size:19px;}}
-@media(prefers-reduced-motion:reduce){.join-room-code-cell{transition:none;}.join-room-code-cell.filled{animation:none;}}
+@media(prefers-reduced-motion:reduce){
+  .join-room-code-cell{transition:none;}
+  .trip-created-art{transition:none;}
+  .trip-created-friends,.trip-created-art::before{animation:none;}
+  .firework-layer{display:none;}
+}
 .emoji-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
 .emoji-chip{
   width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);

@@ -6,6 +6,7 @@ export type NavId = 'navHome' | 'navItinerary' | 'navMap' | 'navProfile';
 const NAV_MAP: Record<ViewName, NavId | undefined> = {
   home: 'navHome',
   itinerary: 'navItinerary',
+  budget: 'navItinerary',
   customize: 'navItinerary',
   map: 'navMap',
   memory: 'navItinerary',

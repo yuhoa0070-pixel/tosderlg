@@ -72,6 +72,7 @@ export default function TripForm() {
           id="startDate"
           label={km ? 'ចេញដំណើរ' : 'Depart'}
           value={startDate}
+          language={state.language}
           onChange={setStartDate}
         />
         <DatePickerField
@@ -79,6 +80,7 @@ export default function TripForm() {
           label={km ? 'ត្រឡប់' : 'Return'}
           min={startDate || undefined}
           value={endDate}
+          language={state.language}
           onChange={setEndDate}
         />
       </div>

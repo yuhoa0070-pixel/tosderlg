@@ -5,6 +5,9 @@ const MAX_TRIP_BYTES = 200_000;
 const MAX_MEMBERS_PER_ROOM = 50;
 const ROOM_TTL_MS = 180 * 24 * 60 * 60 * 1000;
 const SHORT_MAP_HOSTS = new Set(['maps.app.goo.gl', 'goo.gl']);
+const BUDGET_CURRENCIES = new Set(['USD', 'KHR']);
+const BUDGET_CATEGORIES = new Set(['stay', 'transport', 'food', 'activity', 'other']);
+const MAX_BUDGET_AMOUNT = 1_000_000_000_000;
 
 function allowedOrigin(request, env) {
   const origin = request.headers.get('Origin');
@@ -115,6 +118,63 @@ function normalizeMemberIds(value) {
       .map((id) => id.trim())
       .filter((id) => /^[A-Za-z0-9:_-]{8,100}$/.test(id)),
   )).slice(0, 3);
+}
+
+function validBudgetAmount(value) {
+  return Number.isSafeInteger(value) && value >= 0 && value <= MAX_BUDGET_AMOUNT;
+}
+
+function normalizeTripBudget(value) {
+  const budget = value && typeof value === 'object' ? value : {};
+  const currency = BUDGET_CURRENCIES.has(budget.currency) ? budget.currency : 'USD';
+  const targetAmount = validBudgetAmount(budget.targetAmount) ? budget.targetAmount : 0;
+  const expenses = Array.isArray(budget.expenses)
+    ? budget.expenses
+      .filter((expense) => (
+        expense &&
+        typeof expense === 'object' &&
+        typeof expense.id === 'string' &&
+        expense.id.length >= 8 &&
+        expense.id.length <= 100 &&
+        typeof expense.title === 'string' &&
+        expense.title.trim().length > 0 &&
+        expense.title.length <= 60 &&
+        validBudgetAmount(expense.amount) &&
+        expense.amount > 0 &&
+        BUDGET_CATEGORIES.has(expense.category) &&
+        Number.isSafeInteger(expense.createdAt)
+      ))
+      .slice(0, 200)
+      .map((expense) => ({
+        id: expense.id,
+        title: expense.title.trim(),
+        amount: expense.amount,
+        category: expense.category,
+        assignedToMemberId: typeof expense.assignedToMemberId === 'string'
+          ? expense.assignedToMemberId.slice(0, 100)
+          : undefined,
+        createdAt: expense.createdAt,
+      }))
+    : [];
+  const commitments = Array.isArray(budget.commitments)
+    ? budget.commitments
+      .filter((commitment) => (
+        commitment &&
+        typeof commitment === 'object' &&
+        typeof commitment.memberId === 'string' &&
+        /^[A-Za-z0-9:_-]{8,100}$/.test(commitment.memberId) &&
+        validBudgetAmount(commitment.amount) &&
+        commitment.amount > 0 &&
+        Number.isSafeInteger(commitment.lockedAt)
+      ))
+      .slice(0, MAX_MEMBERS_PER_ROOM)
+      .map((commitment) => ({
+        memberId: commitment.memberId,
+        amount: commitment.amount,
+        lockedAt: commitment.lockedAt,
+      }))
+    : [];
+  return { currency, targetAmount, expenses, commitments };
 }
 
 async function listRoomMembers(env, code) {
@@ -363,6 +423,84 @@ async function saveRoom(request, env, origin) {
   return sendJson(origin, { error: 'Could not create a unique room code. Try again.' }, 503);
 }
 
+async function saveBudgetCommitment(request, env, origin) {
+  let body;
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    return sendJson(origin, { error: 'Valid budget data is required.' }, 400);
+  }
+
+  const code = normalizeCode(body?.code);
+  const member = normalizeMember(body?.member);
+  const amount = body?.amount;
+  if (!CODE_PATTERN.test(code) || !member || !validBudgetAmount(amount)) {
+    return sendJson(origin, { error: 'A valid room, member, and amount are required.' }, 400);
+  }
+
+  const roomMember = await env.DB.prepare(
+    `SELECT member_id FROM trip_room_members WHERE room_code = ? AND member_id = ?`,
+  )
+    .bind(code, member.id)
+    .first();
+  if (!roomMember) {
+    return sendJson(origin, { error: 'Join this trip room before reserving a budget amount.' }, 403);
+  }
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    let loaded;
+    try {
+      loaded = await loadRoom(env, code);
+    } catch {
+      return sendJson(origin, { error: 'This trip room contains invalid data.' }, 502);
+    }
+    if (!loaded) return sendJson(origin, { error: 'Trip room not found. Check the code and try again.' }, 404);
+
+    const today = new Date().toISOString().slice(0, 10);
+    if (!loaded.trip.startDate || loaded.trip.startDate <= today) {
+      return sendJson(origin, { error: 'Budget reservations close when the trip starts.' }, 409);
+    }
+
+    const budget = normalizeTripBudget(loaded.trip.budget);
+    const commitments = budget.commitments.filter((commitment) => commitment.memberId !== member.id);
+    const updatedAt = Math.max(Date.now(), Number(loaded.room.updated_at) + 1);
+    if (amount > 0) commitments.push({ memberId: member.id, amount, lockedAt: updatedAt });
+    const nextBudget = { ...budget, commitments };
+    const tripJson = JSON.stringify({ ...loaded.trip, budget: nextBudget });
+    if (tripJson.length > MAX_TRIP_BYTES) {
+      return sendJson(origin, { error: 'Trip data is too large.' }, 400);
+    }
+
+    const result = await env.DB.prepare(
+      `UPDATE trip_rooms
+       SET trip_json = ?, updated_at = ?, expires_at = ?
+       WHERE code = ? AND updated_at = ? AND expires_at > ?`,
+    )
+      .bind(
+        tripJson,
+        updatedAt,
+        updatedAt + ROOM_TTL_MS,
+        code,
+        loaded.room.updated_at,
+        updatedAt,
+      )
+      .run();
+
+    if (result.success && (result.meta?.changes || 0) > 0) {
+      await env.DB.prepare(
+        `UPDATE trip_room_members
+         SET display_name = ?, photo_url = ?, last_seen_at = ?
+         WHERE room_code = ? AND member_id = ?`,
+      )
+        .bind(member.name, member.photoUrl, updatedAt, code, member.id)
+        .run();
+      return sendJson(origin, { budget: nextBudget, updatedAt });
+    }
+  }
+
+  return sendJson(origin, { error: 'The trip budget changed. Try reserving the amount again.' }, 409);
+}
+
 function allowedShortMapUrl(value) {
   try {
     const url = new URL(value);
@@ -554,6 +692,10 @@ export default {
       }
       if (url.pathname === '/api/trip-room/leave') {
         if (request.method === 'POST') return await leaveRoom(request, env, origin);
+        return sendJson(origin, { error: 'Method not allowed.' }, 405);
+      }
+      if (url.pathname === '/api/trip-room/budget/commitment') {
+        if (request.method === 'POST') return await saveBudgetCommitment(request, env, origin);
         return sendJson(origin, { error: 'Method not allowed.' }, 405);
       }
       if (url.pathname === '/api/resolve-map-link') return await resolveMapLink(request, origin);

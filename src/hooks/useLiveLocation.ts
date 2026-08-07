@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
-import L from 'leaflet';
-import { meDotIcon } from './useLeafletMap';
+import type { LiveLocationMapController } from './useGoogleMap';
 import { getTelegramLocation, hasTelegramLocationManager, openTelegramLocationSettings } from '../lib/telegram';
 
 const TELEGRAM_POLL_MS = 4000;
@@ -14,6 +13,16 @@ interface AcceptedPosition {
 
 function validCoordinates(latitude: number, longitude: number): boolean {
   return Number.isFinite(latitude) && Number.isFinite(longitude) && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180;
+}
+
+function distanceMeters(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const toRadians = (degrees: number) => degrees * Math.PI / 180;
+  const dLat = toRadians(bLat - aLat);
+  const dLng = toRadians(bLng - aLng);
+  const lat1 = toRadians(aLat);
+  const lat2 = toRadians(bLat);
+  const value = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 6371000 * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
 }
 
 function accuracyMessage(accuracy: number | null): string {
@@ -32,7 +41,7 @@ function accuracyMessage(accuracy: number | null): string {
  * when available instead — it has no native "watch" API, so continuous
  * tracking is done by polling getLocation() on an interval.
  */
-export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg: string) => void) {
+export function useLiveLocation(mapRef: RefObject<LiveLocationMapController | null>, onStatus: (msg: string) => void) {
   const [active, setActive] = useState(false);
   const [canOpenSettings, setCanOpenSettings] = useState(false);
   const watchIdRef = useRef<number | null>(null);
@@ -40,8 +49,6 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
   const trackingRequestedRef = useRef(false);
   const telegramRequestInFlightRef = useRef(false);
   const telegramMissesRef = useRef(0);
-  const meMarkerRef = useRef<L.Marker | null>(null);
-  const accuracyCircleRef = useRef<L.Circle | null>(null);
   const lastPositionRef = useRef<AcceptedPosition | null>(null);
   const hasCenteredRef = useRef(false);
   const onStatusRef = useRef(onStatus);
@@ -58,9 +65,8 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
       const accuracy = rawAccuracy !== null && Number.isFinite(rawAccuracy) && rawAccuracy > 0 ? rawAccuracy : null;
 
       const previous = lastPositionRef.current;
-      const nextLatLng = L.latLng(latitude, longitude);
       if (previous) {
-        const jumpMeters = nextLatLng.distanceTo([previous.lat, previous.lng]);
+        const jumpMeters = distanceMeters(previous.lat, previous.lng, latitude, longitude);
         const previousAccuracy = previous.accuracy ?? PRECISE_LOCATION_THRESHOLD_METERS;
         const nextAccuracy = accuracy ?? PRECISE_LOCATION_THRESHOLD_METERS;
         if (jumpMeters > 3000 && nextAccuracy >= previousAccuracy) {
@@ -69,46 +75,13 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
         }
       }
 
-      if (meMarkerRef.current) {
-        meMarkerRef.current.setLatLng(nextLatLng);
-      } else {
-        meMarkerRef.current = L.marker(nextLatLng, { icon: meDotIcon(), zIndexOffset: 1000 }).addTo(map);
-      }
-
-      if (accuracy !== null) {
-        if (accuracyCircleRef.current) {
-          accuracyCircleRef.current.setLatLng(nextLatLng).setRadius(accuracy);
-        } else {
-          accuracyCircleRef.current = L.circle(nextLatLng, {
-            radius: accuracy,
-            color: '#2ecc71',
-            weight: 1,
-            opacity: 0.5,
-            fillColor: '#2ecc71',
-            fillOpacity: 0.1,
-            interactive: false,
-          }).addTo(map);
-        }
-      } else if (accuracyCircleRef.current) {
-        accuracyCircleRef.current.remove();
-        accuracyCircleRef.current = null;
-      }
-
-      const centerDistance = map.getCenter().distanceTo(nextLatLng);
+      map.updateUserLocation(latitude, longitude, accuracy);
+      const centerDistance = map.distanceFromCenter(latitude, longitude);
       if (!hasCenteredRef.current) {
-        if (accuracyCircleRef.current && accuracy !== null && accuracy > 100) {
-          map.fitBounds(accuracyCircleRef.current.getBounds(), {
-            padding: [28, 28],
-            maxZoom: 16,
-            animate: true,
-            duration: 0.8,
-          });
-        } else {
-          map.flyTo(nextLatLng, 16, { animate: true, duration: 0.8 });
-        }
+        map.focusUserLocation(latitude, longitude, accuracy, true);
         hasCenteredRef.current = true;
       } else if (centerDistance > Math.max(40, (accuracy ?? 30) * 0.75)) {
-        map.panTo(nextLatLng, { animate: true, duration: 0.55, easeLinearity: 0.2 });
+        map.focusUserLocation(latitude, longitude, accuracy, false);
       }
       lastPositionRef.current = { lat: latitude, lng: longitude, accuracy };
       onStatusRef.current(accuracyMessage(accuracy));
@@ -126,21 +99,14 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
       clearInterval(pollIntervalRef.current);
       pollIntervalRef.current = null;
     }
-    if (meMarkerRef.current) {
-      meMarkerRef.current.remove();
-      meMarkerRef.current = null;
-    }
-    if (accuracyCircleRef.current) {
-      accuracyCircleRef.current.remove();
-      accuracyCircleRef.current = null;
-    }
+    mapRef.current?.clearUserLocation();
     lastPositionRef.current = null;
     hasCenteredRef.current = false;
     trackingRequestedRef.current = false;
     telegramRequestInFlightRef.current = false;
     telegramMissesRef.current = 0;
     setActive(false);
-  }, []);
+  }, [mapRef]);
 
   const startBrowserGeolocation = useCallback(() => {
     setCanOpenSettings(false);
@@ -265,7 +231,7 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
     }
   }, []);
 
-  // Clean up any active watch/poll + the "me" marker on unmount (map view swap).
+  // Clean up any active watch/poll on unmount. The map hook owns marker cleanup.
   useEffect(() => {
     return () => {
       if (watchIdRef.current !== null) {
@@ -275,14 +241,6 @@ export function useLiveLocation(mapRef: RefObject<L.Map | null>, onStatus: (msg:
       if (pollIntervalRef.current !== null) {
         clearInterval(pollIntervalRef.current);
         pollIntervalRef.current = null;
-      }
-      if (meMarkerRef.current) {
-        meMarkerRef.current.remove();
-        meMarkerRef.current = null;
-      }
-      if (accuracyCircleRef.current) {
-        accuracyCircleRef.current.remove();
-        accuracyCircleRef.current = null;
       }
     };
   }, []);

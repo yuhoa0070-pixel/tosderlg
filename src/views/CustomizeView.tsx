@@ -1,18 +1,49 @@
+import { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useActiveTrip } from '../hooks/useActiveTrip';
 import { useSortable } from '../hooks/useSortable';
 import StopCard from '../components/shared/StopCard';
+import TripSuccessCelebration from '../components/shared/TripSuccessCelebration';
+
+function canPersistToStorage(): boolean {
+  try {
+    const probeKey = '__waylo_save_probe__';
+    window.localStorage.setItem(probeKey, '1');
+    window.localStorage.removeItem(probeKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export default function CustomizeView() {
   const { state, dispatch } = useAppContext();
   const activeTrip = useActiveTrip();
   const stops = activeTrip?.tripDays[state.currentDay]?.stops ?? [];
+  const km = state.language === 'km';
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [celebrationOpen, setCelebrationOpen] = useState(false);
 
   const listRef = useSortable((oldIndex, newIndex) => {
     dispatch({ type: 'REORDER_STOPS', dayIndex: state.currentDay, oldIndex, newIndex });
   });
 
   const destinationTitle = activeTrip ? activeTrip.destination.split(',')[0] : '';
+
+  function handleSaveTrip() {
+    if (saving) return;
+    setSaving(true);
+    setSaveError('');
+    window.setTimeout(() => {
+      setSaving(false);
+      if (canPersistToStorage()) {
+        setCelebrationOpen(true);
+      } else {
+        setSaveError(km ? 'មិនអាចរក្សាទុកបានទេ។ សូមព្យាយាមម្ដងទៀត។' : 'Could not save your trip. Please try again.');
+      }
+    }, 350);
+  }
 
   return (
     <section id="view-customize" className="active">
@@ -45,9 +76,24 @@ export default function CustomizeView() {
       >
         + Add a stop
       </button>
-      <button className="btn btn-primary" onClick={() => dispatch({ type: 'NAVIGATE', view: 'itinerary' })}>
-        Looks good, save trip
+      <button className="btn btn-primary" disabled={saving} onClick={handleSaveTrip}>
+        {saving ? (km ? 'កំពុងរក្សាទុក…' : 'Saving…') : 'Looks good, save trip'}
       </button>
+      {saveError && <p className="status err">{saveError}</p>}
+
+      <TripSuccessCelebration
+        open={celebrationOpen}
+        friendImageSrc="/waylo-group-of-friends-transparent.png"
+        language={state.language}
+        onViewItinerary={() => {
+          setCelebrationOpen(false);
+          dispatch({ type: 'NAVIGATE', view: 'itinerary' });
+        }}
+        onClose={() => {
+          setCelebrationOpen(false);
+          dispatch({ type: 'NAVIGATE', view: 'home' });
+        }}
+      />
     </section>
   );
 }

@@ -1,42 +1,138 @@
-import { useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useActiveTrip } from '../hooks/useActiveTrip';
-import { useLeafletMap } from '../hooks/useLeafletMap';
+import { useGoogleMap } from '../hooks/useGoogleMap';
 import { useLiveLocation } from '../hooks/useLiveLocation';
 import { fetchWalkingRoute } from '../lib/geo';
+import { searchPlaces, type PlaceSearchResult } from '../lib/geocode';
+import {
+  fetchGooglePlaceSuggestions,
+  hasGoogleMapsKey,
+  resetGoogleAutocompleteSession,
+  type GooglePlaceSuggestion,
+} from '../lib/googleMaps';
 import { DEFAULT_CENTER } from '../lib/constants';
+import { keyFor } from '../lib/tripUtils';
 import LocationConsentModal from '../components/modals/LocationConsentModal';
+
+function SearchMatch({ text, query }: { text: string; query: string }) {
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const matchIndex = text.toLocaleLowerCase().indexOf(normalizedQuery);
+  if (!normalizedQuery || matchIndex < 0) return text;
+
+  return (
+    <>
+      {text.slice(0, matchIndex)}
+      <mark>{text.slice(matchIndex, matchIndex + normalizedQuery.length)}</mark>
+      {text.slice(matchIndex + normalizedQuery.length)}
+    </>
+  );
+}
 
 export default function MapView() {
   const { state, dispatch } = useAppContext();
   const activeTrip = useActiveTrip();
   const stops = activeTrip?.tripDays[state.currentDay]?.stops ?? [];
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const routeLayersRef = useRef<L.Polyline[]>([]);
-  const [locationNotice, setLocationNotice] = useState<string | null>(null);
+  const searchRequestRef = useRef(0);
+  const autocompleteRequestRef = useRef(0);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const [, setLocationNotice] = useState<string | null>(null);
   const [locationConsentOpen, setLocationConsentOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([]);
+  const [googleSuggestions, setGoogleSuggestions] = useState<GooglePlaceSuggestion[]>([]);
+  const [googleAutocompleteUnavailable, setGoogleAutocompleteUnavailable] = useState(false);
+  const [autocompleteSearching, setAutocompleteSearching] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [searchedPlace, setSearchedPlace] = useState<PlaceSearchResult | null>(null);
+  const [placeGalleryOpen, setPlaceGalleryOpen] = useState(false);
   const km = state.language === 'km';
   const selectedStopIndex = stops[state.selectedStop] ? state.selectedStop : 0;
   const selectedStop = stops[selectedStopIndex];
+  const selectedStopKey = keyFor(state.currentDay, selectedStopIndex);
+  const selectedStopPhotos = activeTrip?.photos[selectedStopKey] ?? [];
   const selectedStopUsesImage = !!selectedStop?.emoji && (
     selectedStop.emoji.startsWith('data:image') || selectedStop.emoji.startsWith('/emoji/')
   );
+  const savedPlaceSuggestions = useMemo(() => {
+    const query = searchQuery.trim().toLocaleLowerCase();
+    if (query.length < 2) return [];
 
-  const { mapRef, invalidateSize, recenterToStops, flyToStop, tileError } = useLeafletMap(containerRef, {
+    const results: PlaceSearchResult[] = [];
+    const seen = new Set<string>();
+    const addResult = (result: PlaceSearchResult) => {
+      const haystack = `${result.name} ${result.address} ${result.category}`.toLocaleLowerCase();
+      const identity = `${result.name.toLocaleLowerCase()}-${result.lat.toFixed(5)}-${result.lng.toFixed(5)}`;
+      if (!haystack.includes(query) || seen.has(identity)) return;
+      seen.add(identity);
+      results.push(result);
+    };
+
+    state.trips.forEach((trip) => {
+      addResult({
+        id: `trip-${trip.id}`,
+        name: trip.destination,
+        address: trip.label || (km ? 'គោលដៅដំណើរ' : 'Trip destination'),
+        category: km ? 'ដំណើរ' : 'trip',
+        lat: trip.center.lat,
+        lng: trip.center.lng,
+      });
+      trip.tripDays.forEach((day, dayIndex) => {
+        day.stops.forEach((stop, stopIndex) => addResult({
+          id: `saved-${trip.id}-${dayIndex}-${stopIndex}`,
+          name: stop.title,
+          address: stop.sub || trip.destination,
+          category: km ? 'បានរក្សាទុក' : 'saved stop',
+          lat: stop.lat,
+          lng: stop.lng,
+        }));
+      });
+    });
+
+    return results.slice(0, 5);
+  }, [km, searchQuery, state.trips]);
+  const trimmedSearchQuery = searchQuery.trim();
+  const searchHasInput = trimmedSearchQuery.length >= 2;
+  const visibleSearchResults = searchResults.length > 0 ? searchResults : savedPlaceSuggestions;
+  const showingSavedSuggestions = searchResults.length === 0 && savedPlaceSuggestions.length > 0;
+  const googleSearchEnabled = hasGoogleMapsKey();
+  const googleLiveSearchEnabled = googleSearchEnabled && !googleAutocompleteUnavailable;
+  const showingGoogleSuggestions = googleLiveSearchEnabled && googleSuggestions.length > 0 && searchResults.length === 0;
+  const autocompleteCenterLat = activeTrip?.center.lat;
+  const autocompleteCenterLng = activeTrip?.center.lng;
+
+  const {
+    locationControllerRef,
+    invalidateSize,
+    recenterToStops,
+    flyToStop,
+    showSearchLocation,
+    clearSearchLocation,
+    drawRoutes,
+    tileError,
+  } = useGoogleMap(containerRef, {
     center: activeTrip?.center ?? DEFAULT_CENTER,
     stops,
     selectedStop: state.selectedStop,
-    onSelectStop: (index) => dispatch({ type: 'SET_SELECTED_STOP', index }),
-    onMapClick: () => undefined,
+    theme: state.theme,
+    onSelectStop: (index) => {
+      setSearchedPlace(null);
+      setPlaceGalleryOpen(true);
+      dispatch({ type: 'SET_SELECTED_STOP', index });
+    },
+    onMapClick: () => {
+      setPlaceGalleryOpen(false);
+      if (searchOpen) closeSearch();
+    },
   });
 
   const {
     active: liveActive,
     toggle: toggleLiveLocation,
-    canOpenSettings: canOpenLocationSettings,
-    openSettings: openLocationSettings,
-  } = useLiveLocation(mapRef, setLocationNotice);
+  } = useLiveLocation(locationControllerRef, setLocationNotice);
 
   function handleToggleLiveLocation() {
     if (!liveActive) {
@@ -51,6 +147,137 @@ export default function MapView() {
     setLocationConsentOpen(false);
     setLocationNotice(null);
     toggleLiveLocation();
+  }
+
+  async function handleMapSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const query = searchQuery.trim();
+    if (query.length < 2) {
+      setSearchError(km ? 'សូមវាយបញ្ចូលយ៉ាងហោចណាស់ ២ តួអក្សរ។' : 'Enter at least 2 characters.');
+      return;
+    }
+
+    if (googleLiveSearchEnabled) {
+      if (googleSuggestions[0]) {
+        await selectGoogleSuggestion(googleSuggestions[0]);
+      } else {
+        setSearchError(km ? 'សូមជ្រើសរើសទីកន្លែងដែលត្រូវគ្នាខាងក្រោម។' : 'Choose a matching location below.');
+      }
+      return;
+    }
+
+    const requestId = ++searchRequestRef.current;
+    setSearching(true);
+    setSearchError('');
+    try {
+      const results = await searchPlaces(query, state.language);
+      if (requestId !== searchRequestRef.current) return;
+      setSearchResults(results);
+      if (results.length === 0) {
+        setSearchError(km ? 'រកមិនឃើញទីកន្លែងនេះទេ។ សាកល្បងឈ្មោះផ្សេង។' : 'No places found. Try a different name.');
+      } else {
+        showSearchResultOnMap(results[0], false);
+      }
+    } catch {
+      if (requestId !== searchRequestRef.current) return;
+      setSearchResults([]);
+      setSearchError(km ? 'មិនអាចស្វែងរកបានឥឡូវនេះទេ។ សូមព្យាយាមម្ដងទៀត។' : 'Search is unavailable right now. Try again.');
+    } finally {
+      if (requestId === searchRequestRef.current) setSearching(false);
+    }
+  }
+
+  function showSearchResultOnMap(result: PlaceSearchResult, closePanel: boolean) {
+    showSearchLocation(result.lat, result.lng, result.name);
+    setSearchedPlace(result);
+    setPlaceGalleryOpen(false);
+    if (closePanel) setSearchOpen(false);
+  }
+
+  function selectSearchResult(result: PlaceSearchResult) {
+    showSearchResultOnMap(result, true);
+    setSearchQuery(result.name);
+  }
+
+  function showTripStops() {
+    clearSearchLocation();
+    setSearchedPlace(null);
+    setPlaceGalleryOpen(false);
+    recenterToStops();
+  }
+
+  function addSearchedPlace() {
+    if (!searchedPlace) return;
+    clearSearchLocation();
+    dispatch({ type: 'SET_PENDING_TAP_COORDS', coords: { lat: searchedPlace.lat, lng: searchedPlace.lng } });
+    dispatch({ type: 'OPEN_MODAL', modal: 'stopForm', editingStopIndex: null });
+    setSearchedPlace(null);
+  }
+
+  function closeSearch() {
+    searchRequestRef.current += 1;
+    autocompleteRequestRef.current += 1;
+    setSearching(false);
+    setAutocompleteSearching(false);
+    setGoogleSuggestions([]);
+    resetGoogleAutocompleteSession();
+    setSearchOpen(false);
+    setSearchError('');
+  }
+
+  function openDestinationSearch() {
+    resetGoogleAutocompleteSession();
+    setSearchOpen(true);
+    setSearchError('');
+    setSearchResults([]);
+  }
+
+  function clearSearchText() {
+    searchRequestRef.current += 1;
+    autocompleteRequestRef.current += 1;
+    setSearchQuery('');
+    setSearchResults([]);
+    setGoogleSuggestions([]);
+    setSearchError('');
+    setSearching(false);
+    setAutocompleteSearching(false);
+    resetGoogleAutocompleteSession();
+    window.requestAnimationFrame(() => searchInputRef.current?.focus());
+  }
+
+  async function selectGoogleSuggestion(suggestion: GooglePlaceSuggestion) {
+    const requestId = ++searchRequestRef.current;
+    autocompleteRequestRef.current += 1;
+    setSearching(true);
+    setAutocompleteSearching(false);
+    setSearchError('');
+    try {
+      const result = await suggestion.resolve();
+      if (requestId !== searchRequestRef.current) return;
+      setGoogleSuggestions([]);
+      setSearchResults([result]);
+      selectSearchResult(result);
+    } catch {
+      if (requestId !== searchRequestRef.current) return;
+      setSearchError(km ? 'មិនអាចបើកទីតាំងនេះបានទេ។ សូមសាកល្បងទីតាំងផ្សេង។' : 'This location could not be opened. Try another suggestion.');
+    } finally {
+      if (requestId === searchRequestRef.current) setSearching(false);
+    }
+  }
+
+  function openSelectedStopGallery() {
+    if (!activeTrip || !selectedStop || selectedStopPhotos.length === 0) return;
+    dispatch({
+      type: 'SET_ACTIVE_MOMENT_GROUP',
+      group: {
+        tripId: activeTrip.id,
+        key: selectedStopKey,
+        time: selectedStop.time,
+        title: selectedStop.title,
+        photos: selectedStopPhotos,
+      },
+    });
+    dispatch({ type: 'OPEN_MODAL', modal: 'memoryCollection' });
   }
 
   useEffect(() => {
@@ -68,42 +295,72 @@ export default function MapView() {
   }, [state.theme]);
 
   useEffect(() => {
+    setPlaceGalleryOpen(false);
+  }, [state.currentDay, activeTrip?.id]);
+
+  useEffect(() => {
+    const query = searchQuery.trim();
+    const requestId = ++autocompleteRequestRef.current;
+    if (!searchOpen || !googleLiveSearchEnabled || query.length < 2) {
+      setGoogleSuggestions([]);
+      setAutocompleteSearching(false);
+      return;
+    }
+
+    setAutocompleteSearching(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const center = autocompleteCenterLat !== undefined && autocompleteCenterLng !== undefined
+          ? { lat: autocompleteCenterLat, lng: autocompleteCenterLng }
+          : undefined;
+        const suggestions = await fetchGooglePlaceSuggestions(query, state.language, center);
+        if (requestId !== autocompleteRequestRef.current) return;
+        setGoogleAutocompleteUnavailable(false);
+        setGoogleSuggestions(suggestions);
+        setSearchError(suggestions.length === 0
+          ? (km ? 'រកមិនឃើញទីកន្លែងដែលត្រូវគ្នាទេ។' : 'No matching locations found.')
+          : '');
+      } catch {
+        if (requestId !== autocompleteRequestRef.current) return;
+        setGoogleSuggestions([]);
+        setGoogleAutocompleteUnavailable(true);
+        setSearchError('');
+      } finally {
+        if (requestId === autocompleteRequestRef.current) setAutocompleteSearching(false);
+      }
+    }, 320);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    autocompleteCenterLat,
+    autocompleteCenterLng,
+    googleLiveSearchEnabled,
+    km,
+    searchOpen,
+    searchQuery,
+    state.language,
+  ]);
+
+  useEffect(() => {
     let cancelled = false;
 
-    async function drawRoutes() {
-      const map = mapRef.current;
-      if (!map) return;
-      routeLayersRef.current.forEach((layer) => map.removeLayer(layer));
-      routeLayersRef.current = [];
-
+    async function loadRoutes() {
       const validStops = stops.filter(
         (stop) => Number.isFinite(stop.lat) && Number.isFinite(stop.lng),
       );
-      if (validStops.length < 2) return;
+      if (validStops.length < 2) {
+        drawRoutes([]);
+        return;
+      }
 
       const segments = await Promise.all(
         validStops.slice(0, -1).map((stop, index) => fetchWalkingRoute(stop, validStops[index + 1])),
       );
       if (cancelled) return;
-
-      segments.forEach((path) => {
-        try {
-          const line = L.polyline(path, {
-            color: '#2ECC71',
-            weight: 5.5,
-            opacity: 0.82,
-            dashArray: '1 13',
-            lineCap: 'round',
-            lineJoin: 'round',
-          }).addTo(map);
-          routeLayersRef.current.push(line);
-        } catch {
-          // A failed route segment should not prevent the rest of the map rendering.
-        }
-      });
+      drawRoutes(segments);
     }
 
-    void drawRoutes();
+    void loadRoutes();
     return () => {
       cancelled = true;
     };
@@ -112,37 +369,141 @@ export default function MapView() {
 
   return (
     <section id="view-map" className="active map-only-view">
-      <div className="map-frame map-fullscreen-frame">
-        <div id="leafletMap" ref={containerRef} />
-        <div className="map-route-summary">
-          <span className="map-route-summary-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <circle cx="6" cy="18" r="2" />
-              <circle cx="18" cy="6" r="2" />
-              <path d="M7.5 16.5c2.5-1.2 2.8-3.2 3.2-5.1.5-2.4 1.3-4.2 5.3-4.8" />
-            </svg>
-          </span>
-          <span className="map-route-summary-copy">
-            <small>{km ? 'ផ្លូវរបស់ខ្ញុំ' : 'My route'}</small>
-            <strong>{activeTrip?.destination || (km ? 'ដំណើររបស់អ្នក' : 'Your trip')}</strong>
-            <span>
-              {km
-                ? `ថ្ងៃទី ${state.currentDay + 1} · ${stops.length} ទីកន្លែង`
-                : `Day ${state.currentDay + 1} · ${stops.length} ${stops.length === 1 ? 'stop' : 'stops'}`}
-            </span>
-          </span>
-          <button type="button" className="map-route-focus-btn" aria-label={km ? 'បង្ហាញទីកន្លែងទាំងអស់' : 'Show all stops'} onClick={recenterToStops}>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-            </svg>
-          </button>
-        </div>
+      <div className={`map-frame map-fullscreen-frame${placeGalleryOpen && !searchedPlace ? ' place-gallery-open' : ''}`}>
+        <div id="googleMap" ref={containerRef} />
+        <form
+          className={`map-search-panel ${searchOpen ? 'is-open' : 'is-closed'}`}
+          role="search"
+          onSubmit={handleMapSearch}
+        >
+          {!searchOpen ? (
+            <button
+              type="button"
+              className="map-search-launch"
+              aria-label={km ? 'ស្វែងរកទីកន្លែង' : 'Search places'}
+              aria-expanded="false"
+              onClick={openDestinationSearch}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="10.8" cy="10.8" r="6.3" />
+                <path d="m15.5 15.5 4.2 4.2" />
+              </svg>
+            </button>
+          ) : (
+            <>
+            <div className="map-search-input-row">
+              <input
+                ref={searchInputRef}
+                type="search"
+                value={searchQuery}
+                onChange={(event) => {
+                  setSearchQuery(event.target.value);
+                  setSearchResults([]);
+                  setGoogleSuggestions([]);
+                  setSearchError('');
+                }}
+                placeholder={km ? 'ស្វែងរកទីកន្លែង…' : 'Search for a place…'}
+                aria-label={km ? 'ស្វែងរកទីកន្លែង' : 'Search for a place'}
+                aria-autocomplete="list"
+                aria-controls="mapSearchSuggestions"
+                aria-expanded={searchHasInput || autocompleteSearching}
+                autoComplete="off"
+                autoFocus
+              />
+              <button
+                type={searchQuery ? 'button' : 'submit'}
+                className={`map-search-submit${searchQuery ? ' is-clear' : ''}`}
+                aria-label={searchQuery ? (km ? 'លុបអត្ថបទស្វែងរក' : 'Clear search text') : (km ? 'ស្វែងរក' : 'Search')}
+                onClick={searchQuery ? clearSearchText : undefined}
+              >
+                {searching || autocompleteSearching ? <span className="map-search-spinner" /> : (
+                  searchQuery ? (
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"/><path d="m15.5 15.5 4.2 4.2"/></svg>
+                  )
+                )}
+              </button>
+            </div>
+            {(searchHasInput || searching || autocompleteSearching || searchError) && (
+              <div className="map-search-results" id="mapSearchSuggestions" role="list" aria-live="polite">
+                {(showingGoogleSuggestions || visibleSearchResults.length > 0) && (
+                  <div className="map-search-results-label">
+                    {showingGoogleSuggestions
+                      ? (km ? 'ទីកន្លែងដែលត្រូវគ្នា' : 'Matching locations')
+                      : showingSavedSuggestions
+                      ? (km ? 'ទីកន្លែងដែលបានរក្សាទុក' : 'From your trips')
+                      : (km ? 'លទ្ធផលផែនទី' : 'Map results')}
+                  </div>
+                )}
+                {searchError && <p className="map-search-error">{searchError}</p>}
+                {showingGoogleSuggestions ? googleSuggestions.map((suggestion) => (
+                  <button
+                    type="button"
+                    className="map-search-result"
+                    key={suggestion.id}
+                    onClick={() => void selectGoogleSuggestion(suggestion)}
+                  >
+                    <span className="map-search-result-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M12 21s6.5-5.9 6.5-11.1a6.5 6.5 0 1 0-13 0C5.5 15.1 12 21 12 21Z"/><circle cx="12" cy="9.8" r="2.1"/></svg>
+                    </span>
+                    <span className="map-search-result-copy">
+                      <strong><SearchMatch text={suggestion.name} query={searchQuery} /></strong>
+                      <small><SearchMatch text={suggestion.address} query={searchQuery} /></small>
+                    </span>
+                    <span className="map-search-result-type">{suggestion.category}</span>
+                  </button>
+                )) : visibleSearchResults.map((result) => (
+                  <button
+                    type="button"
+                    className={`map-search-result${searchedPlace?.id === result.id ? ' active' : ''}`}
+                    key={result.id}
+                    onClick={() => selectSearchResult(result)}
+                  >
+                    <span className="map-search-result-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><path d="M12 21s6.5-5.9 6.5-11.1a6.5 6.5 0 1 0-13 0C5.5 15.1 12 21 12 21Z"/><circle cx="12" cy="9.8" r="2.1"/></svg>
+                    </span>
+                    <span className="map-search-result-copy">
+                      <strong><SearchMatch text={result.name} query={searchQuery} /></strong>
+                      <small><SearchMatch text={result.address} query={searchQuery} /></small>
+                    </span>
+                    <span className="map-search-result-type">{result.category}</span>
+                  </button>
+                ))}
+                {searching || autocompleteSearching ? (
+                  <div className="map-search-loading" role="status">
+                    <span className="map-search-spinner" />
+                    {km ? 'កំពុងស្វែងរកទីកន្លែងដែលត្រូវគ្នា…' : 'Finding matching locations…'}
+                  </div>
+                ) : !googleLiveSearchEnabled && searchResults.length === 0 && searchHasInput ? (
+                  <button type="submit" className="map-search-query-action">
+                    <span className="map-search-query-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.3"/><path d="m15.5 15.5 4.2 4.2"/></svg>
+                    </span>
+                    <span>
+                      <small>{km ? 'ស្វែងរកនៅលើផែនទី' : 'Search the map for'}</small>
+                      <strong>“{trimmedSearchQuery}”</strong>
+                    </span>
+                    <svg className="map-search-query-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                ) : null}
+                {showingGoogleSuggestions && <div className="map-google-attribution">Google Maps</div>}
+              </div>
+            )}
+            </>
+          )}
+        </form>
         {tileError && (
           <div className="map-tile-notice" role="status">
             Map is reconnecting…
           </div>
         )}
+        <button type="button" className="map-recenter-btn" title="Recenter stops" aria-label={km ? 'បង្ហាញទីកន្លែងទាំងអស់' : 'Show all stops'} onClick={showTripStops}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+          </svg>
+        </button>
         <button
           type="button"
           className={`map-live-btn${liveActive ? ' active' : ''}`}
@@ -155,36 +516,70 @@ export default function MapView() {
             <circle cx="12" cy="9.2" r="2.4" fill="currentColor" stroke="none" />
           </svg>
         </button>
-        {locationNotice && (
-          <div className="note map-location-notice" role="status">
-            <span>{locationNotice}</span>
-            {canOpenLocationSettings && (
-              <button type="button" onClick={openLocationSettings}>
-                {state.language === 'km' ? 'បើកការកំណត់' : 'Open settings'}
-              </button>
-            )}
-          </div>
-        )}
-        {selectedStop && (
-          <article className="map-selected-stop-card">
-            <span className="map-selected-stop-art" aria-hidden="true">
-              {selectedStopUsesImage ? (
-                <img src={selectedStop.emoji} alt="" />
-              ) : (
-                <span>{selectedStop.emoji || '🏕️'}</span>
-              )}
-            </span>
+        {searchedPlace ? (
+          <article className="map-selected-stop-card map-searched-place-card">
+            <span className="map-selected-stop-art" aria-hidden="true"><span>🧭</span></span>
             <span className="map-selected-stop-copy">
-              <small>{km ? `ទីកន្លែងទី ${selectedStopIndex + 1}` : `Stop ${selectedStopIndex + 1}`}</small>
-              <strong>{selectedStop.title}</strong>
-              <span>{selectedStop.sub || (km ? 'បានរក្សាទុកក្នុងកាលវិភាគរបស់អ្នក' : 'Saved in your itinerary')}</span>
-              <button type="button" onClick={() => dispatch({ type: 'NAVIGATE', view: 'itinerary' })}>
-                {selectedStop.time || (km ? 'មើលផែនការ' : 'View plan')}
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+              <small>{km ? 'លទ្ធផលស្វែងរក' : 'Search result'}</small>
+              <strong>{searchedPlace.name}</strong>
+              <span>{searchedPlace.address}</span>
+              <button type="button" onClick={addSearchedPlace}>
+                {km ? 'បន្ថែមទៅផែនការ' : 'Add to plan'}
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
             </span>
           </article>
-        )}
+        ) : selectedStop && placeGalleryOpen ? (
+          <article className="map-place-gallery-card" aria-label={km ? 'ព័ត៌មាន និងរូបថតទីកន្លែង' : 'Place details and photos'}>
+            <header className="map-place-gallery-head">
+              <span className="map-place-gallery-title">
+                <small>{km ? `ទីកន្លែងទី ${selectedStopIndex + 1}` : `Stop ${selectedStopIndex + 1}`}</small>
+                <strong>{selectedStop.title}</strong>
+                <span>{selectedStop.sub || (km ? 'បានរក្សាទុកក្នុងកាលវិភាគរបស់អ្នក' : 'Saved in your itinerary')}</span>
+              </span>
+              <button
+                type="button"
+                className="map-place-gallery-close"
+                onClick={() => setPlaceGalleryOpen(false)}
+                aria-label={km ? 'បិទព័ត៌មានទីកន្លែង' : 'Close place details'}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+              </button>
+            </header>
+
+            <div className="map-place-gallery-meta">
+              <span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>
+                {selectedStop.time || (km ? 'មិនទាន់កំណត់ម៉ោង' : 'Time not set')}
+              </span>
+              <button type="button" onClick={() => dispatch({ type: 'NAVIGATE', view: 'itinerary' })}>
+                {km ? 'មើលកាលវិភាគ' : 'View itinerary'}
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+            </div>
+
+            {selectedStopPhotos.length > 0 ? (
+              <button type="button" className="map-place-gallery-strip" onClick={openSelectedStopGallery} aria-label={km ? 'បើករូបថតទាំងអស់' : 'Open all place photos'}>
+                {selectedStopPhotos.slice(0, 3).map((photo, index) => (
+                  <span className="map-place-gallery-photo" key={`${photo.src}-${index}`}>
+                    <img src={photo.src} alt={photo.caption || `${selectedStop.title} ${index + 1}`} />
+                    {index === 2 && selectedStopPhotos.length > 3 ? <b>+{selectedStopPhotos.length - 3}</b> : null}
+                  </span>
+                ))}
+              </button>
+            ) : (
+              <div className="map-place-gallery-empty">
+                <span className="map-place-gallery-empty-art" aria-hidden="true">
+                  {selectedStopUsesImage ? <img src={selectedStop.emoji} alt="" /> : <span>{selectedStop.emoji || '🏕️'}</span>}
+                </span>
+                <span>
+                  <strong>{km ? 'វិចិត្រសាលទីកន្លែង' : 'Place gallery'}</strong>
+                  <small>{km ? 'រូបថតដែលបានរក្សាទុកនឹងបង្ហាញនៅទីនេះ។' : 'Saved photos from this stop will appear here.'}</small>
+                </span>
+              </div>
+            )}
+          </article>
+        ) : null}
       </div>
 
       <LocationConsentModal

@@ -175,10 +175,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const telegramUser = getTelegramUser();
       const sharedBy = telegramUser ? telegramUserDisplayName(telegramUser) : state.profileName || 'A friend';
       const member = currentTripMember(state.profileName, state.profilePhoto);
-      void Promise.allSettled(ownerRooms.map((trip) => {
+      void Promise.allSettled(ownerRooms.map(async (trip) => {
         const existingOwner = trip.members?.find((roomMember) => roomMember.role === 'owner');
         const owner = existingOwner ? { ...member, id: existingOwner.id } : member;
-        return saveTripRoom(trip, sharedBy, owner);
+        const saved = await saveTripRoom(trip, sharedBy, owner);
+        dispatch({ type: 'SET_TRIP_ROOM_UPDATED_AT', tripId: trip.id, updatedAt: saved.updatedAt });
+        return saved;
       }));
     }, 900);
     return () => window.clearTimeout(timer);
@@ -203,8 +205,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const refreshed = await getTripRoom(roomCode);
         if (cancelled) return;
         dispatch({ type: 'SET_TRIP_MEMBERS', tripId, members: refreshed.members ?? [] });
-        if (activeRoomReadOnly && (refreshed.roomUpdatedAt ?? 0) > activeRoomUpdatedAt) {
-          dispatch({ type: 'REFRESH_SHARED_TRIP', trip: refreshed });
+        const refreshedAt = refreshed.roomUpdatedAt ?? 0;
+        if (refreshedAt > activeRoomUpdatedAt) {
+          if (activeRoomReadOnly) {
+            dispatch({ type: 'REFRESH_SHARED_TRIP', trip: refreshed });
+          } else if (refreshed.budget) {
+            dispatch({
+              type: 'SET_TRIP_BUDGET',
+              tripId,
+              budget: refreshed.budget,
+              updatedAt: refreshedAt,
+            });
+          } else {
+            dispatch({ type: 'SET_TRIP_ROOM_UPDATED_AT', tripId, updatedAt: refreshedAt });
+          }
         }
       } catch {
         // Keep the last downloaded copy available while offline.

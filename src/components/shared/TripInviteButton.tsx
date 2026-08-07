@@ -146,6 +146,19 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
         )}
         <button
           type="button"
+          className="trip-budget-button"
+          onClick={() => dispatch({ type: 'NAVIGATE', view: 'budget' })}
+          aria-label={km ? 'បើកថវិកាដំណើរ' : 'Open trip budget'}
+          title={km ? 'ថវិកាដំណើរ' : 'Trip budget'}
+        >
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 7.5h14.5A1.5 1.5 0 0 1 20 9v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h11" />
+            <path d="M15 12h5v4h-5a2 2 0 0 1 0-4Z" />
+            <circle cx="16" cy="14" r=".7" fill="currentColor" stroke="none" />
+          </svg>
+        </button>
+        <button
+          type="button"
           className="trip-invite-button"
           onClick={inviteFriends}
           disabled={busy}
