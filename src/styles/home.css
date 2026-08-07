@@ -1,7 +1,7 @@
 .app-header{
   display:flex;align-items:center;justify-content:space-between;
   background:var(--header-bg);border-radius:0;
-  padding:8px 20px;margin:0;
+  min-height:68px;padding:12px 20px;margin:0;
   box-shadow:0 4px 12px rgba(0,0,0,0.06);
   position:sticky;top:0;z-index:30;
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
@@ -54,7 +54,7 @@ body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header
   .theme-mode-button,.language-mode-button{transition:none;}
 }
 @media(max-width:360px){
-  .app-header{padding:8px 16px;}
+  .app-header{min-height:64px;padding:10px 16px;}
   .app-header-logo-img{width:108px;height:32px;}
   .app-header-controls .language-mode-button{width:31px;height:31px;font-size:16px;}
 }

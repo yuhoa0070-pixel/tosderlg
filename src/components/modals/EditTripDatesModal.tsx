@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useActiveTrip } from '../../hooks/useActiveTrip';
 import { dayCount } from '../../lib/tripUtils';
+import DatePickerField from '../shared/DatePickerField';
 import BottomSheetModal from './BottomSheetModal';
 
 export default function EditTripDatesModal() {
@@ -85,26 +86,20 @@ export default function EditTripDatesModal() {
         {km ? 'កែថ្ងៃចេញដំណើរ និងថ្ងៃត្រឡប់របស់អ្នក។' : 'Update when your trip starts and ends.'}
       </p>
 
-      <div className="row2">
-        <div>
-          <label className="field-label" htmlFor="editTripStartDate">{km ? 'ចេញដំណើរ' : 'Depart'}</label>
-          <input
-            id="editTripStartDate"
-            type="date"
-            value={startDate}
-            onChange={(event) => handleDateChange(setStartDate, event.target.value)}
-          />
-        </div>
-        <div>
-          <label className="field-label" htmlFor="editTripEndDate">{km ? 'ត្រឡប់' : 'Return'}</label>
-          <input
-            id="editTripEndDate"
-            type="date"
-            min={startDate || undefined}
-            value={endDate}
-            onChange={(event) => handleDateChange(setEndDate, event.target.value)}
-          />
-        </div>
+      <div className="date-picker-grid">
+        <DatePickerField
+          id="editTripStartDate"
+          label={km ? 'ចេញដំណើរ' : 'Depart'}
+          value={startDate}
+          onChange={(value) => handleDateChange(setStartDate, value)}
+        />
+        <DatePickerField
+          id="editTripEndDate"
+          label={km ? 'ត្រឡប់' : 'Return'}
+          min={startDate || undefined}
+          value={endDate}
+          onChange={(value) => handleDateChange(setEndDate, value)}
+        />
       </div>
 
       {error && <p className="status err" role="alert">{error}</p>}

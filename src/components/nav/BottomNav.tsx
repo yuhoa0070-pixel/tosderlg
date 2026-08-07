@@ -28,7 +28,10 @@ export default function BottomNav() {
   return (
     <nav className="bottom-nav">
       <button
+        type="button"
         className={`nav-item${active === 'navHome' ? ' active' : ''}`}
+        aria-label={km ? 'ទំព័រដើម' : 'Home'}
+        aria-current={active === 'navHome' ? 'page' : undefined}
         onClick={() => dispatch({ type: 'NAVIGATE', view: 'home' })}
       >
         <svg className="nav-icon" viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
@@ -38,14 +41,28 @@ export default function BottomNav() {
         </svg>
         <span>{km ? 'ទំព័រដើម' : 'Home'}</span>
       </button>
-      <button className={`nav-item${active === 'navItinerary' ? ' active' : ''}`} disabled={!hasTrip} onClick={goItinerary}>
+      <button
+        type="button"
+        className={`nav-item${active === 'navItinerary' ? ' active' : ''}`}
+        aria-label={km ? 'កាលវិភាគ' : 'Itinerary'}
+        aria-current={active === 'navItinerary' ? 'page' : undefined}
+        disabled={!hasTrip}
+        onClick={goItinerary}
+      >
         <svg className="nav-icon" viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3.8" y="4.5" width="16.4" height="16" rx="5" />
           <path d="M8.5 12.3l2.2 2.2 4.8-5.2" />
         </svg>
         <span>{km ? 'កាលវិភាគ' : 'Itinerary'}</span>
       </button>
-      <button className={`nav-item${active === 'navMap' ? ' active' : ''}`} disabled={!hasTrip} onClick={goMap}>
+      <button
+        type="button"
+        className={`nav-item${active === 'navMap' ? ' active' : ''}`}
+        aria-label={km ? 'ផែនទី' : 'Map'}
+        aria-current={active === 'navMap' ? 'page' : undefined}
+        disabled={!hasTrip}
+        onClick={goMap}
+      >
         <svg className="nav-icon" viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 21s6.8-6.1 6.8-11.6a6.8 6.8 0 1 0-13.6 0C5.2 14.9 12 21 12 21z" />
           <circle cx="12" cy="9.3" r="2.4" />
@@ -53,7 +70,10 @@ export default function BottomNav() {
         <span>{km ? 'ផែនទី' : 'Map'}</span>
       </button>
       <button
+        type="button"
         className={`nav-item${active === 'navProfile' ? ' active' : ''}`}
+        aria-label={km ? 'គណនី' : 'Profile'}
+        aria-current={active === 'navProfile' ? 'page' : undefined}
         onClick={() => dispatch({ type: 'NAVIGATE', view: 'profile' })}
       >
         <svg className="nav-icon" viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">

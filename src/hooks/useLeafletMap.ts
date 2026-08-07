@@ -13,45 +13,40 @@ function isImgEmoji(emoji: string | undefined): boolean {
   return !!emoji && (emoji.startsWith('data:image') || emoji.startsWith('/emoji/'));
 }
 
-// Ported verbatim from the original's pinDivIcon().
+function escapeMarkerText(value: string): string {
+  return value.replace(/[&<>'"]/g, (character) => {
+    const entities: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;',
+    };
+    return entities[character];
+  });
+}
+
+// Circular stop artwork keeps the map readable while the selected stop's
+// full details live in the map card at the bottom of the screen.
 export function pinDivIcon(number: number, active: boolean, emoji: string | undefined): L.DivIcon {
   const isImg = isImgEmoji(emoji);
+  const markerWidth = active ? 78 : 50;
+  const markerHeight = active ? 86 : 58;
+  const safeEmoji = emoji ? escapeMarkerText(emoji) : '';
+  const icon = emoji
+    ? isImg
+      ? `<img src="${safeEmoji}" alt=""/>`
+      : `<span aria-hidden="true">${safeEmoji}</span>`
+    : `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="m4 25 8-12 5 7 5-10 7 15H4Z"/><path d="m9 18 3-5 3 4M19 15l3-5 3 6"/></svg>`;
 
-  if (emoji) {
-    const size = active ? 46 : 34;
-    const glow = active
-      ? `<circle cx="20" cy="20" r="19" fill="none" stroke="#F2A488" stroke-width="1.5" opacity="0.55"><animate attributeName="r" values="18;23;18" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.55;0;0.55" dur="1.8s" repeatCount="indefinite"/></circle>`
-      : '';
-    const content = isImg
-      ? `<image href="${emoji}" x="4" y="4" width="32" height="32" preserveAspectRatio="xMidYMid meet"/>`
-      : `<text x="20" y="29" text-anchor="middle" font-size="32">${emoji}</text>`;
-    return L.divIcon({
-      className: 'pin-marker',
-      html: `<svg width="${size}" height="${size}" viewBox="0 0 40 40" style="overflow:visible;filter:drop-shadow(0 3px 4px rgba(0,0,0,0.5));">
-        ${glow}
-        ${content}
-      </svg>`,
-      iconSize: [size, size],
-      iconAnchor: [size / 2, size / 2],
-    });
-  }
-
-  const size = active ? 40 : 28;
-  const fill = active ? '#F2A488' : '#c48a94';
-  const glow = active
-    ? `<circle cx="16" cy="16" r="15" fill="none" stroke="#F2A488" stroke-width="1.5" opacity="0.55"><animate attributeName="r" values="14;19;14" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.55;0;0.55" dur="1.8s" repeatCount="indefinite"/></circle>`
-    : '';
-  const label = `<text x="16" y="21" text-anchor="middle" font-size="13" font-weight="600" fill="${fill}" font-family="Inter,sans-serif">${number}</text>`;
   return L.divIcon({
-    className: 'pin-marker',
-    html: `<svg width="${size}" height="${size * 1.28}" viewBox="0 0 32 41" style="overflow:visible;">
-      ${glow}
-      <path d="M16 0C7.2 0 0 7.2 0 16c0 11 16 25 16 25s16-14 16-25C32 7.2 24.8 0 16 0z" fill="${fill}"/>
-      <circle cx="16" cy="16" r="10.5" fill="#101010"/>
-      ${label}
-    </svg>`,
-    iconSize: [size, size * 1.28],
-    iconAnchor: [size / 2, size * 1.28],
+    className: 'map-stop-marker',
+    html: `<div class="map-photo-marker${active ? ' active' : ''}">
+      <span class="map-photo-marker-media">${icon}</span>
+      <span class="map-photo-marker-number">${number}</span>
+    </div>`,
+    iconSize: [markerWidth, markerHeight],
+    iconAnchor: [markerWidth / 2, markerHeight],
   });
 }
 
@@ -159,16 +154,23 @@ export function useLeafletMap(
       try {
         marker = L.marker([stop.lat, stop.lng], {
           icon: pinDivIcon(i + 1, i === optsRef.current.selectedStop, stop.emoji),
+          title: stop.title,
+          alt: stop.title,
         }).addTo(map);
       } catch {
         return;
       }
-      marker.bindTooltip(stop.title, { permanent: true, direction: 'top', offset: [0, -36], className: 'map-label-pill' });
       marker.on('click', () => optsRef.current.onSelectStop(i));
       markersRef.current[i] = marker;
       latlngs.push([stop.lat, stop.lng]);
     });
-    if (latlngs.length) map.fitBounds(latlngs, { padding: [30, 30] });
+    if (latlngs.length) {
+      map.fitBounds(latlngs, {
+        paddingTopLeft: [78, 72],
+        paddingBottomRight: [78, 150],
+        maxZoom: 16,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opts.stops]);
 
@@ -194,7 +196,13 @@ export function useLeafletMap(
     const map = mapRef.current;
     if (!map) return;
     const latlngs = optsRef.current.stops.filter(isValidCoord).map((s) => [s.lat, s.lng] as [number, number]);
-    if (latlngs.length) map.fitBounds(latlngs, { padding: [30, 30] });
+    if (latlngs.length) {
+      map.fitBounds(latlngs, {
+        paddingTopLeft: [78, 72],
+        paddingBottomRight: [78, 150],
+        maxZoom: 16,
+      });
+    }
   }
 
   function flyToStop(lat: number, lng: number) {

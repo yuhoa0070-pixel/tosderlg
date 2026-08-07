@@ -3,6 +3,7 @@ import { useAppContext } from '../../context/AppContext';
 import { geocodeCity } from '../../lib/geocode';
 import { dayCount } from '../../lib/tripUtils';
 import type { Trip } from '../../types';
+import DatePickerField from '../shared/DatePickerField';
 import TripRoomIcon from '../shared/TripRoomIcon';
 
 export default function TripForm() {
@@ -66,15 +67,20 @@ export default function TripForm() {
           {destError}
         </p>
       )}
-      <div className="row2">
-        <div>
-          <label className="field-label">{km ? 'ចេញដំណើរ' : 'Depart'}</label>
-          <input type="date" id="startDate" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-        </div>
-        <div>
-          <label className="field-label">{km ? 'ត្រឡប់' : 'Return'}</label>
-          <input type="date" id="endDate" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-        </div>
+      <div className="date-picker-grid">
+        <DatePickerField
+          id="startDate"
+          label={km ? 'ចេញដំណើរ' : 'Depart'}
+          value={startDate}
+          onChange={setStartDate}
+        />
+        <DatePickerField
+          id="endDate"
+          label={km ? 'ត្រឡប់' : 'Return'}
+          min={startDate || undefined}
+          value={endDate}
+          onChange={setEndDate}
+        />
       </div>
       <button className="btn btn-primary" id="generateBtn" disabled={busy} onClick={handleCreate}>
         {busy ? (km ? 'កំពុងរៀបចំ…' : 'Setting up…') : (km ? 'បង្កើតដំណើរ' : 'Create trip')}

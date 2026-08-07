@@ -16,6 +16,12 @@ export default function MapView() {
   const routeLayersRef = useRef<L.Polyline[]>([]);
   const [locationNotice, setLocationNotice] = useState<string | null>(null);
   const [locationConsentOpen, setLocationConsentOpen] = useState(false);
+  const km = state.language === 'km';
+  const selectedStopIndex = stops[state.selectedStop] ? state.selectedStop : 0;
+  const selectedStop = stops[selectedStopIndex];
+  const selectedStopUsesImage = !!selectedStop?.emoji && (
+    selectedStop.emoji.startsWith('data:image') || selectedStop.emoji.startsWith('/emoji/')
+  );
 
   const { mapRef, invalidateSize, recenterToStops, flyToStop, tileError } = useLeafletMap(containerRef, {
     center: activeTrip?.center ?? DEFAULT_CENTER,
@@ -82,15 +88,15 @@ export default function MapView() {
 
       segments.forEach((path) => {
         try {
-          const halo = L.polyline(path, { color: '#000', weight: 6, opacity: 0.25 }).addTo(map);
           const line = L.polyline(path, {
-            color: '#F2A488',
-            weight: 3.5,
-            opacity: 0.9,
+            color: '#2ECC71',
+            weight: 5.5,
+            opacity: 0.82,
+            dashArray: '1 13',
             lineCap: 'round',
             lineJoin: 'round',
           }).addTo(map);
-          routeLayersRef.current.push(halo, line);
+          routeLayersRef.current.push(line);
         } catch {
           // A failed route segment should not prevent the rest of the map rendering.
         }
@@ -108,17 +114,35 @@ export default function MapView() {
     <section id="view-map" className="active map-only-view">
       <div className="map-frame map-fullscreen-frame">
         <div id="leafletMap" ref={containerRef} />
+        <div className="map-route-summary">
+          <span className="map-route-summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="6" cy="18" r="2" />
+              <circle cx="18" cy="6" r="2" />
+              <path d="M7.5 16.5c2.5-1.2 2.8-3.2 3.2-5.1.5-2.4 1.3-4.2 5.3-4.8" />
+            </svg>
+          </span>
+          <span className="map-route-summary-copy">
+            <small>{km ? 'ផ្លូវរបស់ខ្ញុំ' : 'My route'}</small>
+            <strong>{activeTrip?.destination || (km ? 'ដំណើររបស់អ្នក' : 'Your trip')}</strong>
+            <span>
+              {km
+                ? `ថ្ងៃទី ${state.currentDay + 1} · ${stops.length} ទីកន្លែង`
+                : `Day ${state.currentDay + 1} · ${stops.length} ${stops.length === 1 ? 'stop' : 'stops'}`}
+            </span>
+          </span>
+          <button type="button" className="map-route-focus-btn" aria-label={km ? 'បង្ហាញទីកន្លែងទាំងអស់' : 'Show all stops'} onClick={recenterToStops}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+            </svg>
+          </button>
+        </div>
         {tileError && (
           <div className="map-tile-notice" role="status">
             Map is reconnecting…
           </div>
         )}
-        <button type="button" className="map-recenter-btn" title="Recenter stops" aria-label="Recenter map to stops" onClick={recenterToStops}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-          </svg>
-        </button>
         <button
           type="button"
           className={`map-live-btn${liveActive ? ' active' : ''}`}
@@ -140,6 +164,26 @@ export default function MapView() {
               </button>
             )}
           </div>
+        )}
+        {selectedStop && (
+          <article className="map-selected-stop-card">
+            <span className="map-selected-stop-art" aria-hidden="true">
+              {selectedStopUsesImage ? (
+                <img src={selectedStop.emoji} alt="" />
+              ) : (
+                <span>{selectedStop.emoji || '🏕️'}</span>
+              )}
+            </span>
+            <span className="map-selected-stop-copy">
+              <small>{km ? `ទីកន្លែងទី ${selectedStopIndex + 1}` : `Stop ${selectedStopIndex + 1}`}</small>
+              <strong>{selectedStop.title}</strong>
+              <span>{selectedStop.sub || (km ? 'បានរក្សាទុកក្នុងកាលវិភាគរបស់អ្នក' : 'Saved in your itinerary')}</span>
+              <button type="button" onClick={() => dispatch({ type: 'NAVIGATE', view: 'itinerary' })}>
+                {selectedStop.time || (km ? 'មើលផែនការ' : 'View plan')}
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+            </span>
+          </article>
         )}
       </div>
 
