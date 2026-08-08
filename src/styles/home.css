@@ -96,6 +96,8 @@ body[data-theme="dark"] .trip-dash-meter-track>div{background:var(--accent);}
 
 .discover-heading{margin-bottom:10px;}
 
+.plan-next-trip{margin-top:8px;}
+
 .hero{padding:4px 0 26px;position:relative;}
 .hero-eyebrow{font-size:14px;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px;font-weight:600;}
 .hero-title{font-family:'Baloo 2',sans-serif;font-size:32px;line-height:1.18;font-weight:800;color:var(--heading);margin:0 0 10px;letter-spacing:-0.01em;}

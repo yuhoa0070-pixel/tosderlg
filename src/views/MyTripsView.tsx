@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import TripCard from '../components/shared/TripCard';
 import TripRoomIcon from '../components/shared/TripRoomIcon';
+import { useStartNewTrip } from '../hooks/useStartNewTrip';
 import { isPastTrip } from '../lib/tripUtils';
 
 type Tab = 'upcoming' | 'past';
@@ -12,21 +13,12 @@ export default function MyTripsView() {
   const [deleteError, setDeleteError] = useState('');
   const [deletingTripId, setDeletingTripId] = useState<number | null>(null);
   const km = state.language === 'km';
+  const startNewTrip = useStartNewTrip();
 
   const allTrips = state.trips.slice().reverse();
   const upcomingTrips = allTrips.filter((trip) => !isPastTrip(trip));
   const pastTrips = allTrips.filter((trip) => isPastTrip(trip));
   const displayedTrips = tab === 'upcoming' ? upcomingTrips : pastTrips;
-
-  function createNewTrip() {
-    dispatch({ type: 'DESELECT_TRIP' });
-    dispatch({ type: 'NAVIGATE', view: 'itinerary' });
-    window.setTimeout(() => {
-      const destinationInput = document.getElementById('destination') as HTMLInputElement | null;
-      destinationInput?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      destinationInput?.focus({ preventScroll: true });
-    }, 60);
-  }
 
   async function handleDeleteTrip(tripId: number) {
     if (deletingTripId !== null) return;
@@ -108,7 +100,7 @@ export default function MyTripsView() {
 
       {/* Bottom actions — in document flow */}
       <div className="mt-actions">
-        <button type="button" className="mt-plan-btn" onClick={createNewTrip} id="planNewTripBtn">
+        <button type="button" className="mt-plan-btn" onClick={startNewTrip} id="planNewTripBtn">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
           {km ? 'រៀបចំដំណើរថ្មី' : 'Plan a new trip'}
         </button>

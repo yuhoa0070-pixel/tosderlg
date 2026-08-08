@@ -2,11 +2,6 @@ import type { ReactNode } from 'react';
 import type { Trip, ViewName } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  return (parts.length > 1 ? `${parts[0][0]}${parts.at(-1)?.[0]}` : parts[0]?.slice(0, 2) || '?').toUpperCase();
-}
-
 function formatDateRange(trip: Trip, km: boolean): string {
   if (!trip.startDate || !trip.endDate) return km ? 'មិនទាន់កំណត់ថ្ងៃ' : 'Dates not set';
   const start = new Date(`${trip.startDate}T00:00:00`);
@@ -67,47 +62,15 @@ export default function TripSummaryHeader({ trip }: { trip?: Trip }) {
     },
   ];
 
-  // "Itinerary" is a primary bottom-nav tab reached directly, so it needs no
-  // back button. Every other view this header appears on (currently just
-  // Budget) is a level deeper, reached from the tab bar below — show a way
-  // back to Itinerary there, matching how the bottom nav also hides on it
-  // (see App.tsx's PRIMARY_TAB_VIEWS).
-  const showBackButton = currentView !== 'itinerary';
-
   return (
     <div className="trip-summary-header">
-      {/* Top row: Back arrow + Trip Title & Subtitle */}
+      {/* Top row: Trip Title & Subtitle — Destination/Itinerary/Budget are peer
+          tabs below, not a push stack, so there's no "back" to go to. */}
       <div className="tsh-top-row">
-        {showBackButton && (
-          <button
-            type="button"
-            className="tsh-back-btn"
-            onClick={() => dispatch({ type: 'NAVIGATE', view: 'itinerary' })}
-            aria-label={km ? 'ត្រឡប់ទៅកាលវិភាគ' : 'Back to itinerary'}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </button>
-        )}
-
         <div className="tsh-title-meta">
           <h1 className="tsh-title">{tripTitle}</h1>
           <p className="tsh-subtitle">{subtitle}</p>
         </div>
-
-        {trip.members && trip.members.length > 0 && (
-          <div className="tsh-member-stack" aria-label={km ? 'សមាជិកដំណើរ' : 'Trip members'}>
-            {trip.members.slice(0, 4).map((member) => (
-              <span className="tsh-member-avatar" key={member.id} title={member.name}>
-                {member.photoUrl ? (
-                  <img src={member.photoUrl} alt="" onError={(event) => event.currentTarget.remove()} />
-                ) : null}
-                <span aria-hidden="true">{initials(member.name)}</span>
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Navigation Segmented Tab Bar */}

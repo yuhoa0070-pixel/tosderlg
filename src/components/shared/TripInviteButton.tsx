@@ -71,11 +71,17 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
       const shareText = km
         ? `ចូលបន្ទប់ដំណើរ ${destination} របស់ខ្ញុំនៅ Waylo ✈️\nលេខកូដបន្ទប់៖ ${room.code}`
         : `Join my ${destination} trip room in Waylo ✈️\nRoom code: ${room.code}`;
+      // Backticks become a tap-to-copy monospace entity once Telegram sends the
+      // message — only meaningful there, so the plain shareText above is used
+      // for navigator.share/clipboard targets that don't parse Markdown.
+      const telegramShareText = km
+        ? `ចូលបន្ទប់ដំណើរ ${destination} របស់ខ្ញុំនៅ Waylo ✈️\nលេខកូដបន្ទប់៖ \`${room.code}\``
+        : `Join my ${destination} trip room in Waylo ✈️\nRoom code: \`${room.code}\``;
       const webApp = getTelegramWebApp();
 
       if (webApp?.openTelegramLink) {
         webApp.openTelegramLink(
-          `https://t.me/share/url?url=&text=${encodeURIComponent(shareText)}`,
+          `https://t.me/share/url?url=&text=${encodeURIComponent(telegramShareText)}`,
         );
         setStatus(km ? 'កំពុងបើក Telegram…' : 'Opening Telegram…');
         return;
