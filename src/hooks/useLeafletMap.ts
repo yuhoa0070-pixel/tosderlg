@@ -50,6 +50,19 @@ export function pinDivIcon(number: number, active: boolean, emoji: string | unde
   });
 }
 
+// Search-result marker — same teardrop artwork as an active stop pin, minus
+// the numbered badge since it isn't part of the itinerary yet.
+function searchDivIcon(): L.DivIcon {
+  return L.divIcon({
+    className: 'map-stop-marker',
+    html: `<div class="map-photo-marker active">
+      <span class="map-photo-marker-media"><span aria-hidden="true">🧭</span></span>
+    </div>`,
+    iconSize: [78, 86],
+    iconAnchor: [39, 86],
+  });
+}
+
 // Ported verbatim from the original's meDotIcon().
 export function meDotIcon(): L.DivIcon {
   return L.divIcon({ className: '', html: '<div class="me-dot"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
@@ -57,6 +70,13 @@ export function meDotIcon(): L.DivIcon {
 
 function isValidCoord(stop: Stop): boolean {
   return typeof stop.lat === 'number' && typeof stop.lng === 'number' && !Number.isNaN(stop.lat) && !Number.isNaN(stop.lng);
+}
+
+export interface LiveLocationMapController {
+  clearUserLocation(): void;
+  distanceFromCenter(lat: number, lng: number): number;
+  focusUserLocation(lat: number, lng: number, accuracy: number | null, first: boolean): void;
+  updateUserLocation(lat: number, lng: number, accuracy: number | null): void;
 }
 
 interface UseLeafletMapOptions {
@@ -69,9 +89,13 @@ interface UseLeafletMapOptions {
 
 interface UseLeafletMapResult {
   mapRef: RefObject<L.Map | null>;
+  locationControllerRef: RefObject<LiveLocationMapController | null>;
   invalidateSize: () => void;
   recenterToStops: () => void;
   flyToStop: (lat: number, lng: number) => void;
+  showSearchLocation: (lat: number, lng: number, title: string) => void;
+  clearSearchLocation: () => void;
+  drawRoutes: (paths: Array<Array<[number, number]>>) => void;
   tileError: boolean;
 }
 
@@ -85,6 +109,11 @@ export function useLeafletMap(
 ): UseLeafletMapResult {
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Record<number, L.Marker>>({});
+  const searchMarkerRef = useRef<L.Marker | null>(null);
+  const routeLayersRef = useRef<L.Polyline[]>([]);
+  const userMarkerRef = useRef<L.Marker | null>(null);
+  const accuracyCircleRef = useRef<L.Circle | null>(null);
+  const locationControllerRef = useRef<LiveLocationMapController | null>(null);
   const [tileError, setTileError] = useState(false);
   const optsRef = useRef(opts);
   optsRef.current = opts;
@@ -117,6 +146,54 @@ export function useLeafletMap(
     map.on('click', (e: L.LeafletMouseEvent) => optsRef.current.onMapClick(e.latlng.lat, e.latlng.lng));
     mapRef.current = map;
 
+    locationControllerRef.current = {
+      clearUserLocation() {
+        userMarkerRef.current?.remove();
+        accuracyCircleRef.current?.remove();
+        userMarkerRef.current = null;
+        accuracyCircleRef.current = null;
+      },
+      distanceFromCenter(lat, lng) {
+        return map.getCenter().distanceTo([lat, lng]);
+      },
+      focusUserLocation(lat, lng, accuracy, first) {
+        const position: L.LatLngExpression = [lat, lng];
+        if (first && accuracyCircleRef.current && accuracy !== null && accuracy > 100) {
+          map.fitBounds(accuracyCircleRef.current.getBounds(), { padding: [28, 28], maxZoom: 16, animate: true, duration: 0.8 });
+        } else if (first) {
+          map.flyTo(position, 16, { animate: true, duration: 0.8 });
+        } else {
+          map.panTo(position, { animate: true, duration: 0.55, easeLinearity: 0.2 });
+        }
+      },
+      updateUserLocation(lat, lng, accuracy) {
+        const position = L.latLng(lat, lng);
+        if (userMarkerRef.current) {
+          userMarkerRef.current.setLatLng(position);
+        } else {
+          userMarkerRef.current = L.marker(position, { icon: meDotIcon(), zIndexOffset: 1000 }).addTo(map);
+        }
+        if (accuracy !== null) {
+          if (accuracyCircleRef.current) {
+            accuracyCircleRef.current.setLatLng(position).setRadius(accuracy);
+          } else {
+            accuracyCircleRef.current = L.circle(position, {
+              radius: accuracy,
+              color: '#2ecc71',
+              weight: 1,
+              opacity: 0.5,
+              fillColor: '#2ecc71',
+              fillOpacity: 0.1,
+              interactive: false,
+            }).addTo(map);
+          }
+        } else if (accuracyCircleRef.current) {
+          accuracyCircleRef.current.remove();
+          accuracyCircleRef.current = null;
+        }
+      },
+    };
+
     // Telegram's iOS WebView often changes width/height several times while
     // expanding. Leaflet otherwise keeps the first (sometimes zero-width)
     // measurement and paints a blank map until the page is reopened.
@@ -135,6 +212,9 @@ export function useLeafletMap(
       map.remove();
       mapRef.current = null;
       markersRef.current = {};
+      searchMarkerRef.current = null;
+      routeLayersRef.current = [];
+      locationControllerRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -209,5 +289,49 @@ export function useLeafletMap(
     mapRef.current?.flyTo([lat, lng], 16, { animate: true, duration: 0.8 });
   }
 
-  return { mapRef, invalidateSize, recenterToStops, flyToStop, tileError };
+  function showSearchLocation(lat: number, lng: number, title: string) {
+    const map = mapRef.current;
+    if (!map) return;
+    searchMarkerRef.current?.remove();
+    searchMarkerRef.current = L.marker([lat, lng], { icon: searchDivIcon(), title, zIndexOffset: 1200 }).addTo(map);
+    map.flyTo([lat, lng], 16, { animate: true, duration: 0.8 });
+  }
+
+  function clearSearchLocation() {
+    searchMarkerRef.current?.remove();
+    searchMarkerRef.current = null;
+  }
+
+  function drawRoutes(paths: Array<Array<[number, number]>>) {
+    const map = mapRef.current;
+    if (!map) return;
+    routeLayersRef.current.forEach((line) => line.remove());
+    routeLayersRef.current = paths.flatMap((path) => {
+      try {
+        return [L.polyline(path, {
+          color: '#2ECC71',
+          weight: 5.5,
+          opacity: 0.82,
+          dashArray: '1 13',
+          lineCap: 'round',
+          lineJoin: 'round',
+        }).addTo(map)];
+      } catch {
+        // A failed route segment should not prevent the rest of the map rendering.
+        return [];
+      }
+    });
+  }
+
+  return {
+    mapRef,
+    locationControllerRef,
+    invalidateSize,
+    recenterToStops,
+    flyToStop,
+    showSearchLocation,
+    clearSearchLocation,
+    drawRoutes,
+    tileError,
+  };
 }

@@ -7,10 +7,10 @@ export default function ProfileView() {
 
   return (
     <section id="view-profile" className="active">
+      {/* Avatar + name */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 26 }}>
         <div
-          className="avatar-edit"
-          id="profilePageAvatar"
+          className="avatar-edit" id="profilePageAvatar"
           style={{ width: 76, height: 76, fontSize: 22 }}
           onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'editProfile' })}
         >
@@ -29,6 +29,7 @@ export default function ProfileView() {
         </div>
       </div>
 
+      {/* Menu rows */}
       <div className="profile-row" id="menuEditProfile" onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'editProfile' })}>
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 12a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4z" />
@@ -47,6 +48,15 @@ export default function ProfileView() {
         <span>{km ? 'ដំណើររបស់ខ្ញុំ' : 'My trips'}</span>
       </div>
 
+      <div className="profile-row" id="menuBudgetTracker" onClick={() => dispatch({ type: 'NAVIGATE', view: 'budgetTracker' })}>
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 3.5V12l6 3.4" />
+        </svg>
+        <span>{km ? 'តាមដានថវិកា' : 'Budget tracker'}</span>
+      </div>
+
+      {/* Danger row */}
       <div className="profile-row danger" id="menuClear" onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'confirmClear' })}>
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4.5 7h15" />

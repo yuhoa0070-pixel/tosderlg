@@ -5,7 +5,10 @@ import { parseGoogleMapsLink, isShortMapsLink, resolveShortLink } from '../../li
 import { reverseGeocode } from '../../lib/geocode';
 import { DEFAULT_CENTER } from '../../lib/constants';
 import { formatStopTime } from '../../lib/stopTime';
+import { currentTripMember, sendPresence } from '../../lib/tripRoom';
 import BottomSheetModal from './BottomSheetModal';
+
+const PRESENCE_HEARTBEAT_MS = 8000;
 
 // Ported verbatim from the original's #emojiPicker: unicode category chips
 // interleaved with 4 image chips extracted from the original's inline base64
@@ -85,6 +88,23 @@ export default function StopFormModal() {
     setTitleError('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, editingIndex]);
+
+  useEffect(() => {
+    const roomCode = activeTrip?.roomCode;
+    if (!isOpen || !roomCode) return;
+    const member = currentTripMember(state.profileName, state.profilePhoto);
+    const stopIndex = isEdit ? (editingIndex as number) : null;
+    const announce = () => {
+      void sendPresence(roomCode, member, { dayIndex: state.currentDay, stopIndex }).catch(() => {});
+    };
+    announce();
+    const timer = window.setInterval(announce, PRESENCE_HEARTBEAT_MS);
+    return () => {
+      window.clearInterval(timer);
+      void sendPresence(roomCode, member, null).catch(() => {});
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, activeTrip?.roomCode, state.currentDay, editingIndex, isEdit]);
 
   function close() {
     dispatch({ type: 'SET_PENDING_TAP_COORDS', coords: null });

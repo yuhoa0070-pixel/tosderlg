@@ -34,6 +34,26 @@ export function getUpcomingTripAlert(trip: Trip, now = new Date()): UpcomingTrip
   return { daysUntil, tone: daysUntil <= 7 ? 'urgent' : 'soon' };
 }
 
+export function dayDateLabel(startDate: string | null, dayIndex: number, language: 'en' | 'km'): string | null {
+  if (!startDate) return null;
+  const [year, month, day] = startDate.split('-').map(Number);
+  if (!year || !month || !day) return null;
+
+  const date = new Date(year, month - 1, day + dayIndex);
+  return new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
+}
+
+export function plannedDaysProgress(tripDays: Trip['tripDays']): { planned: number; total: number; percent: number } {
+  const total = tripDays.length;
+  const planned = tripDays.filter((day) => day.stops.length > 0).length;
+  const percent = total ? Math.round((planned / total) * 100) : 0;
+  return { planned, total, percent };
+}
+
 export function dayCount(startDate: string, endDate: string): number {
   if (!startDate || !endDate) return 1;
   const diff = Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000) + 1;

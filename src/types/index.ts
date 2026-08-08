@@ -11,7 +11,8 @@ export type ViewName =
   | 'memory'
   | 'recap'
   | 'mytrips'
-  | 'profile';
+  | 'profile'
+  | 'budgetTracker';
 
 export type ModalName =
   | 'stopForm'

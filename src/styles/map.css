@@ -156,7 +156,6 @@ body[data-theme="dark"] .map-search-submit.is-clear{background:#293A35;color:#D5
 .map-search-query-arrow{width:16px;height:16px;color:#219D57;}
 .map-search-loading{min-height:55px;display:flex;align-items:center;justify-content:center;gap:9px;color:#747C75;font-size:11px;font-weight:800;}
 .map-search-loading .map-search-spinner{border-color:rgba(46,204,113,.2);border-top-color:#239D58;}
-.map-google-attribution{padding:5px 9px 2px;color:#8A918B;font-size:9px;font-weight:700;text-align:right;}
 body[data-theme="dark"] .map-search-result-copy mark{background:#1F513B;color:#8DE0B5;}
 .map-stats-pill{
   position:absolute;left:12px;bottom:12px;z-index:800;
@@ -244,15 +243,14 @@ body[data-theme="dark"] .map-search-result-copy mark{background:#1F513B;color:#8
 @media (prefers-reduced-motion:reduce){
   .map-stop-emoji-label{transition:none;}
 }
-#leafletMap,#googleMap{height:100%;width:100%;background:#EEF2EF;}
-#googleMap .gm-style{font-family:'Baloo 2',sans-serif;}
+#leafletMap{height:100%;width:100%;background:#EEF2EF;}
 .leaflet-container{font-family:'Baloo 2',sans-serif;}
 .leaflet-tile-pane{filter:grayscale(.24) saturate(.7) brightness(1.06) contrast(.88);}
 @supports (-webkit-touch-callout:none){
   /* CSS filters on Leaflet's translated tile pane can render it transparent
      in iOS Safari and Telegram's WKWebView. Keep native tile colors there. */
   .leaflet-tile-pane{filter:none;}
-  #leafletMap,#googleMap,.leaflet-container{-webkit-transform:translateZ(0);transform:translateZ(0);}
+  #leafletMap,.leaflet-container{-webkit-transform:translateZ(0);transform:translateZ(0);}
 }
 
 #view-map .eyebrow{color:var(--accent);}

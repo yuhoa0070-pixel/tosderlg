@@ -160,6 +160,44 @@ export async function getTripRoom(rawCode: string): Promise<Trip> {
   return roomResponseToTrip((await response.json()) as RoomResponse);
 }
 
+export interface TripPresenceEntry {
+  memberId: string;
+  name: string;
+  dayIndex: number;
+  stopIndex: number | null;
+  updatedAt: number;
+}
+
+export async function sendPresence(
+  rawCode: string,
+  member: TripMemberInput,
+  presence: { dayIndex: number; stopIndex?: number | null } | null,
+): Promise<TripPresenceEntry[]> {
+  const code = rawCode.trim().toUpperCase();
+  const response = await fetch(`${tripRoomApiUrl()}/presence`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(
+      presence
+        ? { code, member, active: true, dayIndex: presence.dayIndex, stopIndex: presence.stopIndex ?? null }
+        : { code, member, active: false },
+    ),
+  });
+  if (!response.ok) throw new Error(await readError(response));
+  const body = (await response.json()) as { presence: TripPresenceEntry[] };
+  return body.presence;
+}
+
+export async function getPresence(rawCode: string): Promise<TripPresenceEntry[]> {
+  const code = rawCode.trim().toUpperCase();
+  const response = await fetch(`${tripRoomApiUrl()}/presence?code=${encodeURIComponent(code)}`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!response.ok) throw new Error(await readError(response));
+  const body = (await response.json()) as { presence: TripPresenceEntry[] };
+  return body.presence;
+}
+
 export async function lockTripBudgetAmount(
   rawCode: string,
   member: TripMemberInput,

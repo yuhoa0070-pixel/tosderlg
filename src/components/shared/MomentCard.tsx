@@ -32,9 +32,6 @@ export default function MomentCard({ group, isSample, onClick }: MomentCardProps
             {group.time}
             {isSample ? ' · example' : ''}
           </div>
-          <div className="moment-card-stat">
-            View <span>&#8594;</span>
-          </div>
         </div>
       </div>
     </div>

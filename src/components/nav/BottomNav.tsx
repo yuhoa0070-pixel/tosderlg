@@ -14,6 +14,7 @@ const NAV_MAP: Record<ViewName, NavId | undefined> = {
   recap: undefined,
   mytrips: undefined,
   profile: 'navProfile',
+  budgetTracker: 'navProfile',
 };
 
 export default function BottomNav() {

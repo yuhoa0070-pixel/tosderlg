@@ -53,6 +53,7 @@ const VIEW_NAMES = new Set<ViewName>([
   'recap',
   'mytrips',
   'profile',
+  'budgetTracker',
 ]);
 
 const TRIP_VIEWS = new Set<ViewName>([

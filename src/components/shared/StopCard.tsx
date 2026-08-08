@@ -5,6 +5,7 @@ interface StopCardProps {
   mode: 'readonly' | 'editable';
   onEdit?: () => void;
   onRemove?: () => void;
+  editedBy?: string;
 }
 
 // Emoji can be a unicode glyph, a legacy inline `data:image/...` value (old
@@ -14,7 +15,7 @@ function isImgIcon(emoji: string | undefined): boolean {
   return !!emoji && (emoji.startsWith('data:image') || emoji.startsWith('/emoji/'));
 }
 
-export default function StopCard({ stop, mode, onEdit, onRemove }: StopCardProps) {
+export default function StopCard({ stop, mode, onEdit, onRemove, editedBy }: StopCardProps) {
   const iconSize = mode === 'readonly' ? 38 : 32;
 
   const icon = isImgIcon(stop.emoji) ? (
@@ -30,15 +31,17 @@ export default function StopCard({ stop, mode, onEdit, onRemove }: StopCardProps
 
   if (mode === 'readonly') {
     return (
-      <div className="stop-card">
+      <div className={`stop-card${editedBy ? ' being-edited' : ''}`}>
         {icon}
         <div className="stop-body">
           <div className="stop-title">{stop.title}</div>
           <div className="stop-sub">{stop.sub}</div>
         </div>
-        <div className="stop-time" style={{ marginLeft: 'auto', alignSelf: 'center' }}>
-          {stop.time}
-        </div>
+        {editedBy && (
+          <span className="stop-card-editor-badge" title={`${editedBy} is editing`} aria-hidden="true">
+            {editedBy}
+          </span>
+        )}
       </div>
     );
   }

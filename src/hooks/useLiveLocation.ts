@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
-import type { LiveLocationMapController } from './useGoogleMap';
+import type { LiveLocationMapController } from './useLeafletMap';
 import { getTelegramLocation, hasTelegramLocationManager, openTelegramLocationSettings } from '../lib/telegram';
 
 const TELEGRAM_POLL_MS = 4000;

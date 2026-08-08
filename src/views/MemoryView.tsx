@@ -32,7 +32,7 @@ export default function MemoryView() {
     <section id="view-memory" className="active">
       <div className="topbar">
         <div className="icon-btn" onClick={goBack}>
-          &#8592;
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7" /><path d="M4.5 12h15" /></svg>
         </div>
         <div className="icon-btn" id="deleteMemoryBtn" onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'confirmDeletePhoto' })}>
           <svg

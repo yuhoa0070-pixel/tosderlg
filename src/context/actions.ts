@@ -14,6 +14,7 @@ export type Action =
   | { type: 'CREATE_TRIP'; trip: Trip }
   | { type: 'UPDATE_TRIP_DATES'; tripId: number; startDate: string; endDate: string }
   | { type: 'LOAD_TRIP'; tripId: number }
+  | { type: 'DESELECT_TRIP' }
   | { type: 'IMPORT_SHARED_TRIP'; trip: Trip }
   | { type: 'REFRESH_SHARED_TRIP'; trip: Trip }
   | { type: 'SET_TRIP_SHARE_ID'; tripId: number; shareId: string }

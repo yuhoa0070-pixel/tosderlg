@@ -1,4 +1,65 @@
-import type { BudgetCurrency, TripBudget } from '../types';
+import type { BudgetCurrency, TripBudget, TripMember } from '../types';
+
+export interface MemberBalance {
+  member: TripMember;
+  paid: number;
+  share: number;
+  /** positive = owed money back, negative = owes money */
+  net: number;
+}
+
+export interface Settlement {
+  from: TripMember;
+  to: TripMember;
+  amount: number;
+}
+
+/**
+ * Computes each member's paid total, equal share, and net balance.
+ * Only members who appear in expenses (as payer) or in the members list are included.
+ */
+export function computeMemberBalances(budget: TripBudget, members: TripMember[]): MemberBalance[] {
+  if (!members.length) return [];
+  const total = budget.expenses.reduce((sum, e) => sum + e.amount, 0);
+  if (total === 0) return [];
+  const share = Math.round(total / members.length);
+  const paidMap = new Map<string, number>();
+  for (const expense of budget.expenses) {
+    if (expense.assignedToMemberId) {
+      paidMap.set(expense.assignedToMemberId, (paidMap.get(expense.assignedToMemberId) ?? 0) + expense.amount);
+    }
+  }
+  return members.map((member) => {
+    const paid = paidMap.get(member.id) ?? 0;
+    return { member, paid, share, net: paid - share };
+  });
+}
+
+/**
+ * Greedy settlement algorithm: returns the minimal set of transactions
+ * needed to zero out all balances.
+ */
+export function computeSettlements(balances: MemberBalance[]): Settlement[] {
+  const settlements: Settlement[] = [];
+  // work with mutable copies
+  const creditors = balances.filter((b) => b.net > 0).map((b) => ({ member: b.member, amount: b.net }));
+  const debtors = balances.filter((b) => b.net < 0).map((b) => ({ member: b.member, amount: -b.net }));
+  let ci = 0;
+  let di = 0;
+  while (ci < creditors.length && di < debtors.length) {
+    const credit = creditors[ci];
+    const debt = debtors[di];
+    const amount = Math.min(credit.amount, debt.amount);
+    if (amount > 0) {
+      settlements.push({ from: debt.member, to: credit.member, amount });
+    }
+    credit.amount -= amount;
+    debt.amount -= amount;
+    if (credit.amount === 0) ci++;
+    if (debt.amount === 0) di++;
+  }
+  return settlements;
+}
 
 export const EMPTY_BUDGET: TripBudget = {
   currency: 'USD',

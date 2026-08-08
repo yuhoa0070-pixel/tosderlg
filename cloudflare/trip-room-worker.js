@@ -8,6 +8,8 @@ const SHORT_MAP_HOSTS = new Set(['maps.app.goo.gl', 'goo.gl']);
 const BUDGET_CURRENCIES = new Set(['USD', 'KHR']);
 const BUDGET_CATEGORIES = new Set(['stay', 'transport', 'food', 'activity', 'other']);
 const MAX_BUDGET_AMOUNT = 1_000_000_000_000;
+const PRESENCE_TTL_MS = 15_000;
+const MAX_DAY_INDEX = 365;
 
 function allowedOrigin(request, env) {
   const origin = request.headers.get('Origin');
@@ -423,6 +425,97 @@ async function saveRoom(request, env, origin) {
   return sendJson(origin, { error: 'Could not create a unique room code. Try again.' }, 503);
 }
 
+async function listPresence(env, code) {
+  await env.DB.prepare(
+    `DELETE FROM trip_room_presence WHERE room_code = ? AND updated_at < ?`,
+  )
+    .bind(code, Date.now() - PRESENCE_TTL_MS)
+    .run();
+
+  const result = await env.DB.prepare(
+    `SELECT member_id, display_name, day_index, stop_index, updated_at
+     FROM trip_room_presence
+     WHERE room_code = ?
+     ORDER BY updated_at ASC
+     LIMIT ?`,
+  )
+    .bind(code, MAX_MEMBERS_PER_ROOM)
+    .all();
+
+  return (result.results || []).map((row) => ({
+    memberId: row.member_id,
+    name: row.display_name,
+    dayIndex: row.day_index,
+    stopIndex: row.stop_index === null || row.stop_index === undefined ? null : Number(row.stop_index),
+    updatedAt: row.updated_at,
+  }));
+}
+
+async function getPresence(request, env, origin) {
+  const code = normalizeCode(new URL(request.url).searchParams.get('code'));
+  if (!CODE_PATTERN.test(code)) {
+    return sendJson(origin, { error: 'Enter a valid 6-character room code.' }, 400);
+  }
+  return sendJson(origin, { presence: await listPresence(env, code) });
+}
+
+async function savePresence(request, env, origin) {
+  let body;
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    return sendJson(origin, { error: 'Valid presence data is required.' }, 400);
+  }
+
+  const code = normalizeCode(body?.code);
+  const member = normalizeMember(body?.member);
+  const dayIndex = body?.dayIndex;
+  const stopIndex = body?.stopIndex;
+  const active = body?.active !== false;
+
+  if (!CODE_PATTERN.test(code) || !member) {
+    return sendJson(origin, { error: 'A valid room code and profile are required.' }, 400);
+  }
+
+  const roomMember = await env.DB.prepare(
+    `SELECT member_id FROM trip_room_members WHERE room_code = ? AND member_id = ?`,
+  )
+    .bind(code, member.id)
+    .first();
+  if (!roomMember) {
+    return sendJson(origin, { error: 'Join this trip room before sharing presence.' }, 403);
+  }
+
+  if (!active) {
+    await env.DB.prepare(
+      `DELETE FROM trip_room_presence WHERE room_code = ? AND member_id = ?`,
+    )
+      .bind(code, member.id)
+      .run();
+    return sendJson(origin, { presence: await listPresence(env, code) });
+  }
+
+  if (!Number.isInteger(dayIndex) || dayIndex < 0 || dayIndex > MAX_DAY_INDEX) {
+    return sendJson(origin, { error: 'A valid day is required.' }, 400);
+  }
+  const normalizedStopIndex = Number.isInteger(stopIndex) && stopIndex >= 0 ? stopIndex : null;
+
+  await env.DB.prepare(
+    `INSERT INTO trip_room_presence
+     (room_code, member_id, display_name, day_index, stop_index, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT(room_code, member_id) DO UPDATE SET
+       display_name = excluded.display_name,
+       day_index = excluded.day_index,
+       stop_index = excluded.stop_index,
+       updated_at = excluded.updated_at`,
+  )
+    .bind(code, member.id, member.name, dayIndex, normalizedStopIndex, Date.now())
+    .run();
+
+  return sendJson(origin, { presence: await listPresence(env, code) });
+}
+
 async function saveBudgetCommitment(request, env, origin) {
   let body;
   try {
@@ -696,6 +789,11 @@ export default {
       }
       if (url.pathname === '/api/trip-room/budget/commitment') {
         if (request.method === 'POST') return await saveBudgetCommitment(request, env, origin);
+        return sendJson(origin, { error: 'Method not allowed.' }, 405);
+      }
+      if (url.pathname === '/api/trip-room/presence') {
+        if (request.method === 'GET') return await getPresence(request, env, origin);
+        if (request.method === 'POST') return await savePresence(request, env, origin);
         return sendJson(origin, { error: 'Method not allowed.' }, 405);
       }
       if (url.pathname === '/api/resolve-map-link') return await resolveMapLink(request, origin);

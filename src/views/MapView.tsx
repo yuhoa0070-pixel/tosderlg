@@ -1,16 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useActiveTrip } from '../hooks/useActiveTrip';
-import { useGoogleMap } from '../hooks/useGoogleMap';
+import { useLeafletMap } from '../hooks/useLeafletMap';
 import { useLiveLocation } from '../hooks/useLiveLocation';
 import { fetchWalkingRoute } from '../lib/geo';
 import { searchPlaces, type PlaceSearchResult } from '../lib/geocode';
-import {
-  fetchGooglePlaceSuggestions,
-  hasGoogleMapsKey,
-  resetGoogleAutocompleteSession,
-  type GooglePlaceSuggestion,
-} from '../lib/googleMaps';
 import { DEFAULT_CENTER } from '../lib/constants';
 import { keyFor } from '../lib/tripUtils';
 import LocationConsentModal from '../components/modals/LocationConsentModal';
@@ -35,16 +29,12 @@ export default function MapView() {
   const stops = activeTrip?.tripDays[state.currentDay]?.stops ?? [];
   const containerRef = useRef<HTMLDivElement | null>(null);
   const searchRequestRef = useRef(0);
-  const autocompleteRequestRef = useRef(0);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [, setLocationNotice] = useState<string | null>(null);
   const [locationConsentOpen, setLocationConsentOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([]);
-  const [googleSuggestions, setGoogleSuggestions] = useState<GooglePlaceSuggestion[]>([]);
-  const [googleAutocompleteUnavailable, setGoogleAutocompleteUnavailable] = useState(false);
-  const [autocompleteSearching, setAutocompleteSearching] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [searchedPlace, setSearchedPlace] = useState<PlaceSearchResult | null>(null);
@@ -98,11 +88,6 @@ export default function MapView() {
   const searchHasInput = trimmedSearchQuery.length >= 2;
   const visibleSearchResults = searchResults.length > 0 ? searchResults : savedPlaceSuggestions;
   const showingSavedSuggestions = searchResults.length === 0 && savedPlaceSuggestions.length > 0;
-  const googleSearchEnabled = hasGoogleMapsKey();
-  const googleLiveSearchEnabled = googleSearchEnabled && !googleAutocompleteUnavailable;
-  const showingGoogleSuggestions = googleLiveSearchEnabled && googleSuggestions.length > 0 && searchResults.length === 0;
-  const autocompleteCenterLat = activeTrip?.center.lat;
-  const autocompleteCenterLng = activeTrip?.center.lng;
 
   const {
     locationControllerRef,
@@ -113,11 +98,10 @@ export default function MapView() {
     clearSearchLocation,
     drawRoutes,
     tileError,
-  } = useGoogleMap(containerRef, {
+  } = useLeafletMap(containerRef, {
     center: activeTrip?.center ?? DEFAULT_CENTER,
     stops,
     selectedStop: state.selectedStop,
-    theme: state.theme,
     onSelectStop: (index) => {
       setSearchedPlace(null);
       setPlaceGalleryOpen(true);
@@ -154,15 +138,6 @@ export default function MapView() {
     const query = searchQuery.trim();
     if (query.length < 2) {
       setSearchError(km ? 'សូមវាយបញ្ចូលយ៉ាងហោចណាស់ ២ តួអក្សរ។' : 'Enter at least 2 characters.');
-      return;
-    }
-
-    if (googleLiveSearchEnabled) {
-      if (googleSuggestions[0]) {
-        await selectGoogleSuggestion(googleSuggestions[0]);
-      } else {
-        setSearchError(km ? 'សូមជ្រើសរើសទីកន្លែងដែលត្រូវគ្នាខាងក្រោម។' : 'Choose a matching location below.');
-      }
       return;
     }
 
@@ -216,17 +191,12 @@ export default function MapView() {
 
   function closeSearch() {
     searchRequestRef.current += 1;
-    autocompleteRequestRef.current += 1;
     setSearching(false);
-    setAutocompleteSearching(false);
-    setGoogleSuggestions([]);
-    resetGoogleAutocompleteSession();
     setSearchOpen(false);
     setSearchError('');
   }
 
   function openDestinationSearch() {
-    resetGoogleAutocompleteSession();
     setSearchOpen(true);
     setSearchError('');
     setSearchResults([]);
@@ -234,35 +204,11 @@ export default function MapView() {
 
   function clearSearchText() {
     searchRequestRef.current += 1;
-    autocompleteRequestRef.current += 1;
     setSearchQuery('');
     setSearchResults([]);
-    setGoogleSuggestions([]);
     setSearchError('');
     setSearching(false);
-    setAutocompleteSearching(false);
-    resetGoogleAutocompleteSession();
     window.requestAnimationFrame(() => searchInputRef.current?.focus());
-  }
-
-  async function selectGoogleSuggestion(suggestion: GooglePlaceSuggestion) {
-    const requestId = ++searchRequestRef.current;
-    autocompleteRequestRef.current += 1;
-    setSearching(true);
-    setAutocompleteSearching(false);
-    setSearchError('');
-    try {
-      const result = await suggestion.resolve();
-      if (requestId !== searchRequestRef.current) return;
-      setGoogleSuggestions([]);
-      setSearchResults([result]);
-      selectSearchResult(result);
-    } catch {
-      if (requestId !== searchRequestRef.current) return;
-      setSearchError(km ? 'មិនអាចបើកទីតាំងនេះបានទេ។ សូមសាកល្បងទីតាំងផ្សេង។' : 'This location could not be opened. Try another suggestion.');
-    } finally {
-      if (requestId === searchRequestRef.current) setSearching(false);
-    }
   }
 
   function openSelectedStopGallery() {
@@ -299,49 +245,6 @@ export default function MapView() {
   }, [state.currentDay, activeTrip?.id]);
 
   useEffect(() => {
-    const query = searchQuery.trim();
-    const requestId = ++autocompleteRequestRef.current;
-    if (!searchOpen || !googleLiveSearchEnabled || query.length < 2) {
-      setGoogleSuggestions([]);
-      setAutocompleteSearching(false);
-      return;
-    }
-
-    setAutocompleteSearching(true);
-    const timer = window.setTimeout(async () => {
-      try {
-        const center = autocompleteCenterLat !== undefined && autocompleteCenterLng !== undefined
-          ? { lat: autocompleteCenterLat, lng: autocompleteCenterLng }
-          : undefined;
-        const suggestions = await fetchGooglePlaceSuggestions(query, state.language, center);
-        if (requestId !== autocompleteRequestRef.current) return;
-        setGoogleAutocompleteUnavailable(false);
-        setGoogleSuggestions(suggestions);
-        setSearchError(suggestions.length === 0
-          ? (km ? 'រកមិនឃើញទីកន្លែងដែលត្រូវគ្នាទេ។' : 'No matching locations found.')
-          : '');
-      } catch {
-        if (requestId !== autocompleteRequestRef.current) return;
-        setGoogleSuggestions([]);
-        setGoogleAutocompleteUnavailable(true);
-        setSearchError('');
-      } finally {
-        if (requestId === autocompleteRequestRef.current) setAutocompleteSearching(false);
-      }
-    }, 320);
-
-    return () => window.clearTimeout(timer);
-  }, [
-    autocompleteCenterLat,
-    autocompleteCenterLng,
-    googleLiveSearchEnabled,
-    km,
-    searchOpen,
-    searchQuery,
-    state.language,
-  ]);
-
-  useEffect(() => {
     let cancelled = false;
 
     async function loadRoutes() {
@@ -370,7 +273,7 @@ export default function MapView() {
   return (
     <section id="view-map" className="active map-only-view">
       <div className={`map-frame map-fullscreen-frame${placeGalleryOpen && !searchedPlace ? ' place-gallery-open' : ''}`}>
-        <div id="googleMap" ref={containerRef} />
+        <div id="leafletMap" ref={containerRef} />
         <form
           className={`map-search-panel ${searchOpen ? 'is-open' : 'is-closed'}`}
           role="search"
@@ -399,14 +302,13 @@ export default function MapView() {
                 onChange={(event) => {
                   setSearchQuery(event.target.value);
                   setSearchResults([]);
-                  setGoogleSuggestions([]);
                   setSearchError('');
                 }}
                 placeholder={km ? 'ស្វែងរកទីកន្លែង…' : 'Search for a place…'}
                 aria-label={km ? 'ស្វែងរកទីកន្លែង' : 'Search for a place'}
                 aria-autocomplete="list"
                 aria-controls="mapSearchSuggestions"
-                aria-expanded={searchHasInput || autocompleteSearching}
+                aria-expanded={searchHasInput || searching}
                 autoComplete="off"
                 autoFocus
               />
@@ -416,7 +318,7 @@ export default function MapView() {
                 aria-label={searchQuery ? (km ? 'លុបអត្ថបទស្វែងរក' : 'Clear search text') : (km ? 'ស្វែងរក' : 'Search')}
                 onClick={searchQuery ? clearSearchText : undefined}
               >
-                {searching || autocompleteSearching ? <span className="map-search-spinner" /> : (
+                {searching ? <span className="map-search-spinner" /> : (
                   searchQuery ? (
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
                   ) : (
@@ -425,35 +327,17 @@ export default function MapView() {
                 )}
               </button>
             </div>
-            {(searchHasInput || searching || autocompleteSearching || searchError) && (
+            {(searchHasInput || searching || searchError) && (
               <div className="map-search-results" id="mapSearchSuggestions" role="list" aria-live="polite">
-                {(showingGoogleSuggestions || visibleSearchResults.length > 0) && (
+                {visibleSearchResults.length > 0 && (
                   <div className="map-search-results-label">
-                    {showingGoogleSuggestions
-                      ? (km ? 'ទីកន្លែងដែលត្រូវគ្នា' : 'Matching locations')
-                      : showingSavedSuggestions
+                    {showingSavedSuggestions
                       ? (km ? 'ទីកន្លែងដែលបានរក្សាទុក' : 'From your trips')
                       : (km ? 'លទ្ធផលផែនទី' : 'Map results')}
                   </div>
                 )}
                 {searchError && <p className="map-search-error">{searchError}</p>}
-                {showingGoogleSuggestions ? googleSuggestions.map((suggestion) => (
-                  <button
-                    type="button"
-                    className="map-search-result"
-                    key={suggestion.id}
-                    onClick={() => void selectGoogleSuggestion(suggestion)}
-                  >
-                    <span className="map-search-result-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24"><path d="M12 21s6.5-5.9 6.5-11.1a6.5 6.5 0 1 0-13 0C5.5 15.1 12 21 12 21Z"/><circle cx="12" cy="9.8" r="2.1"/></svg>
-                    </span>
-                    <span className="map-search-result-copy">
-                      <strong><SearchMatch text={suggestion.name} query={searchQuery} /></strong>
-                      <small><SearchMatch text={suggestion.address} query={searchQuery} /></small>
-                    </span>
-                    <span className="map-search-result-type">{suggestion.category}</span>
-                  </button>
-                )) : visibleSearchResults.map((result) => (
+                {visibleSearchResults.map((result) => (
                   <button
                     type="button"
                     className={`map-search-result${searchedPlace?.id === result.id ? ' active' : ''}`}
@@ -470,12 +354,12 @@ export default function MapView() {
                     <span className="map-search-result-type">{result.category}</span>
                   </button>
                 ))}
-                {searching || autocompleteSearching ? (
+                {searching ? (
                   <div className="map-search-loading" role="status">
                     <span className="map-search-spinner" />
                     {km ? 'កំពុងស្វែងរកទីកន្លែងដែលត្រូវគ្នា…' : 'Finding matching locations…'}
                   </div>
-                ) : !googleLiveSearchEnabled && searchResults.length === 0 && searchHasInput ? (
+                ) : searchResults.length === 0 && searchHasInput ? (
                   <button type="submit" className="map-search-query-action">
                     <span className="map-search-query-icon" aria-hidden="true">
                       <svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.3"/><path d="m15.5 15.5 4.2 4.2"/></svg>
@@ -487,7 +371,6 @@ export default function MapView() {
                     <svg className="map-search-query-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
                   </button>
                 ) : null}
-                {showingGoogleSuggestions && <div className="map-google-attribution">Google Maps</div>}
               </div>
             )}
             </>

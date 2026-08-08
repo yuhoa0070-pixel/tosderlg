@@ -138,6 +138,9 @@ export function appReducer(state: AppState, action: Action): AppState {
       };
     }
 
+    case 'DESELECT_TRIP':
+      return { ...state, currentTripId: null };
+
     case 'IMPORT_SHARED_TRIP': {
       const existing = state.trips.find(
         (trip) =>
