@@ -1,4 +1,5 @@
 import { useEffect, useMemo, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import { useAppContext } from '../../context/AppContext';
 import BottomSheetModal from './BottomSheetModal';
 
@@ -55,41 +56,52 @@ export default function TripCreatedModal() {
   }, [isOpen]);
 
   return (
-    <BottomSheetModal isOpen={isOpen} onClose={continuePlanning} overlayId="tripCreatedOverlay">
-      <div
-        className="trip-created-art"
-        role="dialog"
-        aria-modal="true"
-        aria-label={km ? 'ដំណើរត្រូវបានបង្កើតដោយជោគជ័យ' : 'Trip created successfully'}
-        onClick={continuePlanning}
-      >
-        <img src="/waylo-group-of-friends-transparent.png" alt="" className="trip-created-friends" />
-      </div>
+    <>
+      {isOpen &&
+        createPortal(
+          <div className="app-toast" role="status" aria-live="polite">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="m8 12 2.6 2.6L16.5 9" />
+            </svg>
+            <span>{km ? 'ដំណើរត្រូវបានបង្កើត!' : 'Trip created!'}</span>
+          </div>,
+          document.body,
+        )}
+      <BottomSheetModal isOpen={isOpen} onClose={continuePlanning} overlayId="tripCreatedOverlay">
+        <div
+          className="trip-created-art"
+          role="dialog"
+          aria-modal="true"
+          aria-label={km ? 'ដំណើរត្រូវបានបង្កើតដោយជោគជ័យ' : 'Trip created successfully'}
+          onClick={continuePlanning}
+        />
 
-      {isOpen && (
-        <div className="firework-layer" aria-hidden="true">
-          {bursts.map((burst, burstIndex) => (
-            <span
-              key={burstIndex}
-              className="firework-burst"
-              style={{ left: `${burst.x}%`, top: `${burst.y}%`, animationDelay: `${burst.delay}ms` }}
-            >
-              {burst.particles.map((particle, particleIndex) => (
-                <span
-                  key={particleIndex}
-                  className="firework-particle"
-                  style={{
-                    '--tx': `${particle.tx}px`,
-                    '--ty': `${particle.ty}px`,
-                    background: particle.color,
-                    animationDelay: `${burst.delay}ms`,
-                  } as ParticleStyle}
-                />
-              ))}
-            </span>
-          ))}
-        </div>
-      )}
-    </BottomSheetModal>
+        {isOpen && (
+          <div className="firework-layer" aria-hidden="true">
+            {bursts.map((burst, burstIndex) => (
+              <span
+                key={burstIndex}
+                className="firework-burst"
+                style={{ left: `${burst.x}%`, top: `${burst.y}%`, animationDelay: `${burst.delay}ms` }}
+              >
+                {burst.particles.map((particle, particleIndex) => (
+                  <span
+                    key={particleIndex}
+                    className="firework-particle"
+                    style={{
+                      '--tx': `${particle.tx}px`,
+                      '--ty': `${particle.ty}px`,
+                      background: particle.color,
+                      animationDelay: `${burst.delay}ms`,
+                    } as ParticleStyle}
+                  />
+                ))}
+              </span>
+            ))}
+          </div>
+        )}
+      </BottomSheetModal>
+    </>
   );
 }

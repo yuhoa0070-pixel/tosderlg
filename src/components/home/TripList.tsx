@@ -21,7 +21,7 @@ export default function TripList() {
           {state.language === 'km' ? 'មើលទាំងអស់' : 'See all'}
         </span>
       </div>
-      <div id="tripList" className={trips.length === 1 ? 'single-trip' : undefined}>
+      <div id="tripList">
         {trips.map((trip) => (
           <TripCard
             key={trip.id}

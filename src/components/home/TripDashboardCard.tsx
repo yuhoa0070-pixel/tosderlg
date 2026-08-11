@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { getTelegramUser, telegramUserDisplayName } from '../../lib/telegram';
 import { currentTripMember } from '../../lib/tripRoom';
-import { getUpcomingTripAlert, plannedDaysProgress } from '../../lib/tripUtils';
+import { formatTripDateRange, getUpcomingTripAlert, plannedDaysProgress } from '../../lib/tripUtils';
 import { budgetExpenseTotal, computeMemberBalances, computeSettlements, formatBudgetAmount, tripBudget } from '../../lib/budget';
 import type { Trip, TripMember } from '../../types';
 
@@ -14,19 +14,6 @@ function initials(name: string): string {
 function timeGreeting(hour: number, km: boolean): string {
   if (km) return hour < 12 ? 'អរុណសួស្តី' : hour < 18 ? 'ទិវាសួស្តី' : 'សាយណ្ហសួស្តី';
   return hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-}
-
-function formatDateRange(trip: Trip, km: boolean): string {
-  if (!trip.startDate || !trip.endDate) return km ? 'មិនទាន់កំណត់ថ្ងៃ' : 'Dates not set';
-  const start = new Date(`${trip.startDate}T00:00:00`);
-  const end = new Date(`${trip.endDate}T00:00:00`);
-  const sameYear = start.getFullYear() === end.getFullYear();
-  const fmt = new Intl.DateTimeFormat(km ? 'km-KH' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-    ...(sameYear ? {} : { year: 'numeric' }),
-  });
-  return start.getTime() === end.getTime() ? fmt.format(start) : `${fmt.format(start)} – ${fmt.format(end)}`;
 }
 
 export default function TripDashboardCard({ trip }: { trip: Trip }) {
@@ -64,6 +51,7 @@ export default function TripDashboardCard({ trip }: { trip: Trip }) {
   const settlements = useMemo(() => computeSettlements(balances), [balances]);
 
   const unplannedDays = Math.max(itineraryProgress.total - itineraryProgress.planned, 0);
+  const unpackedItems = (trip.packingItems ?? []).filter((item) => !item.packed).length;
 
   const settlementText = useMemo(() => {
     if (!settlements.length) return null;
@@ -79,11 +67,11 @@ export default function TripDashboardCard({ trip }: { trip: Trip }) {
     return km ? `មានការទូទាត់ ${settlements.length} ត្រូវធ្វើ` : `${settlements.length} settlements needed`;
   }, [settlements, km, budget.currency]);
 
-  const attentionItems: Array<{ key: string; icon: React.ReactNode; text: string; view: 'itinerary' | 'budget' }> = [];
+  const attentionItems: Array<{ key: string; icon: React.ReactNode; text: string; onClick: () => void }> = [];
   if (unplannedDays > 0) {
     attentionItems.push({
       key: 'unplanned',
-      view: 'itinerary',
+      onClick: () => dispatch({ type: 'NAVIGATE', view: 'itinerary' }),
       icon: (
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <rect x="3.8" y="4.5" width="16.4" height="16" rx="5" />
@@ -98,7 +86,7 @@ export default function TripDashboardCard({ trip }: { trip: Trip }) {
   if (settlementText) {
     attentionItems.push({
       key: 'settlements',
-      view: 'budget',
+      onClick: () => dispatch({ type: 'NAVIGATE', view: 'budget' }),
       icon: (
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="9" cy="8" r="3" />
@@ -108,6 +96,20 @@ export default function TripDashboardCard({ trip }: { trip: Trip }) {
         </svg>
       ),
       text: settlementText,
+    });
+  }
+  if (unpackedItems > 0) {
+    attentionItems.push({
+      key: 'packing',
+      onClick: () => dispatch({ type: 'OPEN_MODAL', modal: 'packingChecklist' }),
+      icon: (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 7V5a5 5 0 0 1 10 0v2M5 7h14l1 14H4L5 7Z" />
+        </svg>
+      ),
+      text: km
+        ? `នៅសល់ ${unpackedItems} របស់ត្រូវខ្ចប់`
+        : `${unpackedItems} item${unpackedItems === 1 ? '' : 's'} left to pack`,
     });
   }
 
@@ -121,11 +123,22 @@ export default function TripDashboardCard({ trip }: { trip: Trip }) {
         <span className="trip-dash-avatar" aria-hidden="true">{initials(displayName)}</span>
       </div>
 
-      <div className="trip-dash-card">
+      <div
+        className="trip-dash-card"
+        role="button"
+        tabIndex={0}
+        onClick={() => dispatch({ type: 'NAVIGATE', view: 'tripDetails' })}
+        onKeyDown={(event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          dispatch({ type: 'NAVIGATE', view: 'tripDetails' });
+        }}
+      >
         <div className="trip-dash-card-head">
           <strong>{destName} {km ? 'ដំណើរ' : 'trip'}</strong>
+          <svg className="trip-dash-card-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
         </div>
-        <p className="trip-dash-card-sub">{formatDateRange(trip, km)} · {memberCount} {km ? 'អ្នកធ្វើដំណើរ' : memberCount === 1 ? 'traveler' : 'travelers'}</p>
+        <p className="trip-dash-card-sub">{formatTripDateRange(trip, km)} · {memberCount} {km ? 'អ្នកធ្វើដំណើរ' : memberCount === 1 ? 'traveler' : 'travelers'}</p>
 
         <div className="trip-dash-meters">
           <div className="trip-dash-meter">
@@ -147,7 +160,7 @@ export default function TripDashboardCard({ trip }: { trip: Trip }) {
               type="button"
               key={item.key}
               className="trip-dash-attention-row"
-              onClick={() => dispatch({ type: 'NAVIGATE', view: item.view })}
+              onClick={item.onClick}
             >
               <span className="trip-dash-attention-icon">{item.icon}</span>
               <span className="trip-dash-attention-text">{item.text}</span>

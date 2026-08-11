@@ -1,4 +1,4 @@
-import type { GeoCenter, Language, ModalName, MomentGroup, PackingItem, Photo, Stop, TelegramCloudState, Theme, Trip, TripBudget, TripMember, ViewingPhoto, ViewName } from '../types';
+import type { GeoCenter, Language, ModalName, MomentGroup, PackingItem, Photo, Stop, TelegramCloudState, Theme, Trip, TripBudget, TripDocument, TripMember, ViewingPhoto, ViewName } from '../types';
 
 export type Action =
   | { type: 'NAVIGATE'; view: ViewName }
@@ -9,6 +9,7 @@ export type Action =
   | { type: 'SET_VIEWING_PHOTO'; photo: ViewingPhoto | null }
   | { type: 'SET_PENDING_TAP_COORDS'; coords: GeoCenter | null }
   | { type: 'SET_PENDING_FLY_TO_COORDS'; coords: GeoCenter | null }
+  | { type: 'SET_NEW_TRIP_DESTINATION'; destination: string }
   | { type: 'OPEN_MODAL'; modal: ModalName; editingStopIndex?: number | null }
   | { type: 'CLOSE_MODAL' }
   | { type: 'CREATE_TRIP'; trip: Trip }
@@ -34,6 +35,8 @@ export type Action =
   | { type: 'ADD_PACKING_ITEM'; item: PackingItem }
   | { type: 'TOGGLE_PACKING_ITEM'; itemId: number }
   | { type: 'REMOVE_PACKING_ITEM'; itemId: number }
+  | { type: 'ADD_DOCUMENT'; tripId: number; document: TripDocument }
+  | { type: 'REMOVE_DOCUMENT'; tripId: number; key: string }
   | { type: 'SET_PROFILE_NAME'; name: string }
   | { type: 'SET_PROFILE_PHOTO'; photo: string | null }
   | { type: 'SET_THEME'; theme: Theme }

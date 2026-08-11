@@ -9,7 +9,7 @@ import TripRoomIcon from '../shared/TripRoomIcon';
 export default function TripForm() {
   const { state, dispatch } = useAppContext();
   const km = state.language === 'km';
-  const [destination, setDestination] = useState('');
+  const [destination, setDestination] = useState(() => state.newTripDestination);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [busy, setBusy] = useState(false);

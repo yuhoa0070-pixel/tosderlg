@@ -3,22 +3,10 @@ import { createPortal } from 'react-dom';
 import { useAppContext } from '../../context/AppContext';
 import { getTelegramUser, getTelegramWebApp, telegramUserDisplayName } from '../../lib/telegram';
 import { currentTripMember, saveTripRoom } from '../../lib/tripRoom';
+import { copyText } from '../../lib/clipboard';
 import type { Trip } from '../../types';
 import TripRoomIcon from './TripRoomIcon';
 import TripMembers from './TripMembers';
-
-function copyText(value: string): Promise<void> {
-  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(value);
-  const textArea = document.createElement('textarea');
-  textArea.value = value;
-  textArea.style.position = 'fixed';
-  textArea.style.opacity = '0';
-  document.body.appendChild(textArea);
-  textArea.select();
-  document.execCommand('copy');
-  textArea.remove();
-  return Promise.resolve();
-}
 
 export default function TripInviteButton({ trip }: { trip: Trip }) {
   const { state, dispatch } = useAppContext();
@@ -167,7 +155,7 @@ export default function TripInviteButton({ trip }: { trip: Trip }) {
       </div>
       {codeCopied &&
         createPortal(
-          <div className="trip-copy-toast" role="status" aria-live="polite">
+          <div className="app-toast" role="status" aria-live="polite">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="9" />
               <path d="m8 12 2.6 2.6L16.5 9" />

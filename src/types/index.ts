@@ -12,7 +12,9 @@ export type ViewName =
   | 'recap'
   | 'mytrips'
   | 'profile'
-  | 'budgetTracker';
+  | 'budgetTracker'
+  | 'tripDetails'
+  | 'documents';
 
 export type ModalName =
   | 'stopForm'
@@ -23,7 +25,8 @@ export type ModalName =
   | 'joinTripRoom'
   | 'editProfile'
   | 'confirmClear'
-  | 'confirmDeletePhoto';
+  | 'confirmDeletePhoto'
+  | 'packingChecklist';
 
 export interface Photo {
   src: string;
@@ -49,6 +52,14 @@ export interface PackingItem {
   text: string;
   packed: boolean;
   emoji?: string;
+}
+
+export interface TripDocument {
+  key: string;
+  name: string;
+  size: number;
+  contentType: string;
+  uploadedAt: number;
 }
 
 export interface TripMember {
@@ -100,6 +111,7 @@ export interface Trip {
   tripDays: TripDay[];
   photos: Record<string, Photo[]>;
   packingItems?: PackingItem[];
+  documents?: TripDocument[];
   budget?: TripBudget;
   shareId?: string;
   sharedBy?: string;
@@ -143,6 +155,8 @@ export interface AppState {
   theme: Theme;
   language: Language;
   currentView: ViewName;
+  /** The view NAVIGATE last came from, so a back button can return to where the user actually was. */
+  previousView: ViewName | null;
   memoryReturnView: ViewName;
   activeModal: ModalName | null;
   editingStopIndex: number | null;
@@ -152,4 +166,6 @@ export interface AppState {
   pendingTapCoords: GeoCenter | null;
   /** Coordinates a newly pasted-link stop should fly to, consumed by MapView. */
   pendingFlyToCoords: GeoCenter | null;
+  /** Destination to prefill the next TripForm with — set by "Plan again" on a past trip. */
+  newTripDestination: string;
 }

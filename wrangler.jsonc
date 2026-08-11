@@ -24,5 +24,11 @@
       "migrations_dir": "./cloudflare/migrations",
       "database_id": "1e319e70-1bda-495c-8b73-0fd2a57327e5"
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "TRIP_DOCS",
+      "bucket_name": "waylo-trip-documents"
+    }
   ]
 }

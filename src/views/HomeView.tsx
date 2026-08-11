@@ -33,7 +33,7 @@ export default function HomeView() {
 
       <div className="plan-next-trip">
         <h2 className="trip-dash-section-title">{km ? 'រៀបចំដំណើរបន្ទាប់' : 'Plan your next trip'}</h2>
-        <button type="button" className="itin-add-activity" onClick={startNewTrip}>
+        <button type="button" className="itin-add-activity" onClick={() => startNewTrip()}>
           + {km ? 'ចាប់ផ្ដើមរៀបចំ' : 'Start planning'}
         </button>
       </div>

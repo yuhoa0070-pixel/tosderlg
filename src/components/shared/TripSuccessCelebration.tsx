@@ -6,7 +6,6 @@ interface TripSuccessCelebrationProps {
   open: boolean;
   onClose: () => void;
   onViewItinerary: () => void;
-  friendImageSrc: string;
   language: Language;
 }
 
@@ -57,7 +56,6 @@ export default function TripSuccessCelebration({
   open,
   onClose,
   onViewItinerary,
-  friendImageSrc,
   language,
 }: TripSuccessCelebrationProps) {
   const km = language === 'km';
@@ -157,21 +155,7 @@ export default function TripSuccessCelebration({
             ))}
           </div>
         )}
-        <img
-          src={friendImageSrc}
-          alt=""
-          className={`trip-success-friends${reduceMotion ? ' no-anim' : ''}`}
-        />
       </div>
-
-      <button
-        type="button"
-        className={`trip-success-close${reduceMotion ? ' no-anim' : ''}`}
-        aria-label={km ? 'បិទ' : 'Close'}
-        onClick={onClose}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
-      </button>
 
       <div className={`trip-success-card${reduceMotion ? ' no-anim' : ''}`}>
         <span className="trip-success-check" aria-hidden="true">

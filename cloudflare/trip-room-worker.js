@@ -10,6 +10,15 @@ const BUDGET_CATEGORIES = new Set(['stay', 'transport', 'food', 'activity', 'oth
 const MAX_BUDGET_AMOUNT = 1_000_000_000_000;
 const PRESENCE_TTL_MS = 15_000;
 const MAX_DAY_INDEX = 365;
+const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
+const DOCUMENT_CONTENT_TYPES = new Map([
+  ['application/pdf', 'pdf'],
+  ['image/png', 'png'],
+  ['image/jpeg', 'jpg'],
+  ['image/webp', 'webp'],
+  ['image/heic', 'heic'],
+]);
+const DOCUMENT_KEY_PATTERN = /^[a-f0-9-]{36}\.[a-z0-9]{2,5}$/;
 
 function allowedOrigin(request, env) {
   const origin = request.headers.get('Origin');
@@ -24,7 +33,7 @@ function allowedOrigin(request, env) {
 function responseHeaders(origin) {
   return {
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Origin': origin,
     'Cache-Control': 'no-store',
     'Content-Type': 'application/json; charset=utf-8',
@@ -425,6 +434,64 @@ async function saveRoom(request, env, origin) {
   return sendJson(origin, { error: 'Could not create a unique room code. Try again.' }, 503);
 }
 
+function sanitizeDocumentName(rawName) {
+  const fallback = 'document';
+  if (typeof rawName !== 'string' || !rawName) return fallback;
+  let decoded = rawName;
+  try {
+    decoded = decodeURIComponent(rawName);
+  } catch {
+    // Keep the raw value if it isn't valid percent-encoding.
+  }
+  const cleaned = decoded.replace(/[\\/]+/g, '').trim().slice(0, 150);
+  return cleaned || fallback;
+}
+
+async function uploadTripDocument(request, env, origin) {
+  const contentType = (request.headers.get('Content-Type') || '').split(';')[0].trim().toLowerCase();
+  const extension = DOCUMENT_CONTENT_TYPES.get(contentType);
+  if (!extension) {
+    return sendJson(origin, { error: 'Only PDF, PNG, JPEG, WEBP, or HEIC files are supported.' }, 415);
+  }
+
+  const contentLength = Number(request.headers.get('Content-Length') || 0);
+  if (!contentLength || contentLength > MAX_DOCUMENT_BYTES) {
+    return sendJson(origin, { error: 'Files must be under 10 MB.' }, 413);
+  }
+  if (!request.body) return sendJson(origin, { error: 'A file is required.' }, 400);
+
+  const name = sanitizeDocumentName(new URL(request.url).searchParams.get('name'));
+  const key = `${crypto.randomUUID()}.${extension}`;
+
+  await env.TRIP_DOCS.put(key, request.body, {
+    httpMetadata: { contentType },
+    customMetadata: { name },
+  });
+
+  return sendJson(origin, { key, name, size: contentLength, contentType }, 201);
+}
+
+async function getTripDocument(env, origin, key) {
+  if (!DOCUMENT_KEY_PATTERN.test(key)) return sendJson(origin, { error: 'Invalid document key.' }, 400);
+
+  const object = await env.TRIP_DOCS.get(key);
+  if (!object) return sendJson(origin, { error: 'Document not found.' }, 404);
+
+  const name = object.customMetadata?.name || key;
+  const headers = new Headers(responseHeaders(origin));
+  headers.set('Content-Type', object.httpMetadata?.contentType || 'application/octet-stream');
+  headers.set('Content-Disposition', `attachment; filename="${name.replace(/"/g, "'")}"`);
+  headers.set('Content-Length', String(object.size));
+  headers.set('Cache-Control', 'private, max-age=31536000, immutable');
+  return new Response(object.body, { status: 200, headers });
+}
+
+async function deleteTripDocument(env, origin, key) {
+  if (!DOCUMENT_KEY_PATTERN.test(key)) return sendJson(origin, { error: 'Invalid document key.' }, 400);
+  await env.TRIP_DOCS.delete(key);
+  return sendJson(origin, { deleted: true });
+}
+
 async function listPresence(env, code) {
   await env.DB.prepare(
     `DELETE FROM trip_room_presence WHERE room_code = ? AND updated_at < ?`,
@@ -794,6 +861,16 @@ export default {
       if (url.pathname === '/api/trip-room/presence') {
         if (request.method === 'GET') return await getPresence(request, env, origin);
         if (request.method === 'POST') return await savePresence(request, env, origin);
+        return sendJson(origin, { error: 'Method not allowed.' }, 405);
+      }
+      if (url.pathname === '/api/trip-documents') {
+        if (request.method === 'POST') return await uploadTripDocument(request, env, origin);
+        return sendJson(origin, { error: 'Method not allowed.' }, 405);
+      }
+      if (url.pathname.startsWith('/api/trip-documents/')) {
+        const key = decodeURIComponent(url.pathname.slice('/api/trip-documents/'.length));
+        if (request.method === 'GET') return await getTripDocument(env, origin, key);
+        if (request.method === 'DELETE') return await deleteTripDocument(env, origin, key);
         return sendJson(origin, { error: 'Method not allowed.' }, 405);
       }
       if (url.pathname === '/api/resolve-map-link') return await resolveMapLink(request, origin);

@@ -54,6 +54,8 @@ const VIEW_NAMES = new Set<ViewName>([
   'mytrips',
   'profile',
   'budgetTracker',
+  'tripDetails',
+  'documents',
 ]);
 
 const TRIP_VIEWS = new Set<ViewName>([
@@ -64,6 +66,7 @@ const TRIP_VIEWS = new Set<ViewName>([
   'all-photos',
   'memory',
   'recap',
+  'tripDetails',
 ]);
 
 function isViewName(value: unknown): value is ViewName {

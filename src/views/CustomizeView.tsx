@@ -83,7 +83,6 @@ export default function CustomizeView() {
 
       <TripSuccessCelebration
         open={celebrationOpen}
-        friendImageSrc="/waylo-group-of-friends-transparent.png"
         language={state.language}
         onViewItinerary={() => {
           setCelebrationOpen(false);

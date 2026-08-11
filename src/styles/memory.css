@@ -16,6 +16,44 @@
 .recap-stat-num{font-size:24px;font-weight:700;color:var(--text);}
 .recap-stat-label{font-size:13px;color:var(--text-muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.03em;}
 
+/* ── Trip story recap (Spotify-Wrapped-style share screen) ── */
+.recap-story-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.recap-story-eyebrow{text-align:center;margin:0;}
+.recap-story-title{margin:2px 0 4px;text-align:center;font-size:26px;}
+.recap-story-dates{text-align:center;margin:0 0 20px;}
+
+.recap-story-photo{
+  border-radius:16px;background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text-muted);
+}
+.recap-story-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+.recap-story-photo-hero{aspect-ratio:4/3;margin-bottom:10px;}
+.recap-story-photo-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;}
+.recap-story-photo-row .recap-story-photo{aspect-ratio:1;}
+.recap-photo-placeholder-icon{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+
+.recap-highlights{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.recap-highlight-row{
+  display:flex;align-items:center;gap:10px;padding:14px 16px;
+  border:1px solid var(--border);border-radius:14px;background:var(--card);
+  color:var(--text);font-size:14px;font-weight:600;
+}
+.recap-highlight-row svg{
+  flex:0 0 auto;width:18px;height:18px;color:var(--text-muted);
+  fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round;
+}
+
+.recap-share-btn{
+  width:100%;height:52px;display:flex;align-items:center;justify-content:center;gap:9px;
+  border:1px solid var(--border);border-radius:16px;background:var(--card);
+  color:var(--heading);font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;
+  transition:border-color .18s ease,background-color .18s ease,transform .15s ease;
+}
+.recap-share-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.recap-share-btn:hover{border-color:var(--accent);}
+.recap-share-btn:active{transform:scale(.98);}
+.recap-share-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
 .photo-full{aspect-ratio:4/3;border-radius:16px;background:var(--card);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:16px;}
 .photo-full img{width:100%;height:100%;object-fit:cover;}
 .loc-row{display:flex;align-items:center;gap:6px;font-size:15px;color:var(--text-secondary);margin-bottom:2px;}

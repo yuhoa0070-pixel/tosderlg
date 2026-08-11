@@ -42,12 +42,23 @@ export default function ItineraryView() {
   const latestEditor = presence.length > 0
     ? presence.reduce((a, b) => (a.updatedAt > b.updatedAt ? a : b))
     : null;
+  const unpackedItems = (activeTrip.packingItems ?? []).filter((item) => !item.packed).length;
 
   return (
     <section id="view-itinerary" className="active">
       <TripSummaryHeader trip={activeTrip} />
 
       {activeTrip && <TripInviteButton trip={activeTrip} />}
+
+      <button
+        type="button"
+        className="itin-packing-link"
+        onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'packingChecklist' })}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7V5a5 5 0 0 1 10 0v2M5 7h14l1 14H4L5 7Z" /></svg>
+        {km ? 'បញ្ជីខ្ចប់របស់' : 'Packing list'}
+        {unpackedItems > 0 && <span className="itin-packing-count">{unpackedItems}</span>}
+      </button>
 
       {latestEditor && (
         <div className="itin-presence-banner" role="status">

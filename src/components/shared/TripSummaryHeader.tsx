@@ -1,20 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Trip, ViewName } from '../../types';
 import { useAppContext } from '../../context/AppContext';
-
-function formatDateRange(trip: Trip, km: boolean): string {
-  if (!trip.startDate || !trip.endDate) return km ? 'មិនទាន់កំណត់ថ្ងៃ' : 'Dates not set';
-  const start = new Date(`${trip.startDate}T00:00:00`);
-  const end = new Date(`${trip.endDate}T00:00:00`);
-  const sameYear = start.getFullYear() === end.getFullYear();
-  const fmt = new Intl.DateTimeFormat(km ? 'km-KH' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-    ...(sameYear ? {} : { year: 'numeric' }),
-  });
-  if (start.getTime() === end.getTime()) return fmt.format(start);
-  return `${fmt.format(start)} – ${fmt.format(end)}`;
-}
+import { formatTripDateRange } from '../../lib/tripUtils';
 
 export default function TripSummaryHeader({ trip }: { trip?: Trip }) {
   const { state, dispatch } = useAppContext();
@@ -26,7 +13,7 @@ export default function TripSummaryHeader({ trip }: { trip?: Trip }) {
   const destName = trip.destination.split(',')[0].trim();
   const tripTitle = `${destName} ${km ? 'ដំណើរ' : 'trip'}`;
   const memberCount = trip.members?.length || 1;
-  const datesFormatted = formatDateRange(trip, km);
+  const datesFormatted = formatTripDateRange(trip, km);
   const subtitle = `${datesFormatted} · ${memberCount} ${km ? 'អ្នកធ្វើដំណើរ' : memberCount === 1 ? 'traveler' : 'travelers'}`;
 
   const tabs: Array<{ id: ViewName; label: string; icon: ReactNode }> = [
@@ -55,8 +42,9 @@ export default function TripSummaryHeader({ trip }: { trip?: Trip }) {
       label: km ? 'ថវិកា' : 'Budget',
       icon: (
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M5 3.5l1.8 1.2L8.6 3.5l1.8 1.2 1.8-1.2 1.8 1.2 1.8-1.2 1.8 1.2 1.8-1.2v17l-1.8-1.2-1.8 1.2-1.8-1.2-1.8 1.2-1.8-1.2-1.8 1.2-1.8-1.2V3.5Z" />
-          <path d="M8.5 9h7M8.5 12.5h7M8.5 16h4" />
+          <path d="M3 7a2 2 0 0 1 2-2h11v4H5a2 2 0 0 1-2-2Z" />
+          <path d="M3 7v10a2 2 0 0 0 2 2h13a1 1 0 0 0 1-1v-3" />
+          <path d="M15 13h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a2 2 0 0 1 0-4Z" />
         </svg>
       ),
     },
@@ -69,7 +57,25 @@ export default function TripSummaryHeader({ trip }: { trip?: Trip }) {
       <div className="tsh-top-row">
         <div className="tsh-title-meta">
           <h1 className="tsh-title">{tripTitle}</h1>
-          <p className="tsh-subtitle">{subtitle}</p>
+          {trip.readOnly ? (
+            <p className="tsh-subtitle">{subtitle}</p>
+          ) : (
+            <button
+              type="button"
+              className="trip-date-edit-trigger"
+              onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'editTripDates' })}
+              aria-label={km ? 'កែប្រែកាលបរិច្ឆេទដំណើរ' : 'Edit trip dates'}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="2" />
+                <path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h6" />
+              </svg>
+              <span>{subtitle}</span>
+              <svg className="trip-date-edit-pencil" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 

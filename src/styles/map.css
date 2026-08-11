@@ -99,7 +99,7 @@
 .map-search-input-row{height:40px;display:grid;grid-template-columns:minmax(0,1fr) 34px;align-items:center;gap:6px;}
 .map-search-panel input[type="search"]{
   width:100%;min-width:0;height:36px;margin:0;padding:0 9px;border:0;background:transparent;
-  color:#1E2620;font-family:'Baloo 2',sans-serif;font-size:14px;font-weight:700;outline:none;
+  color:#1E2620;font-family:var(--font-display);font-size:14px;font-weight:700;outline:none;
   -webkit-appearance:none;appearance:none;
 }
 .map-search-panel input[type="search"]::-webkit-search-cancel-button{display:none;}
@@ -244,7 +244,7 @@ body[data-theme="dark"] .map-search-result-copy mark{background:#1F513B;color:#8
   .map-stop-emoji-label{transition:none;}
 }
 #leafletMap{height:100%;width:100%;background:#EEF2EF;}
-.leaflet-container{font-family:'Baloo 2',sans-serif;}
+.leaflet-container{font-family:var(--font-display);}
 .leaflet-tile-pane{filter:grayscale(.24) saturate(.7) brightness(1.06) contrast(.88);}
 @supports (-webkit-touch-callout:none){
   /* CSS filters on Leaflet's translated tile pane can render it transparent
@@ -271,7 +271,7 @@ body[data-theme="dark"] .map-search-result-copy mark{background:#1F513B;color:#8
 .map-search-result-label{
   padding:5px 9px!important;border:1px solid rgba(46,204,113,.45)!important;border-radius:999px!important;
   background:rgba(255,255,255,.94)!important;color:#263229!important;
-  box-shadow:0 5px 14px rgba(35,62,45,.16)!important;font-family:'Baloo 2',sans-serif!important;font-size:11px!important;font-weight:800!important;
+  box-shadow:0 5px 14px rgba(35,62,45,.16)!important;font-family:var(--font-display)!important;font-size:11px!important;font-weight:800!important;
 }
 .map-search-result-label::before{border-top-color:rgba(255,255,255,.94)!important;}
 

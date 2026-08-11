@@ -1,9 +1,10 @@
 import { useAppContext } from '../context/AppContext';
 
-export function useStartNewTrip(): () => void {
+export function useStartNewTrip(): (prefillDestination?: string) => void {
   const { dispatch } = useAppContext();
 
-  return function startNewTrip() {
+  return function startNewTrip(prefillDestination = '') {
+    dispatch({ type: 'SET_NEW_TRIP_DESTINATION', destination: prefillDestination });
     dispatch({ type: 'DESELECT_TRIP' });
     dispatch({ type: 'NAVIGATE', view: 'itinerary' });
     window.setTimeout(() => {

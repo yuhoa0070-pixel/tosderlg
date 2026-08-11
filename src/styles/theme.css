@@ -4,6 +4,13 @@
   --border:#2e2e2b; --accent:#2ECC71; --white:#ffffff; --danger:#e2504a;
   --glass-bg:rgba(255,255,255,0.07); --glass-border:rgba(255,255,255,0.14); --glass-shadow:rgba(0,0,0,0.3);
   --glass-active-text:#eafff1; --header-bg:#1c1c1c;
+  --font-display:'Baloo 2',sans-serif;
+}
+/* Baloo 2 has no Khmer glyphs, so Khmer mode swaps to a friendlier Khmer
+   web font here — everywhere below reads --font-display instead of
+   hardcoding 'Baloo 2', so English keeps its exact original font. */
+body[data-language="km"]{
+  --font-display:'Kantumruy Pro',sans-serif;
 }
 body[data-theme="light"]{
   --bg:#F7F5F0; --card:#FFFFFF; --card-hover:#EFEDE6;

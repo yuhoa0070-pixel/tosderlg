@@ -4,6 +4,7 @@ import TripCard from '../components/shared/TripCard';
 import TripRoomIcon from '../components/shared/TripRoomIcon';
 import { useStartNewTrip } from '../hooks/useStartNewTrip';
 import { isPastTrip } from '../lib/tripUtils';
+import type { Trip } from '../types';
 
 type Tab = 'upcoming' | 'past';
 
@@ -14,6 +15,10 @@ export default function MyTripsView() {
   const [deletingTripId, setDeletingTripId] = useState<number | null>(null);
   const km = state.language === 'km';
   const startNewTrip = useStartNewTrip();
+
+  function planTripAgain(trip: Trip) {
+    startNewTrip(trip.destination);
+  }
 
   const allTrips = state.trips.slice().reverse();
   const upcomingTrips = allTrips.filter((trip) => !isPastTrip(trip));
@@ -35,15 +40,14 @@ export default function MyTripsView() {
 
   return (
     <section id="view-mytrips" className="active mt-view">
-      {/* Top bar */}
-      <div className="topbar">
-        <div className="icon-btn" onClick={() => dispatch({ type: 'NAVIGATE', view: 'home' })}>
+      {/* Header */}
+      <div className="page-header">
+        <div className="icon-btn glass" onClick={() => dispatch({ type: 'NAVIGATE', view: state.previousView ?? 'home' })}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7" /><path d="M4.5 12h15" /></svg>
         </div>
-        <div />
+        <h2 className="mt-heading">{km ? 'ដំណើររបស់ខ្ញុំ' : 'My trips'}</h2>
+        <div className="page-header-spacer" />
       </div>
-
-      <h2 className="mt-heading">{km ? 'ដំណើររបស់ខ្ញុំ' : 'My trips'}</h2>
 
       {/* Upcoming / Past tab switcher */}
       <div className="mt-tab-bar" role="tablist">
@@ -91,6 +95,7 @@ export default function MyTripsView() {
               allowDelete
               onDelete={(id) => void handleDeleteTrip(id)}
               layout="list"
+              onPlanAgain={planTripAgain}
             />
           ))}
         </div>
@@ -100,7 +105,7 @@ export default function MyTripsView() {
 
       {/* Bottom actions — in document flow */}
       <div className="mt-actions">
-        <button type="button" className="mt-plan-btn" onClick={startNewTrip} id="planNewTripBtn">
+        <button type="button" className="mt-plan-btn" onClick={() => startNewTrip()} id="planNewTripBtn">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
           {km ? 'រៀបចំដំណើរថ្មី' : 'Plan a new trip'}
         </button>

@@ -12,6 +12,8 @@ import RecapView from './views/RecapView';
 import MyTripsView from './views/MyTripsView';
 import ProfileView from './views/ProfileView';
 import BudgetTrackerView from './views/BudgetTrackerView';
+import TripDetailsView from './views/TripDetailsView';
+import DocumentsView from './views/DocumentsView';
 import StopFormModal from './components/modals/StopFormModal';
 import PasteLinkModal from './components/modals/PasteLinkModal';
 import MemoryCollectionModal from './components/modals/MemoryCollectionModal';
@@ -21,6 +23,7 @@ import ConfirmClearModal from './components/modals/ConfirmClearModal';
 import JoinTripRoomModal from './components/modals/JoinTripRoomModal';
 import EditTripDatesModal from './components/modals/EditTripDatesModal';
 import TripCreatedModal from './components/modals/TripCreatedModal';
+import PackingChecklistModal from './components/modals/PackingChecklistModal';
 import ThemeSkyTransition from './components/shared/ThemeSkyTransition';
 import AppHeader from './components/shared/AppHeader';
 import AnimatedTravelBackground from './components/shared/AnimatedTravelBackground';
@@ -55,6 +58,10 @@ function renderView(view: ViewName) {
       return <ProfileView />;
     case 'budgetTracker':
       return <BudgetTrackerView />;
+    case 'tripDetails':
+      return <TripDetailsView />;
+    case 'documents':
+      return <DocumentsView />;
     default:
       return <HomeView />;
   }
@@ -81,6 +88,7 @@ function App() {
       <JoinTripRoomModal />
       <EditTripDatesModal />
       <TripCreatedModal />
+      <PackingChecklistModal />
 
       {PRIMARY_TAB_VIEWS.includes(state.currentView) && <BottomNav />}
     </div>

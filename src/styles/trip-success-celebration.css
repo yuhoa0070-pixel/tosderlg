@@ -12,20 +12,6 @@
   position:relative;width:clamp(230px,76vw,340px);
   aspect-ratio:1402/1122;flex:0 0 auto;
 }
-.trip-success-friends{
-  position:relative;z-index:1;display:block;width:100%;height:100%;
-  object-fit:contain;object-position:center;
-  opacity:0;transform:translateY(26px) scale(.65);
-  animation:tripSuccessArtIn .6s ease-out .15s both;
-}
-.trip-success-friends.no-anim{opacity:1;transform:none;animation:none;}
-@keyframes tripSuccessArtIn{
-  0%{opacity:0;transform:translateY(26px) scale(.65);}
-  55%{opacity:1;transform:translateY(-6px) scale(1.08);}
-  78%{transform:translateY(2px) scale(.98);}
-  100%{opacity:1;transform:translateY(0) scale(1);}
-}
-
 .trip-success-fx{position:absolute;inset:0;overflow:visible;pointer-events:none;transition:opacity .4s ease;}
 .trip-success-fx.is-fading{opacity:0;}
 
@@ -54,24 +40,6 @@
   100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + 78px)) rotate(var(--rot));opacity:0;}
 }
 
-.trip-success-close{
-  position:relative;z-index:1;flex:0 0 auto;
-  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
-  border-radius:50%;border:1px solid rgba(255,255,255,.4);
-  background:rgba(255,255,255,.16);color:#fff;cursor:pointer;
-  backdrop-filter:blur(10px) saturate(1.4);-webkit-backdrop-filter:blur(10px) saturate(1.4);
-  box-shadow:0 6px 16px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.3);
-  opacity:0;transform:scale(.7);
-  animation:tripSuccessCloseIn .35s cubic-bezier(.22,1,.36,1) .4s both;
-  transition:transform .16s ease,background-color .2s ease;
-}
-.trip-success-close:hover{background:rgba(255,255,255,.26);}
-.trip-success-close:active{transform:scale(.92);}
-.trip-success-close:focus-visible{outline:2px solid #fff;outline-offset:2px;}
-.trip-success-close svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
-.trip-success-close.no-anim{opacity:1;transform:none;animation:none;}
-@keyframes tripSuccessCloseIn{to{opacity:1;transform:scale(1);}}
-
 .trip-success-card{
   position:relative;z-index:1;width:100%;max-width:340px;
   display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;
@@ -95,6 +63,6 @@
 
 @media(prefers-reduced-motion:reduce){
   .trip-success-overlay{animation:none;background:rgba(0,0,0,.4);}
-  .trip-success-friends,.trip-success-card{animation:none;opacity:1;transform:none;}
+  .trip-success-card{animation:none;opacity:1;transform:none;}
   .trip-success-fx{display:none;}
 }

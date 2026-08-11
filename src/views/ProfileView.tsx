@@ -56,6 +56,15 @@ export default function ProfileView() {
         <span>{km ? 'តាមដានថវិកា' : 'Budget tracker'}</span>
       </div>
 
+      <div className="profile-row" id="menuDocuments" onClick={() => dispatch({ type: 'NAVIGATE', view: 'documents' })}>
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6.5 3h7l4.5 4.5V20a1 1 0 0 1-1 1h-10.5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
+          <path d="M13.5 3v4.5H18" />
+          <path d="M8.5 12.5h7M8.5 15.5h4.5" />
+        </svg>
+        <span>{km ? 'ឯកសាររបស់ខ្ញុំ' : 'My documents'}</span>
+      </div>
+
       {/* Danger row */}
       <div className="profile-row danger" id="menuClear" onClick={() => dispatch({ type: 'OPEN_MODAL', modal: 'confirmClear' })}>
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">

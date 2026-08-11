@@ -11,6 +11,8 @@ interface TripCardProps {
   onDelete?: (id: number) => void;
   /** 'card' = home carousel (default) | 'list' = My Trips vertical layout */
   layout?: 'card' | 'list';
+  /** Shown as a "Plan again" shortcut on past trips (list layout only). */
+  onPlanAgain?: (trip: Trip) => void;
 }
 
 const TRIP_STROKE_COLORS = ['#7FB8FF', '#FF8A73', '#FFD83D', '#A57CFF', '#4FD1C5', '#FF6FA5'];
@@ -97,6 +99,7 @@ function ListTripCard({
   onSelect,
   allowDelete,
   onDelete,
+  onPlanAgain,
 }: TripCardProps) {
   const { state } = useAppContext();
   const km = state.language === 'km';
@@ -226,6 +229,19 @@ function ListTripCard({
               </span>
             </div>
           )}
+          {past && onPlanAgain && (
+            <button
+              type="button"
+              className="mt-plan-again-btn"
+              onClick={(event) => {
+                event.stopPropagation();
+                onPlanAgain(trip);
+              }}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 1 2.7 6M4 12v5h5" /></svg>
+              {km ? 'រៀបចំម្ដងទៀត' : 'Plan this trip again'}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -234,10 +250,10 @@ function ListTripCard({
 
 // ─── Original card-layout (home carousel) ────────────────────────────────────
 
-export default function TripCard({ trip, active, onSelect, allowDelete = false, onDelete, layout = 'card' }: TripCardProps) {
+export default function TripCard({ trip, active, onSelect, allowDelete = false, onDelete, layout = 'card', onPlanAgain }: TripCardProps) {
   // Delegate to list layout
   if (layout === 'list') {
-    return <ListTripCard trip={trip} active={active} onSelect={onSelect} allowDelete={allowDelete} onDelete={onDelete} />;
+    return <ListTripCard trip={trip} active={active} onSelect={onSelect} allowDelete={allowDelete} onDelete={onDelete} onPlanAgain={onPlanAgain} />;
   }
 
   const { state } = useAppContext();

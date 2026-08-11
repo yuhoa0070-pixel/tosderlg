@@ -54,6 +54,19 @@ export function plannedDaysProgress(tripDays: Trip['tripDays']): { planned: numb
   return { planned, total, percent };
 }
 
+export function formatTripDateRange(trip: Trip, km: boolean): string {
+  if (!trip.startDate || !trip.endDate) return km ? 'មិនទាន់កំណត់ថ្ងៃ' : 'Dates not set';
+  const start = new Date(`${trip.startDate}T00:00:00`);
+  const end = new Date(`${trip.endDate}T00:00:00`);
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const fmt = new Intl.DateTimeFormat(km ? 'km-KH' : 'en-US', {
+    month: 'short',
+    day: 'numeric',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  });
+  return start.getTime() === end.getTime() ? fmt.format(start) : `${fmt.format(start)} – ${fmt.format(end)}`;
+}
+
 export function dayCount(startDate: string, endDate: string): number {
   if (!startDate || !endDate) return 1;
   const diff = Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000) + 1;

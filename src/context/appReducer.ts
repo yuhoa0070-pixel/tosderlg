@@ -12,6 +12,7 @@ export const initialState: AppState = {
   theme: 'dark',
   language: 'en',
   currentView: 'home',
+  previousView: null,
   memoryReturnView: 'map',
   activeModal: null,
   editingStopIndex: null,
@@ -19,6 +20,7 @@ export const initialState: AppState = {
   viewingPhoto: null,
   pendingTapCoords: null,
   pendingFlyToCoords: null,
+  newTripDestination: '',
 };
 
 function mapTrip(state: AppState, tripId: number | null, fn: (trip: Trip) => Trip): Trip[] {
@@ -37,13 +39,17 @@ function mergeLocalPhotos(cloudTrip: Trip, localTrip?: Trip): Trip {
 export function appReducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'NAVIGATE':
-      return { ...state, currentView: action.view };
+      if (action.view === state.currentView) return state;
+      return { ...state, previousView: state.currentView, currentView: action.view };
 
     case 'SET_CURRENT_DAY':
       return { ...state, currentDay: action.day };
 
     case 'SET_SELECTED_STOP':
       return { ...state, selectedStop: action.index };
+
+    case 'SET_NEW_TRIP_DESTINATION':
+      return { ...state, newTripDestination: action.destination };
 
     case 'SET_MEMORY_RETURN_VIEW':
       return { ...state, memoryReturnView: action.view };
@@ -372,6 +378,24 @@ export function appReducer(state: AppState, action: Action): AppState {
         trips: mapTrip(state, state.currentTripId, (trip) => ({
           ...trip,
           packingItems: (trip.packingItems ?? []).filter((item) => item.id !== action.itemId),
+        })),
+      };
+
+    case 'ADD_DOCUMENT':
+      return {
+        ...state,
+        trips: mapTrip(state, action.tripId, (trip) => ({
+          ...trip,
+          documents: [...(trip.documents ?? []), action.document],
+        })),
+      };
+
+    case 'REMOVE_DOCUMENT':
+      return {
+        ...state,
+        trips: mapTrip(state, action.tripId, (trip) => ({
+          ...trip,
+          documents: (trip.documents ?? []).filter((doc) => doc.key !== action.key),
         })),
       };
 
