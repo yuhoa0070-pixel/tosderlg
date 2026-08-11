@@ -9,7 +9,7 @@ export default function TripList() {
   const trips = state.trips.slice().reverse();
 
   return (
-    <div id="tripListWrap" style={{ marginBottom: 24 }}>
+    <div id="tripListWrap" style={{ marginTop: 22, marginBottom: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
         <p className="eyebrow" style={{ margin: 0 }}>
           {state.language === 'km' ? 'ដំណើររបស់ខ្ញុំ' : 'My trips'}

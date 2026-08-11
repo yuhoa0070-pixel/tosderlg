@@ -14,7 +14,8 @@ export type ViewName =
   | 'profile'
   | 'budgetTracker'
   | 'tripDetails'
-  | 'documents';
+  | 'documents'
+  | 'tripTemplates';
 
 export type ModalName =
   | 'stopForm'

@@ -1,34 +1,43 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "waylo-trip-rooms",
-  "main": "./cloudflare/trip-room-worker.js",
-  "compatibility_date": "2026-08-06",
-  "compatibility_flags": ["nodejs_compat"],
-  "assets": {
-    "directory": "./dist",
-    "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
-  },
-  "observability": {
-    "enabled": true,
-    "head_sampling_rate": 1
-  },
-  "vars": {
-    "ALLOWED_ORIGINS": "https://waylo-trip-rooms.yuhoa0070.workers.dev,http://localhost:5173"
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "waylo-trip-rooms",
-      "migrations_dir": "./cloudflare/migrations",
-      "database_id": "1e319e70-1bda-495c-8b73-0fd2a57327e5"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "TRIP_DOCS",
-      "bucket_name": "waylo-trip-documents"
-    }
-  ]
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "waylo-trip-rooms",
+	"main": "./cloudflare/trip-room-worker.js",
+	"compatibility_date": "2026-08-06",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS",
+		"not_found_handling": "single-page-application",
+		"run_worker_first": [
+			"/api/*"
+		]
+	},
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 1
+	},
+	"vars": {
+		"ALLOWED_ORIGINS": "https://waylo-trip-rooms.yuhoa0070.workers.dev,http://localhost:5173"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "waylo-trip-rooms",
+			"migrations_dir": "./cloudflare/migrations",
+			"database_id": "1e319e70-1bda-495c-8b73-0fd2a57327e5"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "TRIP_DOCS",
+			"bucket_name": "waylo-trip-documents"
+		},
+		{
+			"bucket_name": "waylo-trip-documents",
+			"binding": "waylo_trip_documents",
+			"remote": true
+		}
+	]
 }

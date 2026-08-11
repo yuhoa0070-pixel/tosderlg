@@ -94,6 +94,13 @@ export default function TripForm() {
       >
         <TripRoomIcon size={18} /> {km ? 'មានលេខកូដ? ចូលបន្ទប់ដំណើរ' : 'Have a code? Join a trip room'}
       </button>
+      <button
+        type="button"
+        className="btn btn-ghost home-join-room"
+        onClick={() => dispatch({ type: 'NAVIGATE', view: 'tripTemplates' })}
+      >
+        {km ? 'រកមើលគំរូដំណើរ' : 'Browse trip templates'}
+      </button>
       <div className="status" id="genStatus">
         {status}
       </div>

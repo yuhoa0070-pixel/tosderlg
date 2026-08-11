@@ -56,6 +56,7 @@ const VIEW_NAMES = new Set<ViewName>([
   'budgetTracker',
   'tripDetails',
   'documents',
+  'tripTemplates',
 ]);
 
 const TRIP_VIEWS = new Set<ViewName>([

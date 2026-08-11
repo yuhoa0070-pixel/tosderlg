@@ -9,8 +9,8 @@
 @keyframes tripSuccessOverlayIn{to{background:rgba(0,0,0,.4);}}
 
 .trip-success-art{
-  position:relative;width:clamp(230px,76vw,340px);
-  aspect-ratio:1402/1122;flex:0 0 auto;
+  position:absolute;top:8%;left:50%;transform:translateX(-50%);
+  width:clamp(230px,76vw,340px);aspect-ratio:1402/1122;pointer-events:none;
 }
 .trip-success-fx{position:absolute;inset:0;overflow:visible;pointer-events:none;transition:opacity .4s ease;}
 .trip-success-fx.is-fading{opacity:0;}

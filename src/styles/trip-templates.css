@@ -1,0 +1,11 @@
+.tpl-list{display:flex;flex-direction:column;gap:16px;}
+.tpl-card{border:1px solid var(--border);border-radius:18px;background:var(--card);overflow:hidden;box-shadow:0 6px 20px rgba(18,34,24,.05);}
+.tpl-cover{
+  width:100%;aspect-ratio:16/9;background:var(--card-hover);color:var(--text-muted);
+  display:flex;align-items:center;justify-content:center;
+}
+.tpl-body{padding:16px;}
+.tpl-title{margin:0 0 2px;color:var(--heading);font-size:17px;font-weight:800;}
+.tpl-destination{margin:0 0 4px;color:var(--text-muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.tpl-route{margin:0 0 14px;color:var(--text-secondary);font-size:14px;font-weight:600;}
+.tpl-use-btn{width:100%;}
