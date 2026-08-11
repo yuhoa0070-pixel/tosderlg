@@ -150,14 +150,14 @@ export default function TripDetailsView() {
 
       <div className="trip-details-status-row">
         <div className="trip-details-status-card">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.5L14 9l2-6.5-1.5-1-4 5.5-4.5-3L5 5.5 8 9 2 13l1 1.5 5.5-1L12 18l1.5-.5L12 13l7.5 2 1-1.5z" /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
           <span className="trip-details-status-label">{km ? 'ជើងហោះហើរ' : 'Flight'}</span>
           <span className={`trip-details-status-value${flightBooked ? ' confirmed' : ''}`}>
             {flightBooked ? (km ? 'បានកក់' : 'Confirmed') : (km ? 'មិនទាន់កក់' : 'Not booked')}
           </span>
         </div>
         <div className="trip-details-status-card">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12v7M21 12v7M3 16h18M3 12a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5M7 12V9M17 12V9" /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4v16" /><path d="M2 8h18a2 2 0 0 1 2 2v10" /><path d="M2 17h20" /><path d="M6 8v9" /></svg>
           <span className="trip-details-status-label">{km ? 'សណ្ឋាគារ' : 'Hotel'}</span>
           <span className={`trip-details-status-value${hotelBooked ? ' confirmed' : ''}`}>
             {hotelBooked ? (km ? 'បានកក់' : 'Confirmed') : (km ? 'មិនទាន់កក់' : 'Not booked')}
@@ -165,7 +165,8 @@ export default function TripDetailsView() {
         </div>
         <div className="trip-details-status-card">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 3.5l1.8 1.2L8.6 3.5l1.8 1.2 1.8-1.2 1.8 1.2 1.8-1.2 1.8 1.2 1.8-1.2v17l-1.8-1.2-1.8 1.2-1.8-1.2-1.8 1.2-1.8-1.2-1.8 1.2-1.8-1.2V3.5Z" />
+            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+            <path d="M13 5v2M13 17v2M13 11v2" />
           </svg>
           <span className="trip-details-status-label">{km ? 'សកម្មភាព' : 'Activities'}</span>
           <span className={`trip-details-status-value${activitiesBooked > 0 ? ' confirmed' : ''}`}>

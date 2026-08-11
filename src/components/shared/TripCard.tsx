@@ -219,12 +219,12 @@ function ListTripCard({
             <div className="mt-card-chips">
               <span className={`mt-card-chip${booking.flight === 'booked' ? ' booked' : ''}`}>
                 {/* Plane icon */}
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.5L14 9l2-6.5-1.5-1-4 5.5-4.5-3L5 5.5 8 9 2 13l1 1.5 5.5-1L12 18l1.5-.5L12 13l7.5 2 1-1.5z" /></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
                 {booking.flight === 'booked' ? (km ? 'បានកក់' : 'Booked') : (km ? 'មិនទាន់' : 'Not booked')}
               </span>
               <span className={`mt-card-chip${booking.stay === 'booked' ? ' booked' : ''}`}>
                 {/* Bed icon */}
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12v7M21 12v7M3 16h18M3 12a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5M7 12V9M17 12V9" /></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4v16" /><path d="M2 8h18a2 2 0 0 1 2 2v10" /><path d="M2 17h20" /><path d="M6 8v9" /></svg>
                 {booking.stay === 'booked' ? (km ? 'បានកក់' : 'Booked') : (km ? 'មិនទាន់' : 'Not booked')}
               </span>
             </div>
