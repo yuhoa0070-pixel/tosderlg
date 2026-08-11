@@ -41,13 +41,12 @@ export default function MyTripsView() {
   return (
     <section id="view-mytrips" className="active mt-view">
       {/* Header */}
-      <div className="tsh-top-row" style={{ marginBottom: 22 }}>
+      <div className="page-header">
         <div className="icon-btn glass" onClick={() => dispatch({ type: 'NAVIGATE', view: state.previousView ?? 'home' })}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7" /><path d="M4.5 12h15" /></svg>
         </div>
-        <div className="tsh-title-meta">
-          <h2 className="tsh-title">{km ? 'ដំណើររបស់ខ្ញុំ' : 'My trips'}</h2>
-        </div>
+        <h2 className="mt-heading">{km ? 'ដំណើររបស់ខ្ញុំ' : 'My trips'}</h2>
+        <div className="page-header-spacer" />
       </div>
 
       {/* Upcoming / Past tab switcher */}
