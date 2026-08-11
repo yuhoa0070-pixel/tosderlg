@@ -1,15 +1,12 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { getTelegramUser, telegramUserDisplayName } from '../../lib/telegram';
 import { currentTripMember } from '../../lib/tripRoom';
 import { formatTripDateRange, getUpcomingTripAlert, plannedDaysProgress } from '../../lib/tripUtils';
 import { budgetExpenseTotal, computeMemberBalances, computeSettlements, formatBudgetAmount, tripBudget } from '../../lib/budget';
+import { fetchCurrentWeather, type CurrentWeather } from '../../lib/weather';
+import WeatherAlertCard from '../shared/WeatherAlertCard';
 import type { Trip, TripMember } from '../../types';
-
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  return (parts.length > 1 ? `${parts[0][0]}${parts.at(-1)?.[0]}` : parts[0]?.slice(0, 2) || '?').toUpperCase();
-}
 
 function timeGreeting(hour: number, km: boolean): string {
   if (km) return hour < 12 ? 'អរុណសួស្តី' : hour < 18 ? 'ទិវាសួស្តី' : 'សាយណ្ហសួស្តី';
@@ -23,6 +20,20 @@ export default function TripDashboardCard({ trip }: { trip: Trip }) {
   const displayName = (telegramUser ? telegramUserDisplayName(telegramUser) : '') || state.profileName || (km ? 'អ្នកធ្វើដំណើរ' : 'Traveler');
   const destName = trip.destination.split(',')[0].trim();
   const memberCount = trip.members?.length || 1;
+  const centerLat = trip.center.lat;
+  const centerLng = trip.center.lng;
+
+  const [weather, setWeather] = useState<CurrentWeather | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setWeather(null);
+    fetchCurrentWeather({ lat: centerLat, lng: centerLng }).then((result) => {
+      if (!cancelled) setWeather(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [centerLat, centerLng]);
 
   const alert = getUpcomingTripAlert(trip);
   const today = new Date();
@@ -120,8 +131,9 @@ export default function TripDashboardCard({ trip }: { trip: Trip }) {
           <p className="trip-dash-hello">{timeGreeting(today.getHours(), km)}, {displayName}</p>
           <h1 className="trip-dash-headline">{headline}</h1>
         </div>
-        <span className="trip-dash-avatar" aria-hidden="true">{initials(displayName)}</span>
       </div>
+
+      {weather && <WeatherAlertCard weather={weather} destination={destName} language={state.language} />}
 
       <div
         className="trip-dash-card"
