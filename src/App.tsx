@@ -29,11 +29,14 @@ import ThemeSkyTransition from './components/shared/ThemeSkyTransition';
 import AppHeader from './components/shared/AppHeader';
 import AnimatedTravelBackground from './components/shared/AnimatedTravelBackground';
 
-// The bottom tab bar only makes sense on screens reached directly from it.
-// Everything else is a "pushed" screen (reached by drilling in further) and
-// should hide the tab bar and rely on that screen's own back button instead —
-// same pattern as a native app's navigation stack.
-const PRIMARY_TAB_VIEWS: ViewName[] = ['home', 'itinerary', 'map', 'profile'];
+// The bottom tab bar only makes sense on screens reached directly from it,
+// or from the Destination/Itinerary/Budget segmented tab bar (TripSummaryHeader)
+// — those three are presented as peer tabs, so the bottom nav should stay
+// visible across all of them rather than disappearing on just one. Everything
+// else is a "pushed" screen (reached by drilling in further) and should hide
+// the tab bar and rely on that screen's own back button instead — same
+// pattern as a native app's navigation stack.
+const PRIMARY_TAB_VIEWS: ViewName[] = ['home', 'itinerary', 'map', 'budget', 'profile'];
 
 function renderView(view: ViewName) {
   switch (view) {

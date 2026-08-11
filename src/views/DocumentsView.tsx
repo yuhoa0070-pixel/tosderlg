@@ -27,14 +27,12 @@ export default function DocumentsView() {
 
   return (
     <section id="view-documents" className="active">
-      <div className="tsh-top-row" style={{ marginBottom: 22 }}>
+      <div className="page-header">
         <div className="icon-btn glass" onClick={() => dispatch({ type: 'NAVIGATE', view: state.previousView ?? 'profile' })}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7" /><path d="M4.5 12h15" /></svg>
         </div>
-        <div className="tsh-title-meta">
-          <h2 className="tsh-title">{km ? 'ឯកសាររបស់ខ្ញុំ' : 'My documents'}</h2>
-          <p className="tsh-subtitle">{km ? 'ឯកសារដែលបានផ្ទុកឡើងសម្រាប់ដំណើររបស់អ្នក' : 'Files uploaded to your trips'}</p>
-        </div>
+        <h2>{km ? 'ឯកសាររបស់ខ្ញុំ' : 'My documents'}</h2>
+        <div className="page-header-spacer" />
       </div>
 
       {tripsWithDocuments.length === 0 ? (
