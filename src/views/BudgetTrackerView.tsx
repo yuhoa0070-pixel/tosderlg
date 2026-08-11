@@ -142,12 +142,13 @@ export default function BudgetTrackerView() {
 
   return (
     <section id="view-budget-tracker" className="active">
-      <div className="page-header">
+      <div className="tsh-top-row" style={{ marginBottom: 22 }}>
         <div className="icon-btn glass" onClick={() => dispatch({ type: 'NAVIGATE', view: 'profile' })}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7" /><path d="M4.5 12h15" /></svg>
         </div>
-        <h2 className="bt-heading">{km ? 'តាមដានថវិកា' : 'Budget tracker'}</h2>
-        <div className="page-header-spacer" />
+        <div className="tsh-title-meta">
+          <h2 className="tsh-title">{km ? 'តាមដានថវិកា' : 'Budget tracker'}</h2>
+        </div>
       </div>
 
       <div className="bt-tabs" role="tablist">
