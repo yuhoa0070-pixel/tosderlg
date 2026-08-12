@@ -65,7 +65,6 @@ export default function WeatherView() {
     return (
       <section id="view-weather" className="active weather-view">
         <div className="wx-hero">
-          <div className="wx-hero-bg" aria-hidden="true" />
           <div className="icon-btn glass wx-back" onClick={() => dispatch({ type: 'NAVIGATE', view: state.previousView ?? 'home' })}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7" /><path d="M4.5 12h15" /></svg>
           </div>
@@ -102,8 +101,6 @@ export default function WeatherView() {
   return (
     <section id="view-weather" className="active weather-view">
       <div className="wx-hero">
-        <div className="wx-hero-bg" aria-hidden="true" />
-
         <div className="icon-btn glass wx-back" onClick={() => dispatch({ type: 'NAVIGATE', view: state.previousView ?? 'home' })}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7" /><path d="M4.5 12h15" /></svg>
         </div>
