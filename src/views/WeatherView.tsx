@@ -1,125 +1,155 @@
-import { useMemo, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useActiveTrip } from '../hooks/useActiveTrip';
-import { useCurrentWeather } from '../hooks/useCurrentWeather';
+import { useWeatherForecast } from '../hooks/useWeatherForecast';
 import { DEFAULT_CENTER } from '../lib/constants';
-import { compassDirection, weatherAlertKind, type WeatherAlertKind } from '../lib/weather';
+import { weatherAlertKind, type WeatherAlertKind } from '../lib/weather';
 import WeatherIcon from '../components/shared/WeatherIcon';
-import DateScrollHeader from '../components/shared/DateScrollHeader';
 
-function isSameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
-const WEATHER_COPY: Record<WeatherAlertKind, { en: string; km: string; adviceEn: string; adviceKm: string }> = {
-  sun: { en: 'Clear skies', km: 'មេឃស្រឡះ', adviceEn: 'A lovely day to explore outdoors.', adviceKm: 'ថ្ងៃល្អសម្រាប់ដើរលេងខាងក្រៅ។' },
-  'partly-cloudy': { en: 'Partly cloudy', km: 'មានពពកខ្លះ', adviceEn: 'Comfortable weather for a full day out.', adviceKm: 'អាកាសធាតុល្អសម្រាប់ដើរលេងពេញមួយថ្ងៃ។' },
-  cloudy: { en: 'Cloudy', km: 'មានពពកច្រើន', adviceEn: 'Keep a light layer close by.', adviceKm: 'យកអាវស្រាលទៅជាមួយផង។' },
-  fog: { en: 'Foggy', km: 'មានអ័ព្ទ', adviceEn: 'Allow extra time between stops.', adviceKm: 'ទុកពេលបន្ថែមសម្រាប់ធ្វើដំណើរ។' },
-  rain: { en: 'Rain expected', km: 'អាចមានភ្លៀង', adviceEn: 'Pack an umbrella and waterproof shoes.', adviceKm: 'យកឆ័ត្រ និងស្បែកជើងការពារទឹក។' },
-  snow: { en: 'Snowy', km: 'មានព្រិល', adviceEn: 'Bring warm layers and allow extra travel time.', adviceKm: 'យកអាវក្រាស់ និងទុកពេលធ្វើដំណើរបន្ថែម។' },
-  thunderstorm: { en: 'Storm alert', km: 'ព្រមានព្យុះ', adviceEn: 'Move outdoor plans indoors when possible.', adviceKm: 'ប្តូរផែនការខាងក្រៅទៅក្នុងអគារបើអាច។' },
-  hot: { en: 'Heat alert', km: 'ព្រមានកម្ដៅ', adviceEn: 'Carry water and avoid the midday heat.', adviceKm: 'យកទឹក និងជៀសវាងកម្ដៅថ្ងៃត្រង់។' },
-  cold: { en: 'Cold alert', km: 'ព្រមានត្រជាក់', adviceEn: 'Pack warm layers before heading out.', adviceKm: 'យកអាវកក់ក្ដៅមុនចេញដំណើរ។' },
-  windy: { en: 'Strong wind', km: 'ខ្យល់ខ្លាំង', adviceEn: 'Secure loose items and check outdoor plans.', adviceKm: 'រក្សារបស់របរឱ្យជាប់ និងពិនិត្យផែនការខាងក្រៅ។' },
+const CONDITION_LABEL: Record<WeatherAlertKind, { en: string; km: string }> = {
+  sun: { en: 'Sunny', km: 'ថ្ងៃរះ' },
+  'partly-cloudy': { en: 'Partly Sunny', km: 'មានពពកខ្លះ' },
+  cloudy: { en: 'Cloudy', km: 'មានពពកច្រើន' },
+  fog: { en: 'Foggy', km: 'មានអ័ព្ទ' },
+  rain: { en: 'Rainy', km: 'មានភ្លៀង' },
+  snow: { en: 'Snowy', km: 'មានព្រិល' },
+  thunderstorm: { en: 'Stormy', km: 'ព្យុះ' },
+  hot: { en: 'Very Hot', km: 'ក្ដៅខ្លាំង' },
+  cold: { en: 'Very Cold', km: 'ត្រជាក់ខ្លាំង' },
+  windy: { en: 'Windy', km: 'ខ្យល់ខ្លាំង' },
 };
+
+const SUMMARY_LINE: Record<WeatherAlertKind, { en: string; km: string }> = {
+  sun: { en: 'You can see clear skies all day.', km: 'អ្នកនឹងឃើញមេឃស្រឡះពេញមួយថ្ងៃ។' },
+  'partly-cloudy': { en: 'Expect a mix of sun and clouds today.', km: 'ថ្ងៃនេះមានពន្លឺថ្ងៃលាយនឹងពពក។' },
+  cloudy: { en: 'Clouds will cover the sky most of the day.', km: 'ពពកនឹងគ្របដណ្ដប់ភាគច្រើននៃថ្ងៃ។' },
+  fog: { en: 'Patchy fog may reduce visibility today.', km: 'អាចមានអ័ព្ទបន្ថយភាពមើលឃើញ។' },
+  rain: { en: 'Rain showers are likely throughout the day.', km: 'អាចមានភ្លៀងពេញមួយថ្ងៃ។' },
+  snow: { en: 'Snow flurries are expected today.', km: 'អាចមានព្រិលធ្លាក់ថ្ងៃនេះ។' },
+  thunderstorm: { en: 'Thunderstorms may roll through later today.', km: 'អាចមានព្យុះផ្គររំពេចនៅពេលក្រោយ។' },
+  hot: { en: 'Temperatures will stay high — stay hydrated.', km: 'សីតុណ្ហភាពនៅតែខ្ពស់ — សូមផឹកទឹកឱ្យបានគ្រប់គ្រាន់។' },
+  cold: { en: 'A cold day ahead — bundle up before heading out.', km: 'ថ្ងៃនេះត្រជាក់ — សូមស្លៀកសម្លៀកបំពាក់កក់ក្ដៅ។' },
+  windy: { en: 'Expect gusty winds throughout the day.', km: 'អាចមានខ្យល់បក់ខ្លាំងពេញមួយថ្ងៃ។' },
+};
+
+function formatHour(date: Date, km: boolean): string {
+  return date.toLocaleTimeString(km ? 'km-KH' : 'en-US', { hour: 'numeric', minute: date.getMinutes() ? '2-digit' : undefined });
+}
 
 export default function WeatherView() {
   const { state, dispatch } = useAppContext();
   const trip = useActiveTrip();
   const km = state.language === 'km';
-  const weather = useCurrentWeather(trip?.center ?? DEFAULT_CENTER);
-
-  const [selectedDate, setSelectedDate] = useState(() => new Date());
-  const [activeTab, setActiveTab] = useState('current');
-  const today = useMemo(() => new Date(), []);
-  const isToday = isSameDay(selectedDate, today);
-  const showLive = activeTab === 'current' && isToday && !!weather;
-
-  const tabs = [
-    { id: 'current', label: km ? 'បច្ចុប្បន្ន' : 'Current' },
-    { id: 'forecast', label: km ? 'ព្យាករណ៍' : 'Forecast' },
-  ];
+  const forecast = useWeatherForecast(trip?.center ?? DEFAULT_CENTER);
 
   if (!trip) return null;
 
   const destName = trip.destination.split(',')[0].trim();
-  const kind = weather ? weatherAlertKind(weather) : 'cloudy';
-  const copy = WEATHER_COPY[kind];
-  const condition = km ? copy.km : copy.en;
-  const advice = km ? copy.adviceKm : copy.adviceEn;
+
+  if (!forecast) {
+    return (
+      <section id="view-weather" className="active weather-view">
+        <div className="wx-hero">
+          <div className="wx-hero-bg" aria-hidden="true" />
+          <div className="icon-btn glass wx-back" onClick={() => dispatch({ type: 'NAVIGATE', view: state.previousView ?? 'home' })}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7" /><path d="M4.5 12h15" /></svg>
+          </div>
+          <p className="wx-loading">{km ? 'កំពុងផ្ទុកអាកាសធាតុ…' : 'Loading weather…'}</p>
+        </div>
+      </section>
+    );
+  }
+
+  const { current, tempMaxC, tempMinC, tomorrowMaxC, hourly } = forecast;
+  const kind = weatherAlertKind(current);
+  const condition = km ? CONDITION_LABEL[kind].km : CONDITION_LABEL[kind].en;
+  const summary = km ? SUMMARY_LINE[kind].km : SUMMARY_LINE[kind].en;
+
+  const diff = Math.round(tomorrowMaxC - tempMaxC);
+  const trendWord =
+    diff <= -3 ? (km ? 'ទាបជាងច្រើន' : 'much lower')
+    : diff <= -1 ? (km ? 'ទាបជាង' : 'lower')
+    : diff >= 3 ? (km ? 'ខ្ពស់ជាងច្រើន' : 'much higher')
+    : diff >= 1 ? (km ? 'ខ្ពស់ជាង' : 'higher')
+    : (km ? 'ស្រដៀងគ្នា' : 'about the same');
+  const trendArrow = diff < 0 ? '↓' : diff > 0 ? '↑' : '·';
+
+  const hourlyTemps = hourly.map((h) => h.tempC);
+  const minT = Math.min(...hourlyTemps);
+  const maxT = Math.max(...hourlyTemps);
+  const range = Math.max(maxT - minT, 1);
+  const points = hourly.map((h, i) => {
+    const x = hourly.length > 1 ? (i / (hourly.length - 1)) * 100 : 50;
+    const y = 26 - ((h.tempC - minT) / range) * 22;
+    return `${x},${y}`;
+  });
 
   return (
     <section id="view-weather" className="active weather-view">
-      <div className={`weather-hero weather-${kind}`}>
-        <div className="weather-hero-topbar">
-          <div className="icon-btn glass" onClick={() => dispatch({ type: 'NAVIGATE', view: state.previousView ?? 'home' })}>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7" /><path d="M4.5 12h15" /></svg>
-          </div>
-          {showLive && <span className="weather-hero-status"><i aria-hidden="true" />{condition}</span>}
+      <div className="wx-hero">
+        <div className="wx-hero-bg" aria-hidden="true" />
+
+        <div className="icon-btn glass wx-back" onClick={() => dispatch({ type: 'NAVIGATE', view: state.previousView ?? 'home' })}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7" /><path d="M4.5 12h15" /></svg>
         </div>
 
-        <div className="weather-hero-loc">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.5 6-11a6 6 0 1 0-12 0c0 5.5 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>
-          <span>{km ? `ឥឡូវនេះនៅ ${destName}` : `Now in ${destName}`}</span>
-        </div>
-
-        <DateScrollHeader
-          selectedDate={selectedDate}
-          onSelectDate={setSelectedDate}
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          language={state.language}
-        />
-
-        {showLive ? (
-          <>
-            <div className="weather-hero-figure"><WeatherIcon code={weather.code} /></div>
-            <div className="weather-hero-temp">{Math.round(weather.tempC)}°</div>
-            <div className="weather-hero-cond">{condition}</div>
-          </>
-        ) : (
-          <div className="weather-hero-placeholder">
-            <p>
-              {activeTab === 'forecast'
-                ? (km ? 'ព្យាករណ៍អាកាសធាតុច្រើនថ្ងៃនឹងមកដល់ឆាប់ៗនេះ' : 'Multi-day forecast coming soon')
-                : (km ? 'អាកាសធាតុបច្ចុប្បន្នអាចមើលបានតែថ្ងៃនេះប៉ុណ្ណោះ' : 'Live conditions are only available for today')}
-            </p>
+        <div className="wx-content">
+          <div className="wx-loc">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.5 6-11a6 6 0 1 0-12 0c0 5.5 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>
+            <span>{destName}</span>
           </div>
-        )}
+
+          <div className="wx-temp">{Math.round(current.tempC)}°</div>
+          <div className="wx-cond">{condition}</div>
+
+          <div className="wx-highlow">
+            <span>↑{Math.round(tempMaxC)}° / ↓{Math.round(tempMinC)}°</span>
+          </div>
+          <div className="wx-feels">{km ? `មានអារម្មណ៍ថា ${Math.round(current.feelsLikeC)}°` : `Feels like ${Math.round(current.feelsLikeC)}°`}</div>
+
+          <p className="wx-summary">{summary}</p>
+
+          <div className="wx-hourly">
+            {hourly.map((h) => (
+              <div className="wx-hour-col" key={h.time.getTime()}>
+                <span className="wx-hour-time">{h.isSunset ? (km ? 'ថ្ងៃលិច' : 'Sunset') : formatHour(h.time, km)}</span>
+                <span className="wx-hour-icon">
+                  {h.isSunset ? (
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v6M5.6 8.6l1.4 1.4M18.4 8.6 17 10M3 18h18M5 15a7 7 0 0 1 14 0" /></svg>
+                  ) : (
+                    <WeatherIcon code={h.code} />
+                  )}
+                </span>
+                <span className="wx-hour-temp">{Math.round(h.tempC)}°</span>
+                {!h.isSunset && <span className="wx-hour-precip">{Math.round(h.precipProbability)}%</span>}
+              </div>
+            ))}
+            <svg className="wx-trend-svg" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+              <polyline points={points.join(' ')} fill="none" />
+              {points.map((point) => {
+                const [x, y] = point.split(',');
+                return <circle key={point} cx={x} cy={y} r="1.4" />;
+              })}
+            </svg>
+          </div>
+
+          <div className="wx-tip-card">
+            <div className="wx-tip-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>
+            </div>
+            <div className="wx-tip-text">
+              <span className="wx-tip-eyebrow">{km ? 'រីករាយថ្ងៃនេះ…' : 'Enjoy the day…'}</span>
+              <p>
+                {km
+                  ? `សីតុណ្ហភាពថ្ងៃស្អែកនឹង${trendWord}ជាងថ្ងៃនេះ`
+                  : `Tomorrow's temperature will be ${trendWord} than today`}
+              </p>
+            </div>
+            {diff !== 0 && <span className="wx-tip-diff">{trendArrow}{Math.abs(diff)}°</span>}
+          </div>
+
+          <div className="wx-dots" aria-hidden="true"><span className="active" /><span /></div>
+        </div>
       </div>
-
-      {showLive ? (
-        <>
-          <div className="weather-metrics-row">
-            <div className="weather-metric-chip">
-              <small>{km ? 'មានអារម្មណ៍ថា' : 'Feels like'}</small>
-              <strong>{Math.round(weather.feelsLikeC)}°</strong>
-            </div>
-            <div className="weather-metric-chip">
-              <small>{km ? 'សំណើម' : 'Humidity'}</small>
-              <strong>{Math.round(weather.humidity)}%</strong>
-            </div>
-            <div className="weather-metric-chip">
-              <small>{km ? 'ខ្យល់' : 'Wind'}</small>
-              <strong>{compassDirection(weather.windDeg)} · {Math.round(weather.windKph)}km/h</strong>
-            </div>
-          </div>
-
-          <div className="weather-tip-card">
-            <span className="weather-tip-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="m12 3 1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3Z" /></svg>
-            </span>
-            <div>
-              <strong>{km ? 'គន្លឹះដំណើរ' : 'Trip tip'}</strong>
-              <p>{advice}</p>
-            </div>
-          </div>
-        </>
-      ) : (
-        !weather && <p className="trip-details-documents-empty">{km ? 'កំពុងផ្ទុកអាកាសធាតុ…' : 'Loading weather…'}</p>
-      )}
     </section>
   );
 }

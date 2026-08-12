@@ -1,0 +1,61 @@
+.dsh-card{
+  position:relative;isolation:isolate;width:390px;max-width:100%;margin:0 auto;
+  padding:22px 20px 18px;border-radius:36px;overflow:hidden;
+  background:linear-gradient(180deg,#FFD24D 0%,#FF8C2E 100%);
+  font-family:inherit;
+}
+
+.dsh-notch{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:120px;height:28px;border-radius:20px;background:#000;
+}
+
+.dsh-statusbar{
+  position:relative;display:flex;align-items:center;justify-content:space-between;
+  margin-top:14px;color:#3A2200;
+}
+.dsh-time{font-size:15px;font-weight:600;}
+.dsh-status-icons{display:flex;align-items:center;gap:5px;color:#3A2200;}
+.dsh-status-icons svg{fill:currentColor;}
+
+.dsh-date-row{
+  display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;
+  margin-top:22px;padding:2px 2px 4px;scrollbar-width:none;
+}
+.dsh-date-row::-webkit-scrollbar{display:none;}
+
+.dsh-date-col{
+  flex:0 0 auto;scroll-snap-align:center;width:40px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  border:0;background:transparent;padding:0;cursor:pointer;font-family:inherit;
+}
+
+.dsh-weekday{
+  font-size:12px;font-weight:600;color:#3A2200;background:none;border:none;
+}
+
+.dsh-day-circle{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;color:#3A2200;background:transparent;border:none;
+}
+
+.dsh-day-circle.selected{
+  background:#FFFFFF;color:#FF8C2E;font-weight:700;font-size:18px;
+  box-shadow:0 4px 10px rgba(58,34,0,.22);
+}
+
+.dsh-tabs{
+  position:relative;display:flex;margin-top:20px;padding:4px;
+  border-radius:999px;background:rgba(255,255,255,.25);
+}
+
+.dsh-tab{
+  flex:1 1 0;padding:9px 0;border:0;border-radius:999px;background:transparent;
+  color:rgba(58,34,0,.65);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
+  transition:background .15s ease,color .15s ease;
+}
+
+.dsh-tab.active{
+  background:#FFFFFF;color:#3A2200;
+}
