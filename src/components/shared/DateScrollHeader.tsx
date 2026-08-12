@@ -49,6 +49,8 @@ export default function DateScrollHeader({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const userInteracting = useRef(false);
   const weekdayFormatter = useMemo(
     () => new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', { weekday: 'short' }),
     [language],
@@ -61,9 +63,48 @@ export default function DateScrollHeader({
     node?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }, [selectedDate, dates]);
 
+  useEffect(() => () => {
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+  }, []);
+
+  const markUserInteracting = () => {
+    userInteracting.current = true;
+  };
+
+  const handleScroll = () => {
+    if (!userInteracting.current) return;
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      userInteracting.current = false;
+      const container = scrollRef.current;
+      if (!container) return;
+      const containerCenter = container.scrollLeft + container.clientWidth / 2;
+      let closestKey: number | null = null;
+      let closestDist = Infinity;
+      itemRefs.current.forEach((node, key) => {
+        const itemCenter = node.offsetLeft + node.offsetWidth / 2;
+        const dist = Math.abs(itemCenter - containerCenter);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closestKey = key;
+        }
+      });
+      if (closestKey === null) return;
+      const closestDate = dates.find((d) => d.getTime() === closestKey);
+      if (closestDate && !isSameDay(closestDate, selectedDate)) onSelectDate(closestDate);
+    }, 120);
+  };
+
   return (
     <div className="date-scroll-header">
-      <div className="date-scroll-track" ref={scrollRef}>
+      <div
+        className="date-scroll-track"
+        ref={scrollRef}
+        onScroll={handleScroll}
+        onPointerDown={markUserInteracting}
+        onWheel={markUserInteracting}
+        onTouchStart={markUserInteracting}
+      >
         {dates.map((date) => {
           const key = date.getTime();
           const selected = isSameDay(date, selectedDate);
@@ -81,6 +122,7 @@ export default function DateScrollHeader({
               onClick={() => onSelectDate(date)}
             >
               <span className="date-scroll-weekday">{weekdayFormatter.format(date)}</span>
+              <span className="date-scroll-bead" aria-hidden="true" />
               <span className="date-scroll-day">{date.getDate()}</span>
             </button>
           );

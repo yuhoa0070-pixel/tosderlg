@@ -1,9 +1,15 @@
+import { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useActiveTrip } from '../hooks/useActiveTrip';
 import { useWeatherForecast } from '../hooks/useWeatherForecast';
 import { DEFAULT_CENTER } from '../lib/constants';
 import { weatherAlertKind, type WeatherAlertKind } from '../lib/weather';
 import WeatherIcon from '../components/shared/WeatherIcon';
+import DateScrollHeader from '../components/shared/DateScrollHeader';
+
+function isSameDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
 
 const CONDITION_LABEL: Record<WeatherAlertKind, { en: string; km: string }> = {
   sun: { en: 'Sunny', km: 'ថ្ងៃរះ' },
@@ -40,10 +46,20 @@ export default function WeatherView() {
   const trip = useActiveTrip();
   const km = state.language === 'km';
   const forecast = useWeatherForecast(trip?.center ?? DEFAULT_CENTER);
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const isToday = isSameDay(selectedDate, new Date());
 
   if (!trip) return null;
 
   const destName = trip.destination.split(',')[0].trim();
+
+  const dateHeader = (
+    <DateScrollHeader
+      selectedDate={selectedDate}
+      onSelectDate={setSelectedDate}
+      language={state.language}
+    />
+  );
 
   if (!forecast) {
     return (
@@ -98,56 +114,66 @@ export default function WeatherView() {
             <span>{destName}</span>
           </div>
 
-          <div className="wx-temp">{Math.round(current.tempC)}°</div>
-          <div className="wx-cond">{condition}</div>
+          {dateHeader}
 
-          <div className="wx-highlow">
-            <span>↑{Math.round(tempMaxC)}° / ↓{Math.round(tempMinC)}°</span>
-          </div>
-          <div className="wx-feels">{km ? `មានអារម្មណ៍ថា ${Math.round(current.feelsLikeC)}°` : `Feels like ${Math.round(current.feelsLikeC)}°`}</div>
+          {isToday ? (
+            <>
+              <div className="wx-temp">{Math.round(current.tempC)}°</div>
+              <div className="wx-cond">{condition}</div>
 
-          <p className="wx-summary">{summary}</p>
-
-          <div className="wx-hourly">
-            {hourly.map((h) => (
-              <div className="wx-hour-col" key={h.time.getTime()}>
-                <span className="wx-hour-time">{h.isSunset ? (km ? 'ថ្ងៃលិច' : 'Sunset') : formatHour(h.time, km)}</span>
-                <span className="wx-hour-icon">
-                  {h.isSunset ? (
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v6M5.6 8.6l1.4 1.4M18.4 8.6 17 10M3 18h18M5 15a7 7 0 0 1 14 0" /></svg>
-                  ) : (
-                    <WeatherIcon code={h.code} />
-                  )}
-                </span>
-                <span className="wx-hour-temp">{Math.round(h.tempC)}°</span>
-                {!h.isSunset && <span className="wx-hour-precip">{Math.round(h.precipProbability)}%</span>}
+              <div className="wx-highlow">
+                <span>↑{Math.round(tempMaxC)}° / ↓{Math.round(tempMinC)}°</span>
               </div>
-            ))}
-            <svg className="wx-trend-svg" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
-              <polyline points={points.join(' ')} fill="none" />
-              {points.map((point) => {
-                const [x, y] = point.split(',');
-                return <circle key={point} cx={x} cy={y} r="1.4" />;
-              })}
-            </svg>
-          </div>
+              <div className="wx-feels">{km ? `មានអារម្មណ៍ថា ${Math.round(current.feelsLikeC)}°` : `Feels like ${Math.round(current.feelsLikeC)}°`}</div>
 
-          <div className="wx-tip-card">
-            <div className="wx-tip-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>
-            </div>
-            <div className="wx-tip-text">
-              <span className="wx-tip-eyebrow">{km ? 'រីករាយថ្ងៃនេះ…' : 'Enjoy the day…'}</span>
-              <p>
-                {km
-                  ? `សីតុណ្ហភាពថ្ងៃស្អែកនឹង${trendWord}ជាងថ្ងៃនេះ`
-                  : `Tomorrow's temperature will be ${trendWord} than today`}
-              </p>
-            </div>
-            {diff !== 0 && <span className="wx-tip-diff">{trendArrow}{Math.abs(diff)}°</span>}
-          </div>
+              <p className="wx-summary">{summary}</p>
 
-          <div className="wx-dots" aria-hidden="true"><span className="active" /><span /></div>
+              <div className="wx-hourly">
+                {hourly.map((h) => (
+                  <div className="wx-hour-col" key={h.time.getTime()}>
+                    <span className="wx-hour-time">{h.isSunset ? (km ? 'ថ្ងៃលិច' : 'Sunset') : formatHour(h.time, km)}</span>
+                    <span className="wx-hour-icon">
+                      {h.isSunset ? (
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v6M5.6 8.6l1.4 1.4M18.4 8.6 17 10M3 18h18M5 15a7 7 0 0 1 14 0" /></svg>
+                      ) : (
+                        <WeatherIcon code={h.code} />
+                      )}
+                    </span>
+                    <span className="wx-hour-temp">{Math.round(h.tempC)}°</span>
+                    {!h.isSunset && <span className="wx-hour-precip">{Math.round(h.precipProbability)}%</span>}
+                  </div>
+                ))}
+                <svg className="wx-trend-svg" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+                  <polyline points={points.join(' ')} fill="none" />
+                  {points.map((point) => {
+                    const [x, y] = point.split(',');
+                    return <circle key={point} cx={x} cy={y} r="1.4" />;
+                  })}
+                </svg>
+              </div>
+
+              <div className="wx-tip-card">
+                <div className="wx-tip-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>
+                </div>
+                <div className="wx-tip-text">
+                  <span className="wx-tip-eyebrow">{km ? 'រីករាយថ្ងៃនេះ…' : 'Enjoy the day…'}</span>
+                  <p>
+                    {km
+                      ? `សីតុណ្ហភាពថ្ងៃស្អែកនឹង${trendWord}ជាងថ្ងៃនេះ`
+                      : `Tomorrow's temperature will be ${trendWord} than today`}
+                  </p>
+                </div>
+                {diff !== 0 && <span className="wx-tip-diff">{trendArrow}{Math.abs(diff)}°</span>}
+              </div>
+
+              <div className="wx-dots" aria-hidden="true"><span className="active" /><span /></div>
+            </>
+          ) : (
+            <p className="wx-placeholder">
+              {km ? 'ព្យាករណ៍សម្រាប់ថ្ងៃនេះមិនទាន់មានទេ' : "Forecast for this day isn't available yet"}
+            </p>
+          )}
         </div>
       </div>
     </section>
