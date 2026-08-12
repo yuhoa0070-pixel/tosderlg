@@ -14,12 +14,12 @@
 .date-scroll-track::-webkit-scrollbar{display:none;}
 .date-scroll-item{position:relative;z-index:1;flex:0 0 auto;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;gap:9px;width:38px;padding:7px 0;border:0;border-radius:14px;background:transparent;color:var(--text-muted);font-family:inherit;cursor:pointer;transition:color .15s ease,transform .15s ease;}
 .date-scroll-item:active{transform:scale(.94);}
-.date-scroll-weekday{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:inherit;opacity:.55;transition:font-size .15s ease,opacity .15s ease;}
-.date-scroll-day{font-size:13px;font-weight:700;color:inherit;opacity:.55;padding-bottom:3px;border-bottom:1.5px solid transparent;transition:font-size .15s ease,opacity .15s ease,border-color .15s ease;}
+.date-scroll-weekday{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:inherit;opacity:.55;transition:opacity .15s ease;}
+.date-scroll-day{display:inline-block;font-size:15px;font-weight:700;color:inherit;opacity:.55;padding-bottom:3px;border-bottom:1.5px solid transparent;transition:opacity .15s ease,border-color .15s ease,transform .15s ease;}
 
-.date-scroll-item.selected .date-scroll-weekday{font-size:10px;opacity:1;}
+.date-scroll-item.selected .date-scroll-weekday{opacity:1;}
 .date-scroll-item.selected .date-scroll-weekday,.date-scroll-item.selected .date-scroll-day{color:var(--accent,#2ECC71);font-weight:900;}
-.date-scroll-item.selected .date-scroll-day{font-size:19px;opacity:1;border-bottom-color:var(--accent,#2ECC71);}
+.date-scroll-item.selected .date-scroll-day{opacity:1;border-bottom-color:var(--accent,#2ECC71);transform:scale(1.25);}
 
 .date-scroll-tabs{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;}
 .date-scroll-tab{flex:0 0 auto;padding:7px 16px;border:0;border-radius:999px;background:var(--card-hover);color:var(--text-muted);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:background .15s ease,color .15s ease;}
