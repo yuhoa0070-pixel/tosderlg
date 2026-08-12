@@ -197,7 +197,6 @@ export default function DateScrollHeader({
 
   return (
     <div className="date-scroll-header">
-      <span className="date-scroll-center-marker" aria-hidden="true" />
       <div
         className="date-scroll-track"
         ref={scrollRef}
