@@ -2,6 +2,7 @@ import type { GeoCenter } from '../types';
 
 export interface CurrentWeather {
   tempC: number;
+  feelsLikeC: number;
   code: number;
   humidity: number;
   windKph: number;
@@ -12,6 +13,7 @@ export interface CurrentWeather {
 interface OpenMeteoResponse {
   current?: {
     temperature_2m?: number;
+    apparent_temperature?: number;
     weather_code?: number;
     relative_humidity_2m?: number;
     wind_speed_10m?: number;
@@ -25,7 +27,7 @@ export async function fetchCurrentWeather(center: GeoCenter): Promise<CurrentWea
     const url = new URL('https://api.open-meteo.com/v1/forecast');
     url.searchParams.set('latitude', String(center.lat));
     url.searchParams.set('longitude', String(center.lng));
-    url.searchParams.set('current', 'temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m,wind_direction_10m,is_day');
+    url.searchParams.set('current', 'temperature_2m,apparent_temperature,weather_code,relative_humidity_2m,wind_speed_10m,wind_direction_10m,is_day');
     url.searchParams.set('timezone', 'auto');
 
     const response = await fetch(url.toString());
@@ -39,6 +41,7 @@ export async function fetchCurrentWeather(center: GeoCenter): Promise<CurrentWea
 
     return {
       tempC,
+      feelsLikeC: typeof current?.apparent_temperature === 'number' ? current.apparent_temperature : tempC,
       code,
       humidity: typeof current?.relative_humidity_2m === 'number' ? current.relative_humidity_2m : 0,
       windKph: typeof current?.wind_speed_10m === 'number' ? current.wind_speed_10m : 0,
