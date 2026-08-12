@@ -98,6 +98,14 @@ export interface HourlyPoint {
   isSunset?: boolean;
 }
 
+export interface DayForecast {
+  date: Date;
+  code: number;
+  tempMaxC: number;
+  tempMinC: number;
+  hourly: HourlyPoint[];
+}
+
 export interface WeatherForecast {
   current: CurrentWeather;
   tempMaxC: number;
@@ -105,6 +113,8 @@ export interface WeatherForecast {
   tomorrowMaxC: number;
   sunset: Date | null;
   hourly: HourlyPoint[];
+  /** Real forecast data for today plus the next several days — the range Open-Meteo's free forecast covers. */
+  days: DayForecast[];
 }
 
 interface OpenMeteoForecastResponse {
@@ -116,10 +126,30 @@ interface OpenMeteoForecastResponse {
     precipitation_probability?: number[];
   };
   daily?: {
+    time?: string[];
     temperature_2m_max?: number[];
     temperature_2m_min?: number[];
+    weather_code?: number[];
     sunset?: string[];
   };
+}
+
+function parseLocalDate(isoDate: string): Date {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function isSameLocalDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function downsample<T>(items: T[], count: number): T[] {
+  if (items.length <= count) return items;
+  const result: T[] = [];
+  for (let i = 0; i < count; i += 1) {
+    result.push(items[Math.round((i * (items.length - 1)) / (count - 1))]);
+  }
+  return result;
 }
 
 export async function fetchWeatherForecast(center: GeoCenter): Promise<WeatherForecast | null> {
@@ -129,8 +159,8 @@ export async function fetchWeatherForecast(center: GeoCenter): Promise<WeatherFo
     url.searchParams.set('longitude', String(center.lng));
     url.searchParams.set('current', 'temperature_2m,apparent_temperature,weather_code,relative_humidity_2m,wind_speed_10m,wind_direction_10m,is_day');
     url.searchParams.set('hourly', 'temperature_2m,weather_code,precipitation_probability');
-    url.searchParams.set('daily', 'temperature_2m_max,temperature_2m_min,sunset');
-    url.searchParams.set('forecast_days', '2');
+    url.searchParams.set('daily', 'temperature_2m_max,temperature_2m_min,weather_code,sunset');
+    url.searchParams.set('forecast_days', '8');
     url.searchParams.set('timezone', 'auto');
 
     const response = await fetch(url.toString());
@@ -180,6 +210,27 @@ export async function fetchWeatherForecast(center: GeoCenter): Promise<WeatherFo
       else hourly.splice(insertAt, 0, sunsetPoint);
     }
 
+    const dailyDates = data.daily?.time ?? [];
+    const days: DayForecast[] = dailyDates.map((isoDate, i) => {
+      const date = parseLocalDate(isoDate);
+      const dayHours: HourlyPoint[] = [];
+      for (let j = 0; j < times.length; j += 1) {
+        const time = new Date(times[j]);
+        if (!isSameLocalDay(time, date)) continue;
+        if (typeof temps[j] !== 'number' || typeof codes[j] !== 'number') continue;
+        dayHours.push({ time, tempC: temps[j], code: codes[j], precipProbability: typeof precips[j] === 'number' ? precips[j] : 0 });
+      }
+      const isToday = isSameLocalDay(date, now);
+      const sampled = isToday ? hourly.slice(0, 6) : downsample(dayHours, 6);
+      return {
+        date,
+        code: typeof data.daily?.weather_code?.[i] === 'number' ? data.daily.weather_code[i] : code,
+        tempMaxC: data.daily?.temperature_2m_max?.[i] ?? tempC,
+        tempMinC: data.daily?.temperature_2m_min?.[i] ?? tempC,
+        hourly: sampled,
+      };
+    });
+
     return {
       current: currentWeather,
       tempMaxC: data.daily?.temperature_2m_max?.[0] ?? tempC,
@@ -187,6 +238,7 @@ export async function fetchWeatherForecast(center: GeoCenter): Promise<WeatherFo
       tomorrowMaxC: data.daily?.temperature_2m_max?.[1] ?? data.daily?.temperature_2m_max?.[0] ?? tempC,
       sunset,
       hourly: hourly.slice(0, 6),
+      days,
     };
   } catch {
     return null;

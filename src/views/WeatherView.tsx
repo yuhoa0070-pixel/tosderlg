@@ -3,7 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import { useActiveTrip } from '../hooks/useActiveTrip';
 import { useWeatherForecast } from '../hooks/useWeatherForecast';
 import { DEFAULT_CENTER } from '../lib/constants';
-import { weatherAlertKind, type WeatherAlertKind } from '../lib/weather';
+import { weatherAlertKind, weatherIconKind, type WeatherAlertKind } from '../lib/weather';
 import WeatherIcon from '../components/shared/WeatherIcon';
 import DateScrollHeader from '../components/shared/DateScrollHeader';
 
@@ -74,23 +74,25 @@ export default function WeatherView() {
     );
   }
 
-  const { current, tempMaxC, tempMinC, tomorrowMaxC, hourly } = forecast;
-  const kind = weatherAlertKind(current);
-  const condition = km ? CONDITION_LABEL[kind].km : CONDITION_LABEL[kind].en;
-  const summary = km ? SUMMARY_LINE[kind].km : SUMMARY_LINE[kind].en;
+  const { current, tempMaxC, tempMinC } = forecast;
 
-  const diff = Math.round(tomorrowMaxC - tempMaxC);
-  const trendWord =
-    diff <= -3 ? (km ? 'ទាបជាងច្រើន' : 'much lower')
-    : diff <= -1 ? (km ? 'ទាបជាង' : 'lower')
-    : diff >= 3 ? (km ? 'ខ្ពស់ជាងច្រើន' : 'much higher')
-    : diff >= 1 ? (km ? 'ខ្ពស់ជាង' : 'higher')
-    : (km ? 'ស្រដៀងគ្នា' : 'about the same');
-  const trendArrow = diff < 0 ? '↓' : diff > 0 ? '↑' : '·';
+  const selectedDay = forecast.days.find((d) => isSameDay(d.date, selectedDate));
+  const isPast = !isToday && selectedDate < forecast.days[0].date;
+
+  let headlineTempC: number | null = null;
+  let hourly: typeof forecast.hourly = [];
+  let dayKind: WeatherAlertKind | null = null;
+  if (selectedDay) {
+    headlineTempC = isToday ? current.tempC : selectedDay.tempMaxC;
+    hourly = isToday ? forecast.hourly : selectedDay.hourly;
+    dayKind = isToday ? weatherAlertKind(current) : weatherIconKind(selectedDay.code) === 'unknown' ? 'cloudy' : (weatherIconKind(selectedDay.code) as WeatherAlertKind);
+  }
+  const condition = dayKind ? (km ? CONDITION_LABEL[dayKind].km : CONDITION_LABEL[dayKind].en) : '';
+  const summary = dayKind ? (km ? SUMMARY_LINE[dayKind].km : SUMMARY_LINE[dayKind].en) : '';
 
   const hourlyTemps = hourly.map((h) => h.tempC);
-  const minT = Math.min(...hourlyTemps);
-  const maxT = Math.max(...hourlyTemps);
+  const minT = hourlyTemps.length ? Math.min(...hourlyTemps) : 0;
+  const maxT = hourlyTemps.length ? Math.max(...hourlyTemps) : 0;
   const range = Math.max(maxT - minT, 1);
   const points = hourly.map((h, i) => {
     const x = hourly.length > 1 ? (i / (hourly.length - 1)) * 100 : 50;
@@ -113,15 +115,17 @@ export default function WeatherView() {
 
           {dateHeader}
 
-          {isToday ? (
+          {selectedDay ? (
             <>
-              <div className="wx-temp">{Math.round(current.tempC)}°</div>
+              <div className="wx-temp">{Math.round(headlineTempC ?? 0)}°</div>
               <div className="wx-cond">{condition}</div>
 
               <div className="wx-highlow">
-                <span>↑{Math.round(tempMaxC)}° / ↓{Math.round(tempMinC)}°</span>
+                <span>↑{Math.round(isToday ? tempMaxC : selectedDay.tempMaxC)}° / ↓{Math.round(isToday ? tempMinC : selectedDay.tempMinC)}°</span>
               </div>
-              <div className="wx-feels">{km ? `មានអារម្មណ៍ថា ${Math.round(current.feelsLikeC)}°` : `Feels like ${Math.round(current.feelsLikeC)}°`}</div>
+              {isToday && (
+                <div className="wx-feels">{km ? `មានអារម្មណ៍ថា ${Math.round(current.feelsLikeC)}°` : `Feels like ${Math.round(current.feelsLikeC)}°`}</div>
+              )}
 
               <p className="wx-summary">{summary}</p>
 
@@ -149,26 +153,12 @@ export default function WeatherView() {
                 </svg>
               </div>
 
-              <div className="wx-tip-card">
-                <div className="wx-tip-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>
-                </div>
-                <div className="wx-tip-text">
-                  <span className="wx-tip-eyebrow">{km ? 'រីករាយថ្ងៃនេះ…' : 'Enjoy the day…'}</span>
-                  <p>
-                    {km
-                      ? `សីតុណ្ហភាពថ្ងៃស្អែកនឹង${trendWord}ជាងថ្ងៃនេះ`
-                      : `Tomorrow's temperature will be ${trendWord} than today`}
-                  </p>
-                </div>
-                {diff !== 0 && <span className="wx-tip-diff">{trendArrow}{Math.abs(diff)}°</span>}
-              </div>
-
-              <div className="wx-dots" aria-hidden="true"><span className="active" /><span /></div>
             </>
           ) : (
             <p className="wx-placeholder">
-              {km ? 'ព្យាករណ៍សម្រាប់ថ្ងៃនេះមិនទាន់មានទេ' : "Forecast for this day isn't available yet"}
+              {isPast
+                ? (km ? 'មិនអាចមើលអាកាសធាតុថ្ងៃមុនបានទេ' : "Past weather isn't available")
+                : (km ? 'ព្យាករណ៍លើសពី ៧ថ្ងៃមិនទាន់មានទេ' : "Forecast beyond 7 days isn't available yet")}
             </p>
           )}
         </div>
