@@ -18,6 +18,7 @@ const NAV_MAP: Record<ViewName, NavId | undefined> = {
   tripDetails: undefined,
   documents: 'navProfile',
   tripTemplates: 'navHome',
+  weather: undefined,
 };
 
 export default function BottomNav() {

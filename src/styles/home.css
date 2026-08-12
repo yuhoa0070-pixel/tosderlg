@@ -65,9 +65,11 @@ body[data-theme="light"] .theme-mode-button,body[data-theme="light"] .app-header
 .trip-dash-hello{margin:0 0 4px;color:var(--text-secondary);font-size:14px;font-weight:600;}
 .trip-dash-headline{margin:0;font-family:var(--font-display);font-size:26px;font-weight:800;line-height:1.2;color:var(--heading);letter-spacing:-0.01em;}
 .trip-dash-weather{
-  flex:0 0 auto;display:flex;align-items:center;gap:5px;height:32px;padding:0 12px;border-radius:999px;
-  background:rgba(46,204,113,.16);color:var(--heading);font-size:14px;font-weight:800;white-space:nowrap;
+  flex:0 0 auto;display:flex;align-items:center;gap:5px;height:32px;padding:0 12px;border-radius:999px;border:0;
+  background:rgba(46,204,113,.16);color:var(--heading);font-family:inherit;font-size:14px;font-weight:800;white-space:nowrap;cursor:pointer;
+  transition:transform .15s ease;
 }
+.trip-dash-weather:active{transform:scale(.96);}
 .trip-dash-weather svg{width:17px;height:17px;flex:0 0 auto;color:var(--accent);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 
 .trip-dash-card{

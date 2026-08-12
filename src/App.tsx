@@ -15,6 +15,7 @@ import BudgetTrackerView from './views/BudgetTrackerView';
 import TripDetailsView from './views/TripDetailsView';
 import DocumentsView from './views/DocumentsView';
 import TripTemplatesView from './views/TripTemplatesView';
+import WeatherView from './views/WeatherView';
 import StopFormModal from './components/modals/StopFormModal';
 import PasteLinkModal from './components/modals/PasteLinkModal';
 import MemoryCollectionModal from './components/modals/MemoryCollectionModal';
@@ -68,6 +69,8 @@ function renderView(view: ViewName) {
       return <DocumentsView />;
     case 'tripTemplates':
       return <TripTemplatesView />;
+    case 'weather':
+      return <WeatherView />;
     default:
       return <HomeView />;
   }

@@ -57,6 +57,7 @@ const VIEW_NAMES = new Set<ViewName>([
   'tripDetails',
   'documents',
   'tripTemplates',
+  'weather',
 ]);
 
 const TRIP_VIEWS = new Set<ViewName>([
@@ -68,6 +69,7 @@ const TRIP_VIEWS = new Set<ViewName>([
   'memory',
   'recap',
   'tripDetails',
+  'weather',
 ]);
 
 function isViewName(value: unknown): value is ViewName {

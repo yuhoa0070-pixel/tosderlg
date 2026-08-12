@@ -15,7 +15,8 @@ export type ViewName =
   | 'budgetTracker'
   | 'tripDetails'
   | 'documents'
-  | 'tripTemplates';
+  | 'tripTemplates'
+  | 'weather';
 
 export type ModalName =
   | 'stopForm'
