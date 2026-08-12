@@ -3,7 +3,6 @@ import { useAppContext } from '../context/AppContext';
 import { useActiveTrip } from '../hooks/useActiveTrip';
 import { useSortable } from '../hooks/useSortable';
 import StopCard from '../components/shared/StopCard';
-import TripSuccessCelebration from '../components/shared/TripSuccessCelebration';
 
 function canPersistToStorage(): boolean {
   try {
@@ -23,7 +22,6 @@ export default function CustomizeView() {
   const km = state.language === 'km';
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
-  const [celebrationOpen, setCelebrationOpen] = useState(false);
 
   const listRef = useSortable((oldIndex, newIndex) => {
     dispatch({ type: 'REORDER_STOPS', dayIndex: state.currentDay, oldIndex, newIndex });
@@ -38,7 +36,7 @@ export default function CustomizeView() {
     window.setTimeout(() => {
       setSaving(false);
       if (canPersistToStorage()) {
-        setCelebrationOpen(true);
+        dispatch({ type: 'NAVIGATE', view: 'itinerary' });
       } else {
         setSaveError(km ? 'មិនអាចរក្សាទុកបានទេ។ សូមព្យាយាមម្ដងទៀត។' : 'Could not save your trip. Please try again.');
       }
@@ -80,19 +78,6 @@ export default function CustomizeView() {
         {saving ? (km ? 'កំពុងរក្សាទុក…' : 'Saving…') : 'Looks good, save trip'}
       </button>
       {saveError && <p className="status err">{saveError}</p>}
-
-      <TripSuccessCelebration
-        open={celebrationOpen}
-        language={state.language}
-        onViewItinerary={() => {
-          setCelebrationOpen(false);
-          dispatch({ type: 'NAVIGATE', view: 'itinerary' });
-        }}
-        onClose={() => {
-          setCelebrationOpen(false);
-          dispatch({ type: 'NAVIGATE', view: 'home' });
-        }}
-      />
     </section>
   );
 }

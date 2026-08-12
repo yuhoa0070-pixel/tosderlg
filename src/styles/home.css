@@ -143,6 +143,7 @@ body[data-theme="dark"] .trip-dash-meter-track>div{background:var(--accent);}
   border-radius:16px;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;
   display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;
   padding:14px;gap:6px;background-color:var(--card-hover);
+  transform-origin:center;will-change:transform,opacity;
 }
 .hero-gallery-card span{color:#fff;font-size:16px;font-weight:700;line-height:1.2;text-shadow:0 1px 5px rgba(0,0,0,.35);}
 #memoriesGallery{
