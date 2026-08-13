@@ -8,14 +8,14 @@ const RESUME_AFTER_INTERACTION_MS = 5000;
 // the native version's timing is inconsistent across browsers/engines, whereas
 // setting scrollLeft directly each frame is the same code path a real drag
 // already takes, so it reaches the target reliably.
-function animateScrollLeft(container: HTMLElement, target: number, duration = 320) {
+function animateScrollLeft(container: HTMLElement, target: number, duration = 700) {
   const start = container.scrollLeft;
   const change = target - start;
   if (Math.abs(change) < 1) return;
   const startTime = performance.now();
   const step = (now: number) => {
     const t = Math.min((now - startTime) / duration, 1);
-    const eased = 1 - (1 - t) ** 3;
+    const eased = 1 - (1 - t) ** 2;
     container.scrollLeft = start + change * eased;
     if (t < 1) requestAnimationFrame(step);
   };
