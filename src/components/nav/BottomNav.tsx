@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import type { ViewName } from '../../types';
 
@@ -29,64 +28,13 @@ export default function BottomNav() {
   const active = NAV_MAP[state.currentView] ?? 'navHome';
   const km = state.language === 'km';
 
-  const navRef = useRef<HTMLElement>(null);
-  const pillRef = useRef<HTMLSpanElement>(null);
-  const itemRefs = useRef<Map<NavId, HTMLButtonElement>>(new Map());
-
-  // A single pill element tracks the active tab's box via transform + width,
-  // measured from the real DOM each time. Previously every .nav-item grew
-  // its own background/width independently, so on tab change the old tab's
-  // background was still fading out while the new one grew in — a visible
-  // overlap that read as the pill "duplicating" — and each item's own
-  // box-shadow (not clipped by that item's own overflow:hidden, since an
-  // element's box-shadow is never clipped by its own overflow) could bleed
-  // past its edge mid-transition. One shared, CSS-transitioned element
-  // sidesteps both: there's only ever one shape, so retargeting its
-  // transform/width on rapid taps just smoothly redirects the same
-  // transition instead of stacking animations.
-  useEffect(() => {
-    const nav = navRef.current;
-    const pill = pillRef.current;
-    const node = itemRefs.current.get(active);
-    if (!nav || !pill || !node) return;
-
-    let attempts = 0;
-    let cancelled = false;
-    const position = () => {
-      if (cancelled) return;
-      if (nav.clientWidth < 20 && attempts < 15) {
-        attempts += 1;
-        requestAnimationFrame(position);
-        return;
-      }
-      pill.style.transform = `translateX(${node.offsetLeft}px)`;
-      pill.style.width = `${node.offsetWidth}px`;
-      pill.style.height = `${node.offsetHeight}px`;
-    };
-    requestAnimationFrame(position);
-
-    const observer = new ResizeObserver(() => position());
-    observer.observe(nav);
-    return () => {
-      cancelled = true;
-      observer.disconnect();
-    };
-  }, [active]);
-
   const goItinerary = () => dispatch({ type: 'NAVIGATE', view: hasTrip ? 'itinerary' : 'home' });
   const goMap = () => dispatch({ type: 'NAVIGATE', view: hasTrip ? 'map' : 'home' });
 
-  const setItemRef = (id: NavId) => (node: HTMLButtonElement | null) => {
-    if (node) itemRefs.current.set(id, node);
-    else itemRefs.current.delete(id);
-  };
-
   return (
-    <nav className="bottom-nav" ref={navRef}>
-      <span className="nav-active-pill" ref={pillRef} aria-hidden="true" />
+    <nav className="bottom-nav">
       <button
         type="button"
-        ref={setItemRef('navHome')}
         className={`nav-item${active === 'navHome' ? ' active' : ''}`}
         aria-label={km ? 'ទំព័រដើម' : 'Home'}
         aria-current={active === 'navHome' ? 'page' : undefined}
@@ -101,7 +49,6 @@ export default function BottomNav() {
       </button>
       <button
         type="button"
-        ref={setItemRef('navItinerary')}
         className={`nav-item${active === 'navItinerary' ? ' active' : ''}`}
         aria-label={km ? 'កាលវិភាគ' : 'Itinerary'}
         aria-current={active === 'navItinerary' ? 'page' : undefined}
@@ -116,7 +63,6 @@ export default function BottomNav() {
       </button>
       <button
         type="button"
-        ref={setItemRef('navMap')}
         className={`nav-item${active === 'navMap' ? ' active' : ''}`}
         aria-label={km ? 'ផែនទី' : 'Map'}
         aria-current={active === 'navMap' ? 'page' : undefined}
@@ -131,7 +77,6 @@ export default function BottomNav() {
       </button>
       <button
         type="button"
-        ref={setItemRef('navProfile')}
         className={`nav-item${active === 'navProfile' ? ' active' : ''}`}
         aria-label={km ? 'គណនី' : 'Profile'}
         aria-current={active === 'navProfile' ? 'page' : undefined}
