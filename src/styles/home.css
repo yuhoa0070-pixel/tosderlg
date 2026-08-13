@@ -134,7 +134,7 @@ body[data-theme="dark"] .trip-dash-meter-track>div{background:var(--accent);}
 .hero-sub{font-size:16px;color:var(--text-secondary);line-height:1.5;margin:0 0 20px;max-width:320px;}
 .hero-gallery-wrap{position:relative;}
 .hero-gallery{
-  display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
+  display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;
   -webkit-overflow-scrolling:touch;padding:2px 0 4px;
   scrollbar-width:none;
 }

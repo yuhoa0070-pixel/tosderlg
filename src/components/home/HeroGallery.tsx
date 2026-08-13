@@ -1,17 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { heroGalleryData } from '../../lib/constants';
 
-const AUTO_SCROLL_INTERVAL_MS = 5000;
+const AUTO_SCROLL_INTERVAL_MS = 4000;
 const RESUME_AFTER_INTERACTION_MS = 5000;
+const COUNT = heroGalleryData.length;
 
 // A self-driven scrollLeft tween instead of native scrollTo({behavior:'smooth'}) —
 // the native version's timing is inconsistent across browsers/engines, whereas
 // setting scrollLeft directly each frame is the same code path a real drag
 // already takes, so it reaches the target reliably.
-function animateScrollLeft(container: HTMLElement, target: number, duration = 1800) {
+function animateScrollLeft(container: HTMLElement, target: number, onDone?: () => void, duration = 1800) {
   const start = container.scrollLeft;
   const change = target - start;
-  if (Math.abs(change) < 1) return;
+  if (Math.abs(change) < 1) {
+    onDone?.();
+    return;
+  }
   const startTime = performance.now();
   const step = (now: number) => {
     const t = Math.min((now - startTime) / duration, 1);
@@ -20,6 +24,7 @@ function animateScrollLeft(container: HTMLElement, target: number, duration = 18
     const eased = (1 - Math.cos(Math.PI * t)) / 2;
     container.scrollLeft = start + change * eased;
     if (t < 1) requestAnimationFrame(step);
+    else onDone?.();
   };
   requestAnimationFrame(step);
 }
@@ -31,6 +36,7 @@ export default function HeroGallery() {
   const autoScrollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const goToIndexRef = useRef<(index: number) => void>(() => {});
+  const goToNextRef = useRef<() => void>(() => {});
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
@@ -55,7 +61,7 @@ export default function HeroGallery() {
           closestIndex = i;
         }
       });
-      setActiveIndex(closestIndex);
+      setActiveIndex(closestIndex % COUNT);
     };
 
     const handleScroll = () => {
@@ -70,16 +76,27 @@ export default function HeroGallery() {
       }
     };
 
+    // Advance forward by exactly one card-width every time, including the
+    // step from the last real card onto the trailing clone of the first
+    // card — then, once that identical-looking clone has fully slid into
+    // place, snap back to the real first card with no animation at all.
+    // Because the clone is pixel-for-pixel the same as the real card, that
+    // snap is invisible, so looping back to the start never has to cover
+    // the whole track's width in one fast, jarring slide (the "blink").
+    const goToNext = () => {
+      const cardWidth = track.clientWidth;
+      if (!cardWidth) return;
+      const currentIndex = Math.round(track.scrollLeft / cardWidth);
+      const nextIndex = currentIndex + 1;
+      animateScrollLeft(track, nextIndex * cardWidth, () => {
+        if (nextIndex >= COUNT) track.scrollLeft = 0;
+      });
+    };
+    goToNextRef.current = goToNext;
+
     const startAutoScroll = () => {
       stopAutoScroll();
-      autoScrollTimer.current = setInterval(() => {
-        const cardWidth = track.clientWidth;
-        if (!cardWidth) return;
-        const count = cardRefs.current.length;
-        const currentIndex = Math.round(track.scrollLeft / cardWidth);
-        const nextIndex = (currentIndex + 1) % count;
-        animateScrollLeft(track, nextIndex * cardWidth);
-      }, AUTO_SCROLL_INTERVAL_MS);
+      autoScrollTimer.current = setInterval(goToNext, AUTO_SCROLL_INTERVAL_MS);
     };
 
     // Pause on any user-driven interaction, resume a while after it ends —
@@ -112,7 +129,10 @@ export default function HeroGallery() {
     };
   }, []);
 
-  const count = heroGalleryData.length;
+  const handleNextClick = () => {
+    goToIndexRef.current(activeIndex); // pauses autoplay + schedules resume
+    goToNextRef.current();
+  };
 
   return (
     <div className="hero-gallery-wrap">
@@ -142,22 +162,41 @@ export default function HeroGallery() {
             <span>{card.label}</span>
           </div>
         ))}
+        {/* Trailing clone of the first card — see goToNext for why this exists. */}
+        <div
+          aria-hidden="true"
+          className="hero-gallery-card"
+          ref={(node) => {
+            if (node) cardRefs.current[COUNT] = node;
+          }}
+          style={{
+            background: `linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.05) 55%), url('${heroGalleryData[0].image ?? `https://picsum.photos/seed/${heroGalleryData[0].seed}/260/300`}') center/cover`,
+          }}
+        >
+          <svg
+            width="30"
+            height="30"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#fff"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            dangerouslySetInnerHTML={{ __html: heroGalleryData[0].icon }}
+          />
+          <span>{heroGalleryData[0].label}</span>
+        </div>
       </div>
 
       <button
         type="button"
         className="hero-gallery-arrow prev"
         aria-label="Previous slide"
-        onClick={() => goToIndexRef.current((activeIndex - 1 + count) % count)}
+        onClick={() => goToIndexRef.current((activeIndex - 1 + COUNT) % COUNT)}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg>
       </button>
-      <button
-        type="button"
-        className="hero-gallery-arrow next"
-        aria-label="Next slide"
-        onClick={() => goToIndexRef.current((activeIndex + 1) % count)}
-      >
+      <button type="button" className="hero-gallery-arrow next" aria-label="Next slide" onClick={handleNextClick}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
       </button>
 
