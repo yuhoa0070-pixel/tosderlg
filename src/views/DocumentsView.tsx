@@ -1,6 +1,14 @@
+import { useRef, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { deleteTripDocument, tripDocumentDownloadUrl } from '../lib/tripDocuments';
-import type { Trip } from '../types';
+import { useActiveTrip } from '../hooks/useActiveTrip';
+import {
+  ACCEPTED_DOCUMENT_TYPES,
+  MAX_DOCUMENT_BYTES,
+  deleteTripDocument,
+  tripDocumentDownloadUrl,
+  uploadTripDocument,
+} from '../lib/tripDocuments';
+import type { Trip, TripDocument } from '../types';
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -9,7 +17,11 @@ function formatFileSize(bytes: number): string {
 
 export default function DocumentsView() {
   const { state, dispatch } = useAppContext();
+  const activeTrip = useActiveTrip();
   const km = state.language === 'km';
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   const tripsWithDocuments = state.trips
     .filter((trip) => (trip.documents ?? []).length > 0)
@@ -25,6 +37,33 @@ export default function DocumentsView() {
     dispatch({ type: 'REMOVE_DOCUMENT', tripId: trip.id, key });
   }
 
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file || !activeTrip) return;
+
+    setUploadError('');
+    if (!ACCEPTED_DOCUMENT_TYPES.includes(file.type)) {
+      setUploadError(km ? 'គាំទ្រតែ PDF, PNG, JPEG, WEBP, ឬ HEIC ប៉ុណ្ណោះ' : 'Only PDF, PNG, JPEG, WEBP, or HEIC files are supported.');
+      return;
+    }
+    if (file.size > MAX_DOCUMENT_BYTES) {
+      setUploadError(km ? 'ឯកសារត្រូវតែតូចជាង 10MB' : 'Files must be under 10 MB.');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const uploaded = await uploadTripDocument(file);
+      const document: TripDocument = { ...uploaded, uploadedAt: Date.now() };
+      dispatch({ type: 'ADD_DOCUMENT', tripId: activeTrip.id, document });
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : (km ? 'មិនអាចផ្ទុកឡើងបានទេ' : 'Could not upload this file.'));
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <section id="view-documents" className="active">
       <div className="page-header">
@@ -37,7 +76,7 @@ export default function DocumentsView() {
 
       {tripsWithDocuments.length === 0 ? (
         <p className="trip-details-documents-empty">
-          {km ? 'មិនទាន់មានឯកសារនៅឡើយទេ។' : 'No documents yet. Add one from a trip’s details screen.'}
+          {km ? 'មិនទាន់មានឯកសារនៅឡើយទេ។' : 'No documents yet. Add one below.'}
         </p>
       ) : (
         tripsWithDocuments.map((trip) => (
@@ -79,6 +118,29 @@ export default function DocumentsView() {
           </div>
         ))
       )}
+
+      {activeTrip && !activeTrip.readOnly && (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPTED_DOCUMENT_TYPES.join(',')}
+            style={{ display: 'none' }}
+            onChange={(event) => void handleFileChange(event)}
+          />
+          <button
+            type="button"
+            className="itin-add-activity"
+            disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            + {uploading
+              ? (km ? 'កំពុងផ្ទុកឡើង…' : 'Uploading…')
+              : (km ? `បន្ថែមឯកសារទៅ ${activeTrip.destination.split(',')[0].trim()}` : `Add a document to ${activeTrip.destination.split(',')[0].trim()}`)}
+          </button>
+        </>
+      )}
+      {uploadError && <p className="status err" role="alert">{uploadError}</p>}
     </section>
   );
 }

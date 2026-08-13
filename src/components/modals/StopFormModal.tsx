@@ -108,6 +108,7 @@ export default function StopFormModal() {
 
   function close() {
     dispatch({ type: 'SET_PENDING_TAP_COORDS', coords: null });
+    dispatch({ type: 'SET_PENDING_STOP_INSERT_FIRST', value: false });
     dispatch({ type: 'CLOSE_MODAL' });
   }
 
@@ -172,9 +173,11 @@ export default function StopFormModal() {
     } else {
       const tapCoords = state.pendingTapCoords;
       const coords = tapCoords || parsedCoords || jitteredCoords();
+      const insertFirst = state.pendingStopInsertFirst;
       dispatch({
         type: 'ADD_STOP',
         dayIndex: state.currentDay,
+        insertFirst,
         stop: {
           time: finalTime,
           title: finalTitle,
@@ -186,8 +189,10 @@ export default function StopFormModal() {
         },
       });
       if (tapCoords) {
-        // Newly added stop lands at the end — select it so the map view highlights it.
-        dispatch({ type: 'SET_SELECTED_STOP', index: stops.length });
+        // A normal tap-added stop lands at the end; "start trip here" instead
+        // inserts it at the front — select wherever it actually landed so the
+        // map view highlights the right marker.
+        dispatch({ type: 'SET_SELECTED_STOP', index: insertFirst ? 0 : stops.length });
       }
     }
     close();
@@ -195,7 +200,7 @@ export default function StopFormModal() {
 
   return (
     <BottomSheetModal isOpen={isOpen} onClose={close} overlayId="stopFormOverlay">
-      <h2>{isEdit ? 'Edit stop' : 'Add a stop'}</h2>
+      <h2>{isEdit ? 'Edit stop' : state.pendingStopInsertFirst ? 'Start your trip here' : 'Add a stop'}</h2>
       <label className="field-label">Time</label>
       <input
         type="text"

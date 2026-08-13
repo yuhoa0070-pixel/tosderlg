@@ -19,6 +19,7 @@ export const initialState: AppState = {
   activeMomentGroup: null,
   viewingPhoto: null,
   pendingTapCoords: null,
+  pendingStopInsertFirst: false,
   pendingFlyToCoords: null,
   newTripDestination: '',
 };
@@ -81,6 +82,9 @@ export function appReducer(state: AppState, action: Action): AppState {
 
     case 'SET_PENDING_TAP_COORDS':
       return { ...state, pendingTapCoords: action.coords };
+
+    case 'SET_PENDING_STOP_INSERT_FIRST':
+      return { ...state, pendingStopInsertFirst: action.value };
 
     case 'SET_PENDING_FLY_TO_COORDS':
       return { ...state, pendingFlyToCoords: action.coords };
@@ -277,7 +281,9 @@ export function appReducer(state: AppState, action: Action): AppState {
         ...state,
         trips: mapTrip(state, state.currentTripId, (trip) => {
           const tripDays = trip.tripDays.map((day, i) =>
-            i === action.dayIndex ? { stops: [...day.stops, action.stop] } : day,
+            i === action.dayIndex
+              ? { stops: action.insertFirst ? [action.stop, ...day.stops] : [...day.stops, action.stop] }
+              : day,
           );
           return { ...trip, tripDays };
         }),

@@ -107,9 +107,24 @@ export default function MapView() {
       setPlaceGalleryOpen(true);
       dispatch({ type: 'SET_SELECTED_STOP', index });
     },
-    onMapClick: () => {
+    onMapClick: (lat, lng) => {
       setPlaceGalleryOpen(false);
       if (searchOpen) closeSearch();
+      // A tap on empty map (not a marker — those have their own click
+      // handler and don't bubble here) drops a pin at that spot, reusing
+      // the same "search result" card + Add to plan flow already used for
+      // search results, so the user can name and save it as a stop.
+      showSearchResultOnMap(
+        {
+          id: `tap-${lat.toFixed(5)}-${lng.toFixed(5)}`,
+          name: km ? 'ទីតាំងដែលបានចុច' : 'Dropped pin',
+          address: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+          category: km ? 'ចំណុចថ្មី' : 'new point',
+          lat,
+          lng,
+        },
+        false,
+      );
     },
   });
 
@@ -185,6 +200,19 @@ export default function MapView() {
     if (!searchedPlace) return;
     clearSearchLocation();
     dispatch({ type: 'SET_PENDING_TAP_COORDS', coords: { lat: searchedPlace.lat, lng: searchedPlace.lng } });
+    dispatch({ type: 'SET_PENDING_STOP_INSERT_FIRST', value: false });
+    dispatch({ type: 'OPEN_MODAL', modal: 'stopForm', editingStopIndex: null });
+    setSearchedPlace(null);
+  }
+
+  // Offered only on a freshly dropped pin (not a search result) — sets it as
+  // Day 1's first stop instead of appending wherever the itinerary is now.
+  function startTripHere() {
+    if (!searchedPlace) return;
+    clearSearchLocation();
+    dispatch({ type: 'SET_CURRENT_DAY', day: 0 });
+    dispatch({ type: 'SET_PENDING_TAP_COORDS', coords: { lat: searchedPlace.lat, lng: searchedPlace.lng } });
+    dispatch({ type: 'SET_PENDING_STOP_INSERT_FIRST', value: true });
     dispatch({ type: 'OPEN_MODAL', modal: 'stopForm', editingStopIndex: null });
     setSearchedPlace(null);
   }
@@ -403,13 +431,28 @@ export default function MapView() {
           <article className="map-selected-stop-card map-searched-place-card">
             <span className="map-selected-stop-art" aria-hidden="true"><span>🧭</span></span>
             <span className="map-selected-stop-copy">
-              <small>{km ? 'លទ្ធផលស្វែងរក' : 'Search result'}</small>
+              <small>
+                {searchedPlace.id.startsWith('tap-')
+                  ? (km ? 'ចំណុចដែលបានចុច' : 'Dropped pin')
+                  : (km ? 'លទ្ធផលស្វែងរក' : 'Search result')}
+              </small>
               <strong>{searchedPlace.name}</strong>
               <span>{searchedPlace.address}</span>
-              <button type="button" onClick={addSearchedPlace}>
-                {km ? 'បន្ថែមទៅផែនការ' : 'Add to plan'}
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-              </button>
+              {searchedPlace.id.startsWith('tap-') ? (
+                <span className="map-pin-actions">
+                  <button type="button" className="primary" onClick={startTripHere}>
+                    {km ? 'ចាប់ផ្ដើមដំណើរទីនេះ' : 'Start trip here'}
+                  </button>
+                  <button type="button" onClick={addSearchedPlace}>
+                    {km ? 'បន្ថែមទៅផែនការ' : 'Add to plan'}
+                  </button>
+                </span>
+              ) : (
+                <button type="button" onClick={addSearchedPlace}>
+                  {km ? 'បន្ថែមទៅផែនការ' : 'Add to plan'}
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                </button>
+              )}
             </span>
           </article>
         ) : selectedStop && placeGalleryOpen ? (

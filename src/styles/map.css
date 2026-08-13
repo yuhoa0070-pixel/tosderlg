@@ -300,6 +300,15 @@ body[data-theme="dark"] .map-search-result-copy mark{background:#1F513B;color:#8
 .map-selected-stop-copy>button svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .map-selected-stop-copy>button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 
+.map-pin-actions{width:100%;margin-top:auto;display:flex;gap:6px;}
+.map-pin-actions button{
+  flex:1 1 0;min-width:0;height:27px;padding:0 8px;display:flex;align-items:center;justify-content:center;
+  border:0;border-radius:999px;background:#FFF0E7;color:#C2784E;
+  font-family:inherit;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.map-pin-actions button.primary{background:var(--accent,#2ECC71);color:#071A0F;}
+.map-pin-actions button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
 .map-place-gallery-card{
   position:absolute;left:12px;right:12px;bottom:calc(var(--bottom-nav-height,84px) - 24px);z-index:820;
   padding:14px;border:1px solid rgba(255,255,255,.88);border-radius:24px;

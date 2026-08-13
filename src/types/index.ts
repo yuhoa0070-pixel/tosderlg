@@ -166,6 +166,8 @@ export interface AppState {
   viewingPhoto: ViewingPhoto | null;
   /** Coordinates from a tap-to-add-stop on the map, consumed by StopFormModal. */
   pendingTapCoords: GeoCenter | null;
+  /** Set when the pending stop should become the trip's first stop (e.g. "Start trip here" from a dropped map pin). */
+  pendingStopInsertFirst: boolean;
   /** Coordinates a newly pasted-link stop should fly to, consumed by MapView. */
   pendingFlyToCoords: GeoCenter | null;
   /** Destination to prefill the next TripForm with — set by "Plan again" on a past trip. */

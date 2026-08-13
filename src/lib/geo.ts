@@ -26,7 +26,7 @@ export function jitteredCoords(center: GeoCenter | null | undefined): GeoCenter 
 
 export async function fetchWalkingRoute(a: GeoCenter, b: GeoCenter): Promise<LatLngTuple[]> {
   try {
-    const url = `https://router.project-osrm.org/route/v1/foot/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometry=geojson`;
+    const url = `https://router.project-osrm.org/route/v1/foot/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`;
     const res = await fetch(url);
     const data = await res.json();
     const coords: [number, number][] | undefined = data?.routes?.[0]?.geometry?.coordinates;

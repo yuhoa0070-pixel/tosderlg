@@ -312,7 +312,6 @@ export function useLeafletMap(
           color: '#2ECC71',
           weight: 5.5,
           opacity: 0.82,
-          dashArray: '1 13',
           lineCap: 'round',
           lineJoin: 'round',
         }).addTo(map)];

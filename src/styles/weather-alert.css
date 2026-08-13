@@ -28,12 +28,12 @@
 .wx-placeholder{margin:60px 0 0;font-size:14px;font-weight:700;color:var(--text-muted);text-align:center;}
 
 .wx-temp{margin-top:18px;font-size:76px;font-weight:300;line-height:1;letter-spacing:-.02em;color:var(--heading);text-align:center;}
-.wx-cond{margin-top:2px;font-size:18px;font-weight:700;color:var(--heading);}
+.wx-cond{margin-top:2px;font-size:18px;font-weight:700;color:var(--heading);text-align:center;}
 
-.wx-highlow{margin-top:16px;font-size:14px;font-weight:700;color:var(--text);}
-.wx-feels{margin-top:4px;font-size:14px;font-weight:600;color:var(--text-muted);}
+.wx-highlow{margin-top:16px;font-size:14px;font-weight:700;color:var(--text);text-align:center;}
+.wx-feels{margin-top:4px;font-size:14px;font-weight:600;color:var(--text-muted);text-align:center;}
 
-.wx-summary{margin:22px 0 0;font-size:14px;font-weight:700;color:var(--text);}
+.wx-summary{margin:22px 0 0;font-size:14px;font-weight:700;color:var(--text);text-align:center;}
 
 .wx-hourly{position:relative;display:flex;gap:18px;overflow-x:auto;margin-top:20px;padding:16px 4px 8px;scrollbar-width:none;}
 .wx-hourly::-webkit-scrollbar{display:none;}
