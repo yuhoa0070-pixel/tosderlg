@@ -36,6 +36,24 @@
 }
 .bottom-nav>*{position:relative;z-index:1;}
 
+/* Single shared indicator behind the active tab — see BottomNav.tsx for why
+   this replaced each .nav-item animating its own background/width. */
+.nav-active-pill{
+  position:absolute;
+  top:6px;
+  left:0;
+  z-index:0;
+  border-radius:999px;
+  background:linear-gradient(150deg,rgba(80,224,148,.97),rgba(46,204,113,.94));
+  border:1px solid rgba(255,255,255,.4);
+  box-shadow:0 6px 16px rgba(46,204,113,.32),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -6px 10px rgba(7,26,15,.1);
+  backdrop-filter:blur(10px) saturate(1.4);
+  -webkit-backdrop-filter:blur(10px) saturate(1.4);
+  pointer-events:none;
+  will-change:transform,width;
+  transition:transform .26s cubic-bezier(.22,1,.36,1),width .26s cubic-bezier(.22,1,.36,1);
+}
+
 body[data-theme="light"] .bottom-nav{
   border-color:rgba(255,255,255,.7);
   background:rgba(255,255,255,.9);
@@ -132,21 +150,9 @@ body[data-theme="light"] .nav-item::before{
   min-width:128px;
   padding:0 10px;
   gap:6px;
-  background:linear-gradient(150deg,rgba(80,224,148,.97),rgba(46,204,113,.94));
   color:#071A0F;
-  border:1px solid rgba(255,255,255,.4);
-  box-shadow:0 6px 16px rgba(46,204,113,.32),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -6px 10px rgba(7,26,15,.1);
-  backdrop-filter:blur(10px) saturate(1.4);
-  -webkit-backdrop-filter:blur(10px) saturate(1.4);
 }
 .nav-item.active::before{opacity:0;transform:translate(-50%,-50%) scale(.75);}
-body[data-theme="light"] .nav-item.active,
-body[data-theme="dark"] .nav-item.active{
-  background:linear-gradient(150deg,rgba(80,224,148,.97),rgba(46,204,113,.94));
-  color:#071A0F;
-  border:1px solid rgba(255,255,255,.4);
-  box-shadow:0 7px 18px rgba(46,204,113,.34),inset 0 1px 0 rgba(255,255,255,.5),inset 0 -6px 10px rgba(7,26,15,.1);
-}
 .nav-item.active span{max-width:90px;opacity:1;overflow:hidden;text-overflow:clip;transform:translateX(0);transition-delay:.06s;}
 .nav-item.active .nav-icon{transform:scale(1.02);animation:navIconSettle .36s cubic-bezier(.22,1,.36,1);}
 .nav-item.pop .nav-icon{animation:navPop .4s cubic-bezier(.34,1.56,.64,1);}
@@ -172,5 +178,5 @@ body[data-theme="dark"] .nav-item.active{
 }
 
 @media(prefers-reduced-motion:reduce){
-  .nav-item,.nav-item::before,.nav-item .nav-icon,.nav-item span{transition:none;animation:none;}
+  .nav-item,.nav-item::before,.nav-item .nav-icon,.nav-item span,.nav-active-pill{transition:none;animation:none;}
 }

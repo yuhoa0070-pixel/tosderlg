@@ -49,6 +49,8 @@
   border:1px solid var(--border);border-radius:14px;background:var(--card);
 }
 .trip-details-document-row>svg{flex:0 0 auto;width:18px;height:18px;color:var(--text-muted);fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.trip-details-document-link{flex:1;min-width:0;display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none;}
+.trip-details-document-link>svg{flex:0 0 auto;width:18px;height:18px;color:var(--text-muted);fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
 .trip-details-document-name{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .trip-details-document-name small{font-size:11px;font-weight:600;color:var(--text-muted);}
 .trip-details-document-action{

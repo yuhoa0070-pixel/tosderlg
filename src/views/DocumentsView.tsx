@@ -46,22 +46,22 @@ export default function DocumentsView() {
             <div className="trip-details-documents">
               {(trip.documents ?? []).map((document) => (
                 <div className="trip-details-document-row" key={document.key}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M6.5 3h7l4.5 4.5V20a1 1 0 0 1-1 1h-10.5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
-                    <path d="M13.5 3v4.5H18" />
-                    <path d="M8.5 12.5h7M8.5 15.5h4.5" />
-                  </svg>
-                  <span className="trip-details-document-name">
-                    {document.name}
-                    <small>{formatFileSize(document.size)}</small>
-                  </span>
                   <a
-                    className="trip-details-document-action"
+                    className="trip-details-document-link"
                     href={tripDocumentDownloadUrl(document.key)}
-                    download={document.name}
-                    aria-label={km ? `ទាញយក ${document.name}` : `Download ${document.name}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={km ? `មើល ${document.name}` : `View ${document.name}`}
                   >
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 11l4 4 4-4M5 19h14" /></svg>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M6.5 3h7l4.5 4.5V20a1 1 0 0 1-1 1h-10.5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
+                      <path d="M13.5 3v4.5H18" />
+                      <path d="M8.5 12.5h7M8.5 15.5h4.5" />
+                    </svg>
+                    <span className="trip-details-document-name">
+                      {document.name}
+                      <small>{formatFileSize(document.size)}</small>
+                    </span>
                   </a>
                   {!trip.readOnly && (
                     <button

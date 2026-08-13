@@ -22,8 +22,7 @@ export default function RecapView() {
   const spent = budget ? budgetExpenseTotal(budget) : 0;
   const destName = trip ? trip.destination.split(',')[0] : '';
 
-  const heroPhoto = allPhotos[0];
-  const rowPhotos = allPhotos.slice(1, 3);
+  const rowPhotos = allPhotos.slice(0, 2);
 
   async function shareTripStory() {
     if (!trip) return;
@@ -77,9 +76,6 @@ export default function RecapView() {
       </h1>
       {trip && <p className="sub recap-story-dates">{formatTripDateRange(trip, km)}</p>}
 
-      <div className="recap-story-photo recap-story-photo-hero">
-        {heroPhoto ? <img src={heroPhoto.src} alt="" /> : <PhotoPlaceholderIcon className="recap-photo-placeholder-icon" />}
-      </div>
       <div className="recap-story-photo-row">
         {[0, 1].map((i) => (
           <div className="recap-story-photo" key={i}>

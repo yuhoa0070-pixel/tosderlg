@@ -5,28 +5,12 @@ const AUTO_SCROLL_INTERVAL_MS = 4000;
 const RESUME_AFTER_INTERACTION_MS = 5000;
 const COUNT = heroGalleryData.length;
 
-// A self-driven scrollLeft tween instead of native scrollTo({behavior:'smooth'}) —
-// the native version's timing is inconsistent across browsers/engines, whereas
-// setting scrollLeft directly each frame is the same code path a real drag
-// already takes, so it reaches the target reliably.
-function animateScrollLeft(container: HTMLElement, target: number, onDone?: () => void, duration = 1800) {
-  const start = container.scrollLeft;
-  const change = target - start;
-  if (Math.abs(change) < 1) {
-    onDone?.();
-    return;
-  }
-  const startTime = performance.now();
-  const step = (now: number) => {
-    const t = Math.min((now - startTime) / duration, 1);
-    // ease-in-out sine — the gentlest common easing curve, no sharp
-    // acceleration at either end of the slide.
-    const eased = (1 - Math.cos(Math.PI * t)) / 2;
-    container.scrollLeft = start + change * eased;
-    if (t < 1) requestAnimationFrame(step);
-    else onDone?.();
-  };
-  requestAnimationFrame(step);
+// A plain, instant scrollLeft jump — no animated tween. Animated scrolling
+// (both native scrollTo({behavior:'smooth'}) and a hand-rolled rAF tween)
+// kept producing visible stutter, so the card change now just snaps.
+function jumpScrollLeft(container: HTMLElement, target: number, onDone?: () => void) {
+  container.scrollLeft = target;
+  onDone?.();
 }
 
 export default function HeroGallery() {
@@ -37,11 +21,22 @@ export default function HeroGallery() {
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const goToIndexRef = useRef<(index: number) => void>(() => {});
   const goToNextRef = useRef<() => void>(() => {});
+  const cardCenters = useRef<number[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
+
+    // Each card's center only changes on layout/resize, never during a
+    // scroll — reading offsetLeft/offsetWidth from inside the scroll-driven
+    // loop below forces a synchronous layout on every single frame, right
+    // while that same loop is also writing scrollLeft. That read/write
+    // interleaving is what causes the stutter; caching the positions once
+    // turns the hot path into pure arithmetic plus style writes.
+    const recalcCardCenters = () => {
+      cardCenters.current = cardRefs.current.map((card) => (card ? card.offsetLeft + card.offsetWidth / 2 : 0));
+    };
 
     const applyScrollEffect = () => {
       const containerCenter = track.scrollLeft + track.clientWidth / 2;
@@ -49,7 +44,7 @@ export default function HeroGallery() {
       let closestDist = Infinity;
       cardRefs.current.forEach((card, i) => {
         if (!card) return;
-        const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+        const cardCenter = cardCenters.current[i] ?? 0;
         const distance = Math.abs(cardCenter - containerCenter);
         const progress = Math.min(distance / (track.clientWidth || 1), 1);
         const scale = 1 - progress * 0.08;
@@ -67,6 +62,11 @@ export default function HeroGallery() {
     const handleScroll = () => {
       if (rafId.current) cancelAnimationFrame(rafId.current);
       rafId.current = requestAnimationFrame(applyScrollEffect);
+    };
+
+    const handleResize = () => {
+      recalcCardCenters();
+      handleScroll();
     };
 
     const stopAutoScroll = () => {
@@ -88,7 +88,7 @@ export default function HeroGallery() {
       if (!cardWidth) return;
       const currentIndex = Math.round(track.scrollLeft / cardWidth);
       const nextIndex = currentIndex + 1;
-      animateScrollLeft(track, nextIndex * cardWidth, () => {
+      jumpScrollLeft(track, nextIndex * cardWidth, () => {
         if (nextIndex >= COUNT) track.scrollLeft = 0;
       });
     };
@@ -109,20 +109,21 @@ export default function HeroGallery() {
 
     goToIndexRef.current = (index: number) => {
       pauseAndScheduleResume();
-      animateScrollLeft(track, index * track.clientWidth);
+      jumpScrollLeft(track, index * track.clientWidth);
     };
 
+    recalcCardCenters();
     applyScrollEffect();
     startAutoScroll();
     track.addEventListener('scroll', handleScroll, { passive: true });
     track.addEventListener('pointerdown', pauseAndScheduleResume);
     track.addEventListener('touchstart', pauseAndScheduleResume, { passive: true });
-    window.addEventListener('resize', handleScroll);
+    window.addEventListener('resize', handleResize);
     return () => {
       track.removeEventListener('scroll', handleScroll);
       track.removeEventListener('pointerdown', pauseAndScheduleResume);
       track.removeEventListener('touchstart', pauseAndScheduleResume);
-      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('resize', handleResize);
       if (rafId.current) cancelAnimationFrame(rafId.current);
       stopAutoScroll();
       if (resumeTimer.current) clearTimeout(resumeTimer.current);

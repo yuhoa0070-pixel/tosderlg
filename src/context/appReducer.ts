@@ -1,5 +1,5 @@
 import type { AppState, Trip } from '../types';
-import { dayCount, isPastTrip } from '../lib/tripUtils';
+import { dayCount } from '../lib/tripUtils';
 import type { Action } from './actions';
 
 export const initialState: AppState = {
@@ -140,7 +140,7 @@ export function appReducer(state: AppState, action: Action): AppState {
         ...state,
         currentTripId: trip.id,
         currentDay: 0,
-        currentView: isPastTrip(trip) ? 'recap' : 'itinerary',
+        currentView: 'itinerary',
       };
     }
 
