@@ -1,23 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import { heroGalleryData } from '../../lib/constants';
 
-const AUTO_SCROLL_INTERVAL_MS = 4000;
+const AUTO_SCROLL_INTERVAL_MS = 5000;
 const RESUME_AFTER_INTERACTION_MS = 5000;
 
 // A self-driven scrollLeft tween instead of native scrollTo({behavior:'smooth'}) —
 // the native version's timing is inconsistent across browsers/engines, whereas
 // setting scrollLeft directly each frame is the same code path a real drag
 // already takes, so it reaches the target reliably.
-function animateScrollLeft(container: HTMLElement, target: number, duration = 1100) {
+function animateScrollLeft(container: HTMLElement, target: number, duration = 1800) {
   const start = container.scrollLeft;
   const change = target - start;
   if (Math.abs(change) < 1) return;
   const startTime = performance.now();
   const step = (now: number) => {
     const t = Math.min((now - startTime) / duration, 1);
-    // ease-in-out cubic — gentle start and finish, avoids the abrupt snap
-    // of a pure ease-out curve on a slide this size.
-    const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
+    // ease-in-out sine — the gentlest common easing curve, no sharp
+    // acceleration at either end of the slide.
+    const eased = (1 - Math.cos(Math.PI * t)) / 2;
     container.scrollLeft = start + change * eased;
     if (t < 1) requestAnimationFrame(step);
   };
