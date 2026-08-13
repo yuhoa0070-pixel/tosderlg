@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { heroGalleryData } from '../../lib/constants';
 
 const AUTO_SCROLL_INTERVAL_MS = 4000;
@@ -8,14 +8,16 @@ const RESUME_AFTER_INTERACTION_MS = 5000;
 // the native version's timing is inconsistent across browsers/engines, whereas
 // setting scrollLeft directly each frame is the same code path a real drag
 // already takes, so it reaches the target reliably.
-function animateScrollLeft(container: HTMLElement, target: number, duration = 700) {
+function animateScrollLeft(container: HTMLElement, target: number, duration = 1100) {
   const start = container.scrollLeft;
   const change = target - start;
   if (Math.abs(change) < 1) return;
   const startTime = performance.now();
   const step = (now: number) => {
     const t = Math.min((now - startTime) / duration, 1);
-    const eased = 1 - (1 - t) ** 2;
+    // ease-in-out cubic — gentle start and finish, avoids the abrupt snap
+    // of a pure ease-out curve on a slide this size.
+    const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
     container.scrollLeft = start + change * eased;
     if (t < 1) requestAnimationFrame(step);
   };
@@ -28,6 +30,8 @@ export default function HeroGallery() {
   const rafId = useRef<number | null>(null);
   const autoScrollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const goToIndexRef = useRef<(index: number) => void>(() => {});
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     const track = trackRef.current;
@@ -35,7 +39,9 @@ export default function HeroGallery() {
 
     const applyScrollEffect = () => {
       const containerCenter = track.scrollLeft + track.clientWidth / 2;
-      cardRefs.current.forEach((card) => {
+      let closestIndex = 0;
+      let closestDist = Infinity;
+      cardRefs.current.forEach((card, i) => {
         if (!card) return;
         const cardCenter = card.offsetLeft + card.offsetWidth / 2;
         const distance = Math.abs(cardCenter - containerCenter);
@@ -44,7 +50,12 @@ export default function HeroGallery() {
         const opacity = 1 - progress * 0.45;
         card.style.transform = `scale(${scale})`;
         card.style.opacity = String(opacity);
+        if (distance < closestDist) {
+          closestDist = distance;
+          closestIndex = i;
+        }
       });
+      setActiveIndex(closestIndex);
     };
 
     const handleScroll = () => {
@@ -79,6 +90,11 @@ export default function HeroGallery() {
       resumeTimer.current = setTimeout(startAutoScroll, RESUME_AFTER_INTERACTION_MS);
     };
 
+    goToIndexRef.current = (index: number) => {
+      pauseAndScheduleResume();
+      animateScrollLeft(track, index * track.clientWidth);
+    };
+
     applyScrollEffect();
     startAutoScroll();
     track.addEventListener('scroll', handleScroll, { passive: true });
@@ -96,33 +112,68 @@ export default function HeroGallery() {
     };
   }, []);
 
+  const count = heroGalleryData.length;
+
   return (
-    <div className="hero-gallery" ref={trackRef}>
-      {heroGalleryData.map((card, i) => (
-        <div
-          key={card.seed}
-          className="hero-gallery-card"
-          ref={(node) => {
-            if (node) cardRefs.current[i] = node;
-          }}
-          style={{
-            background: `linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.05) 55%), url('${card.image ?? `https://picsum.photos/seed/${card.seed}/260/300`}') center/cover`,
-          }}
-        >
-          <svg
-            width="30"
-            height="30"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            dangerouslySetInnerHTML={{ __html: card.icon }}
+    <div className="hero-gallery-wrap">
+      <div className="hero-gallery" ref={trackRef}>
+        {heroGalleryData.map((card, i) => (
+          <div
+            key={card.seed}
+            className="hero-gallery-card"
+            ref={(node) => {
+              if (node) cardRefs.current[i] = node;
+            }}
+            style={{
+              background: `linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.05) 55%), url('${card.image ?? `https://picsum.photos/seed/${card.seed}/260/300`}') center/cover`,
+            }}
+          >
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#fff"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              dangerouslySetInnerHTML={{ __html: card.icon }}
+            />
+            <span>{card.label}</span>
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        className="hero-gallery-arrow prev"
+        aria-label="Previous slide"
+        onClick={() => goToIndexRef.current((activeIndex - 1 + count) % count)}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg>
+      </button>
+      <button
+        type="button"
+        className="hero-gallery-arrow next"
+        aria-label="Next slide"
+        onClick={() => goToIndexRef.current((activeIndex + 1) % count)}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+      </button>
+
+      <div className="hero-gallery-dots" role="tablist" aria-label="Discover more slides">
+        {heroGalleryData.map((card, i) => (
+          <button
+            key={card.seed}
+            type="button"
+            role="tab"
+            aria-label={card.label}
+            aria-selected={i === activeIndex}
+            className={`hero-gallery-dot${i === activeIndex ? ' active' : ''}`}
+            onClick={() => goToIndexRef.current(i)}
           />
-          <span>{card.label}</span>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
